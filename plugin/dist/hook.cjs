@@ -33,9 +33,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// node_modules/kind-of/index.js
+// ../../../../../../../../Desktop/binkgo/node_modules/kind-of/index.js
 var require_kind_of = __commonJS({
-  "node_modules/kind-of/index.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/kind-of/index.js"(exports2, module2) {
     var toString = Object.prototype.toString;
     module2.exports = function kindOf(val) {
       if (val === void 0) return "undefined";
@@ -154,9 +154,9 @@ var require_kind_of = __commonJS({
   }
 });
 
-// node_modules/is-extendable/index.js
+// ../../../../../../../../Desktop/binkgo/node_modules/is-extendable/index.js
 var require_is_extendable = __commonJS({
-  "node_modules/is-extendable/index.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/is-extendable/index.js"(exports2, module2) {
     "use strict";
     module2.exports = function isExtendable(val) {
       return typeof val !== "undefined" && val !== null && (typeof val === "object" || typeof val === "function");
@@ -164,9 +164,9 @@ var require_is_extendable = __commonJS({
   }
 });
 
-// node_modules/extend-shallow/index.js
+// ../../../../../../../../Desktop/binkgo/node_modules/extend-shallow/index.js
 var require_extend_shallow = __commonJS({
-  "node_modules/extend-shallow/index.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/extend-shallow/index.js"(exports2, module2) {
     "use strict";
     var isObject = require_is_extendable();
     module2.exports = function extend(o) {
@@ -195,9 +195,9 @@ var require_extend_shallow = __commonJS({
   }
 });
 
-// node_modules/section-matter/index.js
+// ../../../../../../../../Desktop/binkgo/node_modules/section-matter/index.js
 var require_section_matter = __commonJS({
-  "node_modules/section-matter/index.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/section-matter/index.js"(exports2, module2) {
     "use strict";
     var typeOf = require_kind_of();
     var extend = require_extend_shallow();
@@ -302,9 +302,9 @@ var require_section_matter = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/common.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/common.js
 var require_common = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/common.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/common.js"(exports2, module2) {
     "use strict";
     function isNothing(subject) {
       return typeof subject === "undefined" || subject === null;
@@ -347,9 +347,9 @@ var require_common = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/exception.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/exception.js
 var require_exception = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/exception.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/exception.js"(exports2, module2) {
     "use strict";
     function YAMLException(reason, mark) {
       Error.call(this);
@@ -377,9 +377,9 @@ var require_exception = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/mark.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/mark.js
 var require_mark = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/mark.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/mark.js"(exports2, module2) {
     "use strict";
     var common = require_common();
     function Mark(name, buffer, position, line, column) {
@@ -435,9 +435,9 @@ var require_mark = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type.js
 var require_type = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type.js"(exports2, module2) {
     "use strict";
     var YAMLException = require_exception();
     var TYPE_CONSTRUCTOR_OPTIONS = [
@@ -494,9 +494,9 @@ var require_type = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/schema.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema.js
 var require_schema = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/schema.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema.js"(exports2, module2) {
     "use strict";
     var common = require_common();
     var YAMLException = require_exception();
@@ -582,9 +582,9 @@ var require_schema = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/str.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/str.js
 var require_str = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/str.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/str.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     module2.exports = new Type("tag:yaml.org,2002:str", {
@@ -596,9 +596,9 @@ var require_str = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/seq.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/seq.js
 var require_seq = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/seq.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/seq.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     module2.exports = new Type("tag:yaml.org,2002:seq", {
@@ -610,9 +610,9 @@ var require_seq = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/map.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/map.js
 var require_map = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/map.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/map.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     module2.exports = new Type("tag:yaml.org,2002:map", {
@@ -624,9 +624,9 @@ var require_map = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/schema/failsafe.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/failsafe.js
 var require_failsafe = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/schema/failsafe.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/failsafe.js"(exports2, module2) {
     "use strict";
     var Schema = require_schema();
     module2.exports = new Schema({
@@ -639,9 +639,9 @@ var require_failsafe = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/null.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/null.js
 var require_null = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/null.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/null.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     function resolveYamlNull(data) {
@@ -679,9 +679,9 @@ var require_null = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/bool.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/bool.js
 var require_bool = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/bool.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/bool.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     function resolveYamlBoolean(data) {
@@ -716,9 +716,9 @@ var require_bool = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/int.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/int.js
 var require_int = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/int.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/int.js"(exports2, module2) {
     "use strict";
     var common = require_common();
     var Type = require_type();
@@ -849,9 +849,9 @@ var require_int = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/float.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/float.js
 var require_float = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/float.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/float.js"(exports2, module2) {
     "use strict";
     var common = require_common();
     var Type = require_type();
@@ -944,9 +944,9 @@ var require_float = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/schema/json.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/json.js
 var require_json = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/schema/json.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/json.js"(exports2, module2) {
     "use strict";
     var Schema = require_schema();
     module2.exports = new Schema({
@@ -963,9 +963,9 @@ var require_json = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/schema/core.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/core.js
 var require_core = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/schema/core.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/core.js"(exports2, module2) {
     "use strict";
     var Schema = require_schema();
     module2.exports = new Schema({
@@ -976,9 +976,9 @@ var require_core = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/timestamp.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/timestamp.js
 var require_timestamp = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/timestamp.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/timestamp.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     var YAML_DATE_REGEXP = new RegExp(
@@ -1037,9 +1037,9 @@ var require_timestamp = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/merge.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/merge.js
 var require_merge = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/merge.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/merge.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     function resolveYamlMerge(data) {
@@ -1052,9 +1052,9 @@ var require_merge = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/binary.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/binary.js
 var require_binary = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/binary.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/binary.js"(exports2, module2) {
     "use strict";
     var NodeBuffer;
     try {
@@ -1145,9 +1145,9 @@ var require_binary = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/omap.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/omap.js
 var require_omap = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/omap.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/omap.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     var _hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -1182,9 +1182,9 @@ var require_omap = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/pairs.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/pairs.js
 var require_pairs = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/pairs.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/pairs.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     var _toString = Object.prototype.toString;
@@ -1220,9 +1220,9 @@ var require_pairs = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/set.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/set.js
 var require_set = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/set.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/set.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     var _hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -1247,9 +1247,9 @@ var require_set = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/schema/default_safe.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/default_safe.js
 var require_default_safe = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/schema/default_safe.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/default_safe.js"(exports2, module2) {
     "use strict";
     var Schema = require_schema();
     module2.exports = new Schema({
@@ -1270,9 +1270,9 @@ var require_default_safe = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/js/undefined.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/js/undefined.js
 var require_undefined = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/js/undefined.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/js/undefined.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     function resolveJavascriptUndefined() {
@@ -1297,9 +1297,9 @@ var require_undefined = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/js/regexp.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/js/regexp.js
 var require_regexp = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/js/regexp.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/js/regexp.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     function resolveJavascriptRegExp(data) {
@@ -1341,9 +1341,9 @@ var require_regexp = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/type/js/function.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/js/function.js
 var require_function = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/type/js/function.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/js/function.js"(exports2, module2) {
     "use strict";
     var esprima;
     try {
@@ -1396,9 +1396,9 @@ var require_function = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/schema/default_full.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/default_full.js
 var require_default_full = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/schema/default_full.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/default_full.js"(exports2, module2) {
     "use strict";
     var Schema = require_schema();
     module2.exports = Schema.DEFAULT = new Schema({
@@ -1414,9 +1414,9 @@ var require_default_full = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/loader.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/loader.js
 var require_loader = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/loader.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/loader.js"(exports2, module2) {
     "use strict";
     var common = require_common();
     var YAMLException = require_exception();
@@ -2520,7 +2520,7 @@ var require_loader = __commonJS({
         iterator(documents[index]);
       }
     }
-    function load(input, options2) {
+    function load2(input, options2) {
       var documents = loadDocuments(input, options2);
       if (documents.length === 0) {
         return void 0;
@@ -2537,18 +2537,18 @@ var require_loader = __commonJS({
       return loadAll(input, iterator, common.extend({ schema: DEFAULT_SAFE_SCHEMA }, options2));
     }
     function safeLoad(input, options2) {
-      return load(input, common.extend({ schema: DEFAULT_SAFE_SCHEMA }, options2));
+      return load2(input, common.extend({ schema: DEFAULT_SAFE_SCHEMA }, options2));
     }
     module2.exports.loadAll = loadAll;
-    module2.exports.load = load;
+    module2.exports.load = load2;
     module2.exports.safeLoadAll = safeLoadAll;
     module2.exports.safeLoad = safeLoad;
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml/dumper.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/dumper.js
 var require_dumper = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml/dumper.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/dumper.js"(exports2, module2) {
     "use strict";
     var common = require_common();
     var YAMLException = require_exception();
@@ -3094,9 +3094,9 @@ var require_dumper = __commonJS({
   }
 });
 
-// node_modules/js-yaml/lib/js-yaml.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml.js
 var require_js_yaml = __commonJS({
-  "node_modules/js-yaml/lib/js-yaml.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml.js"(exports2, module2) {
     "use strict";
     var loader = require_loader();
     var dumper = require_dumper();
@@ -3129,18 +3129,18 @@ var require_js_yaml = __commonJS({
   }
 });
 
-// node_modules/js-yaml/index.js
+// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/index.js
 var require_js_yaml2 = __commonJS({
-  "node_modules/js-yaml/index.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/index.js"(exports2, module2) {
     "use strict";
     var yaml2 = require_js_yaml();
     module2.exports = yaml2;
   }
 });
 
-// node_modules/gray-matter/lib/engines.js
+// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/engines.js
 var require_engines = __commonJS({
-  "node_modules/gray-matter/lib/engines.js"(exports, module) {
+  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/engines.js"(exports, module) {
     "use strict";
     var yaml = require_js_yaml2();
     var engines = exports = module.exports;
@@ -3176,9 +3176,9 @@ var require_engines = __commonJS({
   }
 });
 
-// node_modules/strip-bom-string/index.js
+// ../../../../../../../../Desktop/binkgo/node_modules/strip-bom-string/index.js
 var require_strip_bom_string = __commonJS({
-  "node_modules/strip-bom-string/index.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/strip-bom-string/index.js"(exports2, module2) {
     "use strict";
     module2.exports = function(str2) {
       if (typeof str2 === "string" && str2.charAt(0) === "\uFEFF") {
@@ -3189,9 +3189,9 @@ var require_strip_bom_string = __commonJS({
   }
 });
 
-// node_modules/gray-matter/lib/utils.js
+// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/utils.js
 var require_utils = __commonJS({
-  "node_modules/gray-matter/lib/utils.js"(exports2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/utils.js"(exports2) {
     "use strict";
     var stripBom = require_strip_bom_string();
     var typeOf = require_kind_of();
@@ -3229,9 +3229,9 @@ var require_utils = __commonJS({
   }
 });
 
-// node_modules/gray-matter/lib/defaults.js
+// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/defaults.js
 var require_defaults = __commonJS({
-  "node_modules/gray-matter/lib/defaults.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/defaults.js"(exports2, module2) {
     "use strict";
     var engines2 = require_engines();
     var utils = require_utils();
@@ -3248,9 +3248,9 @@ var require_defaults = __commonJS({
   }
 });
 
-// node_modules/gray-matter/lib/engine.js
+// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/engine.js
 var require_engine = __commonJS({
-  "node_modules/gray-matter/lib/engine.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/engine.js"(exports2, module2) {
     "use strict";
     module2.exports = function(name, options2) {
       let engine = options2.engines[name] || options2.engines[aliase(name)];
@@ -3282,9 +3282,9 @@ var require_engine = __commonJS({
   }
 });
 
-// node_modules/gray-matter/lib/stringify.js
+// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/stringify.js
 var require_stringify = __commonJS({
-  "node_modules/gray-matter/lib/stringify.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/stringify.js"(exports2, module2) {
     "use strict";
     var typeOf = require_kind_of();
     var getEngine = require_engine();
@@ -3335,9 +3335,9 @@ var require_stringify = __commonJS({
   }
 });
 
-// node_modules/gray-matter/lib/excerpt.js
+// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/excerpt.js
 var require_excerpt = __commonJS({
-  "node_modules/gray-matter/lib/excerpt.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/excerpt.js"(exports2, module2) {
     "use strict";
     var defaults = require_defaults();
     module2.exports = function(file, options2) {
@@ -3362,9 +3362,9 @@ var require_excerpt = __commonJS({
   }
 });
 
-// node_modules/gray-matter/lib/to-file.js
+// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/to-file.js
 var require_to_file = __commonJS({
-  "node_modules/gray-matter/lib/to-file.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/to-file.js"(exports2, module2) {
     "use strict";
     var typeOf = require_kind_of();
     var stringify = require_stringify();
@@ -3396,9 +3396,9 @@ var require_to_file = __commonJS({
   }
 });
 
-// node_modules/gray-matter/lib/parse.js
+// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/parse.js
 var require_parse = __commonJS({
-  "node_modules/gray-matter/lib/parse.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/parse.js"(exports2, module2) {
     "use strict";
     var getEngine = require_engine();
     var defaults = require_defaults();
@@ -3413,11 +3413,11 @@ var require_parse = __commonJS({
   }
 });
 
-// node_modules/gray-matter/index.js
+// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/index.js
 var require_gray_matter = __commonJS({
-  "node_modules/gray-matter/index.js"(exports2, module2) {
+  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/index.js"(exports2, module2) {
     "use strict";
-    var fs11 = require("fs");
+    var fs12 = require("fs");
     var sections = require_section_matter();
     var defaults = require_defaults();
     var stringify = require_stringify();
@@ -3501,7 +3501,7 @@ var require_gray_matter = __commonJS({
       return stringify(file, data, options2);
     };
     matter2.read = function(filepath, options2) {
-      const str2 = fs11.readFileSync(filepath, "utf8");
+      const str2 = fs12.readFileSync(filepath, "utf8");
       const file = matter2(str2, options2);
       file.path = filepath;
       return file;
@@ -3589,7 +3589,7 @@ function uniqueId(dir, base) {
   return id;
 }
 
-// node_modules/zod/v3/external.js
+// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/external.js
 var external_exports = {};
 __export(external_exports, {
   BRAND: () => BRAND,
@@ -3701,7 +3701,7 @@ __export(external_exports, {
   void: () => voidType
 });
 
-// node_modules/zod/v3/helpers/util.js
+// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/helpers/util.js
 var util;
 (function(util2) {
   util2.assertEqual = (_) => {
@@ -3835,7 +3835,7 @@ var getParsedType = (data) => {
   }
 };
 
-// node_modules/zod/v3/ZodError.js
+// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/ZodError.js
 var ZodIssueCode = util.arrayToEnum([
   "invalid_type",
   "invalid_literal",
@@ -3953,7 +3953,7 @@ ZodError.create = (issues) => {
   return error;
 };
 
-// node_modules/zod/v3/locales/en.js
+// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/locales/en.js
 var errorMap = (issue, _ctx) => {
   let message;
   switch (issue.code) {
@@ -4056,7 +4056,7 @@ var errorMap = (issue, _ctx) => {
 };
 var en_default = errorMap;
 
-// node_modules/zod/v3/errors.js
+// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/errors.js
 var overrideErrorMap = en_default;
 function setErrorMap(map) {
   overrideErrorMap = map;
@@ -4065,10 +4065,10 @@ function getErrorMap() {
   return overrideErrorMap;
 }
 
-// node_modules/zod/v3/helpers/parseUtil.js
+// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path12, errorMaps, issueData } = params;
-  const fullPath = [...path12, ...issueData.path || []];
+  const { data, path: path13, errorMaps, issueData } = params;
+  const fullPath = [...path13, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -4175,20 +4175,20 @@ var isDirty = (x) => x.status === "dirty";
 var isValid = (x) => x.status === "valid";
 var isAsync = (x) => typeof Promise !== "undefined" && x instanceof Promise;
 
-// node_modules/zod/v3/helpers/errorUtil.js
+// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/helpers/errorUtil.js
 var errorUtil;
 (function(errorUtil2) {
   errorUtil2.errToObj = (message) => typeof message === "string" ? { message } : message || {};
   errorUtil2.toString = (message) => typeof message === "string" ? message : message?.message;
 })(errorUtil || (errorUtil = {}));
 
-// node_modules/zod/v3/types.js
+// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path12, key) {
+  constructor(parent, value, path13, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path12;
+    this._path = path13;
     this._key = key;
   }
   get path() {
@@ -7871,6 +7871,8 @@ function readText(file) {
     }
   }
 }
+var LockTimeout = class extends Error {
+};
 var lockStaleMs = 5e3;
 var lockTimeoutMs = 8e3;
 function setLockDefaults(opts) {
@@ -7953,7 +7955,7 @@ function withLock(target, fn, opts = {}) {
     }
     if (Date.now() > deadline) {
       const cause = lastCode && lastCode !== "EEXIST" ? ` (${lastCode})` : "";
-      throw new Error(`lock timeout: ${target}${cause}`);
+      throw new LockTimeout(`lock timeout: ${target}${cause}`);
     }
     sleepMs(20);
   }
@@ -8086,8 +8088,8 @@ function mutateEntry(root, kind, id, fn) {
 }
 
 // src/hooks/run.ts
-var import_node_fs10 = __toESM(require("node:fs"), 1);
-var import_node_path11 = __toESM(require("node:path"), 1);
+var import_node_fs11 = __toESM(require("node:fs"), 1);
+var import_node_path12 = __toESM(require("node:path"), 1);
 
 // src/vault/registry.ts
 var import_node_fs3 = __toESM(require("node:fs"), 1);
@@ -8137,8 +8139,9 @@ function registerProject(root, name, now, opts = {}) {
 }
 
 // src/hooks/handlers.ts
-var import_node_fs9 = __toESM(require("node:fs"), 1);
-var import_node_path10 = __toESM(require("node:path"), 1);
+var import_node_fs10 = __toESM(require("node:fs"), 1);
+var import_node_os4 = __toESM(require("node:os"), 1);
+var import_node_path11 = __toESM(require("node:path"), 1);
 
 // src/transcript/usage.ts
 var import_node_fs4 = __toESM(require("node:fs"), 1);
@@ -8425,9 +8428,68 @@ function computeUsage(transcriptPath) {
   return { model, usage };
 }
 
-// src/vault/map.ts
+// src/vault/index.ts
+var import_node_crypto2 = require("node:crypto");
 var import_node_fs5 = __toESM(require("node:fs"), 1);
 var import_node_path5 = __toESM(require("node:path"), 1);
+var VERSION = 1;
+function cacheFile(root) {
+  const key = (0, import_node_crypto2.createHash)("sha1").update(canonicalPath(root).toLowerCase()).digest("hex").slice(0, 16);
+  return import_node_path5.default.join(binkgoHome(), "cache", `tasks-${key}.json`);
+}
+function load(root) {
+  try {
+    const json = JSON.parse(import_node_fs5.default.readFileSync(cacheFile(root), "utf8"));
+    return json.v === VERSION && json.rows && typeof json.rows === "object" ? json.rows : {};
+  } catch {
+    return {};
+  }
+}
+function rowOf(root, id, m, s) {
+  const e = readEntry(root, "task", id, ["history"]);
+  if (isBroken(e)) return { m, s, broken: true, error: e.error, status: "" };
+  const d = e.data;
+  const row = { m, s, status: d.status };
+  if (d.topic) row.topic = d.topic;
+  if (typeof d.rank === "number") row.rank = d.rank;
+  if (d.parent) row.parent = d.parent;
+  if (d.blocked_by?.length) row.blocked_by = d.blocked_by;
+  if (d.sprint) row.sprint = d.sprint;
+  if (d.milestone) row.milestone = d.milestone;
+  if (d.status !== "done") row.data = d;
+  return row;
+}
+function taskRows(root) {
+  const cached = load(root);
+  const out = /* @__PURE__ */ new Map();
+  let changed = false;
+  for (const id of listIds(root, "task")) {
+    let st;
+    try {
+      st = import_node_fs5.default.statSync(entryPath(root, "task", id));
+    } catch {
+      continue;
+    }
+    const old = cached[id];
+    if (old && old.m === st.mtimeMs && old.s === st.size) {
+      out.set(id, old);
+    } else {
+      out.set(id, rowOf(root, id, st.mtimeMs, st.size));
+      changed = true;
+    }
+  }
+  if (changed || Object.keys(cached).length !== out.size) {
+    try {
+      writeAtomic(cacheFile(root), JSON.stringify({ v: VERSION, rows: Object.fromEntries(out) }));
+    } catch {
+    }
+  }
+  return out;
+}
+
+// src/vault/map.ts
+var import_node_fs6 = __toESM(require("node:fs"), 1);
+var import_node_path6 = __toESM(require("node:path"), 1);
 
 // src/vault/refs.ts
 function refOf(kind, id) {
@@ -8448,15 +8510,15 @@ function noControl(what, value, multiline = false) {
 
 // src/vault/map.ts
 function stampOf(root, rel) {
-  const full = import_node_path5.default.join(canonicalPath(root), rel === "." ? "" : rel);
+  const full = import_node_path6.default.join(canonicalPath(root), rel === "." ? "" : rel);
   try {
-    const st = import_node_fs5.default.statSync(full);
+    const st = import_node_fs6.default.statSync(full);
     if (!st.isDirectory()) return `f:${st.size}:${Math.floor(st.mtimeMs)}`;
     let newest = 0;
-    const names = import_node_fs5.default.readdirSync(full).filter((n) => n !== VAULT_DIRNAME && n !== ".git" && n !== "node_modules");
+    const names = import_node_fs6.default.readdirSync(full).filter((n) => n !== VAULT_DIRNAME && n !== ".git" && n !== "node_modules");
     for (const n of names) {
       try {
-        newest = Math.max(newest, Math.floor(import_node_fs5.default.statSync(import_node_path5.default.join(full, n)).mtimeMs));
+        newest = Math.max(newest, Math.floor(import_node_fs6.default.statSync(import_node_path6.default.join(full, n)).mtimeMs));
       } catch {
       }
     }
@@ -8512,22 +8574,14 @@ function scanTasks(root) {
   const done = /* @__PURE__ */ new Set();
   const known = /* @__PURE__ */ new Set();
   const perMilestone = /* @__PURE__ */ new Map();
-  for (const id of listIds(root, "task")) {
-    const raw = readRaw(root, "task", id);
-    if (raw === null) continue;
+  for (const [id, row] of taskRows(root)) {
     known.add(id);
-    const end = raw.indexOf("\n---", 3);
-    const front = end < 0 ? raw : raw.slice(0, end);
-    const isDone = /^status:\s*["']?done\b/m.test(front);
-    const refs = [...front.matchAll(/^(?:milestone|sprint):\s*["']?([A-Za-z0-9-]+)/gm)].map((m) => m[1]);
-    if (isDone) {
-      done.add(id);
-    } else {
-      const e = readEntry(root, "task", id, ["history"]);
-      if (isBroken(e)) continue;
-      open.push(e);
-    }
-    for (const ref of refs) {
+    if (row.broken) continue;
+    const isDone = row.status === "done";
+    if (isDone) done.add(id);
+    else if (row.data) open.push({ kind: "task", id, data: row.data, sections: {} });
+    for (const ref of /* @__PURE__ */ new Set([row.milestone, row.sprint])) {
+      if (!ref) continue;
       const counts = perMilestone.get(ref) ?? { done: 0, total: 0 };
       counts.total++;
       if (isDone) counts.done++;
@@ -8546,8 +8600,9 @@ function byPriorityThenRank(a, b) {
   if (ra === void 0 !== (rb === void 0)) return ra === void 0 ? 1 : -1;
   return byUpdated(a, b);
 }
-function activeSprint(root) {
-  return listGood(root, "milestone").filter((m) => milestoneKind(m.data) === "sprint" && m.data.status === "active").sort((a, b) => (a.data.end ?? "9999").localeCompare(b.data.end ?? "9999") || (a.id < b.id ? -1 : 1))[0];
+function activeSprint(root, today) {
+  const over = (m) => m.data.end && m.data.end < today ? 1 : 0;
+  return listGood(root, "milestone").filter((m) => milestoneKind(m.data) === "sprint" && m.data.status === "active").sort((a, b) => over(a) - over(b) || (a.data.end ?? "9999").localeCompare(b.data.end ?? "9999") || (a.id < b.id ? -1 : 1))[0];
 }
 var cap = (s, n) => {
   const one = s.replace(/\s+/g, " ").trim();
@@ -8563,6 +8618,15 @@ var LIST = 3;
 var MAP_SHOWN = 8;
 var MAP_SCAN = 100;
 var SHOWN = [["doing", 4], ["blocked", 2], ["todo", 4]];
+function countActive(root, kind) {
+  let n = 0;
+  for (const id of listIds(root, kind)) {
+    const raw = readRaw(root, kind, id);
+    const end = raw === null ? -1 : raw.indexOf("\n---", 3);
+    if (raw !== null && /^status:\s*["']?active\b/m.test(end < 0 ? raw : raw.slice(0, end))) n++;
+  }
+  return n;
+}
 var some = (ids, shown = LIST) => ids.slice(0, shown).join(", ") + (ids.length > shown ? ` (+${ids.length - shown})` : "");
 function buildBrief(root, now = /* @__PURE__ */ new Date()) {
   const project = readEntry(root, "project", "project");
@@ -8582,7 +8646,7 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
   }
   const { open: tasks, done: doneIds, known, perMilestone } = scanTasks(root);
   const today = dateStamp(now);
-  const sprint = activeSprint(root);
+  const sprint = activeSprint(root, today);
   if (sprint) {
     const counts = perMilestone.get(sprint.id) ?? { done: 0, total: 0 };
     const ends = sprint.data.end ? `ends ${sprint.data.end}` : "no end date";
@@ -8591,9 +8655,12 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
   const soon = dateStamp(new Date(now.getTime() + 30 * 864e5));
   const due = listGood(root, "milestone").filter((m) => milestoneKind(m.data) === "milestone" && m.data.status !== "done" && m.data.end && m.data.end >= today && m.data.end <= soon).sort((a, b) => a.data.end.localeCompare(b.data.end));
   if (due.length) units.push(`Milestones due soon: ${due.slice(0, LIST).map((m) => `${m.id} (${m.data.end})`).join(", ")}${due.length > LIST ? ` (+${due.length - LIST})` : ""}`);
+  const late2 = listGood(root, "milestone").filter((m) => m.data.status !== "done" && m.data.end && m.data.end < today).sort((a, b) => a.data.end.localeCompare(b.data.end) || (a.id < b.id ? -1 : 1));
+  if (late2.length) units.push(`Milestones overdue: ${late2.slice(0, LIST).map((m) => `${m.id} (${m.data.end})`).join(", ")}${late2.length > LIST ? ` (+${late2.length - LIST})` : ""}`);
   const overdue = tasks.filter((t) => t.data.due && t.data.due < today).sort((a, b) => a.data.due.localeCompare(b.data.due) || newestFirst(a, b));
   if (overdue.length) units.push(`Overdue (${overdue.length}): ${some(overdue.map((t) => t.id))}`);
   const unblocked = tasks.filter((t) => {
+    if (t.data.status === "doing") return false;
     const waits = t.data.blocked_by ?? [];
     return waits.length > 0 && waits.every((b) => doneIds.has(b) || !known.has(b));
   });
@@ -8624,7 +8691,7 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
   }
   const decisions = newestEntries(root, "decision").filter((d) => d.data.status === "active").sort(byCreated);
   const fixes = newestEntries(root, "fix").sort(byCreated);
-  const decisionTotal = listIds(root, "decision").length;
+  const decisionTotal = countActive(root, "decision");
   const fixTotal = listIds(root, "fix").length;
   if (decisions.length) units.push(`Decisions (${decisionTotal}): ${some(decisions.map((d) => d.id))}`);
   if (fixes.length) units.push(`Fixes (${fixTotal}): ${some(fixes.map((f) => f.data.status === "active" ? f.id : `${f.id} [${f.data.status}]`))}`);
@@ -8654,18 +8721,18 @@ var createdNote = (name, commits) => `Binkgo: this git repository had no vault, 
 var ADOPT_COMMITS = 20;
 
 // src/vault/live.ts
-var import_node_fs6 = __toESM(require("node:fs"), 1);
-var import_node_path6 = __toESM(require("node:path"), 1);
+var import_node_fs7 = __toESM(require("node:fs"), 1);
+var import_node_path7 = __toESM(require("node:path"), 1);
 var CLAUDE_WORKING_MS = 10 * 60 * 1e3;
 var CODEX_WORKING_MS = 5 * 60 * 1e3;
 var CLAUDE_WAITING_MS = 30 * 60 * 1e3;
 var CLOSED_VISIBLE_MS = 60 * 60 * 1e3;
 var LIVE_MAX_AGE_MS = 24 * 60 * 60 * 1e3;
 function liveDir() {
-  return import_node_path6.default.join(binkgoHome(), "live");
+  return import_node_path7.default.join(binkgoHome(), "live");
 }
 function liveFile(sessionId) {
-  return import_node_path6.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
+  return import_node_path7.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
 }
 function isRecord(v) {
   if (!v || typeof v !== "object") return false;
@@ -8675,7 +8742,7 @@ function isRecord(v) {
 }
 function readFile(file) {
   try {
-    const parsed = JSON.parse(import_node_fs6.default.readFileSync(file, "utf8"));
+    const parsed = JSON.parse(import_node_fs7.default.readFileSync(file, "utf8"));
     return isRecord(parsed) ? parsed : null;
   } catch {
     return null;
@@ -8705,9 +8772,9 @@ function markClaude(input, state, now) {
 }
 
 // src/vault/sessions.ts
-var import_node_path7 = __toESM(require("node:path"), 1);
+var import_node_path8 = __toESM(require("node:path"), 1);
 function openSession(root, sessionId, meta, now = /* @__PURE__ */ new Date()) {
-  const dir = import_node_path7.default.join(vaultDir(root), DIRS.session);
+  const dir = import_node_path8.default.join(vaultDir(root), DIRS.session);
   return withLock(dir, () => {
     const sid8 = sessionId.replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toLowerCase() || "session";
     const suffix = new RegExp(`-${sid8}(-\\d+)?$`);
@@ -8772,13 +8839,13 @@ function findFixesForFile(root, relPath) {
 }
 
 // src/vault/state.ts
-var import_node_fs7 = __toESM(require("node:fs"), 1);
-var import_node_path8 = __toESM(require("node:path"), 1);
+var import_node_fs8 = __toESM(require("node:fs"), 1);
+var import_node_path9 = __toESM(require("node:path"), 1);
 function stateDir() {
-  return import_node_path8.default.join(binkgoHome(), "state");
+  return import_node_path9.default.join(binkgoHome(), "state");
 }
 function stateFile(sessionId) {
-  return import_node_path8.default.join(stateDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
+  return import_node_path9.default.join(stateDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
 }
 function isState(v) {
   if (!v || typeof v !== "object") return false;
@@ -8787,7 +8854,7 @@ function isState(v) {
 }
 function readFile2(file) {
   try {
-    const parsed = JSON.parse(import_node_fs7.default.readFileSync(file, "utf8"));
+    const parsed = JSON.parse(import_node_fs8.default.readFileSync(file, "utf8"));
     return isState(parsed) ? parsed : null;
   } catch {
     return null;
@@ -8812,13 +8879,13 @@ function pruneStates(now, maxAgeDays = 30) {
   const leftoverCutoff = now.getTime() - LEFTOVER_MAX_AGE_MS;
   let names;
   try {
-    names = import_node_fs7.default.readdirSync(stateDir());
+    names = import_node_fs8.default.readdirSync(stateDir());
   } catch {
     return;
   }
   const mtimeOf = (file) => {
     try {
-      const st = import_node_fs7.default.statSync(file);
+      const st = import_node_fs8.default.statSync(file);
       return st.isFile() ? st.mtimeMs : null;
     } catch {
       return null;
@@ -8827,7 +8894,7 @@ function pruneStates(now, maxAgeDays = 30) {
   let handled = 0;
   for (const name of names) {
     if (handled >= PRUNE_MAX_FILES) break;
-    const file = import_node_path8.default.join(stateDir(), name);
+    const file = import_node_path9.default.join(stateDir(), name);
     try {
       if (name.endsWith(".json")) {
         const m = mtimeOf(file);
@@ -8835,11 +8902,11 @@ function pruneStates(now, maxAgeDays = 30) {
         handled++;
         withLock(file, () => {
           const again = mtimeOf(file);
-          if (again !== null && again < cutoff) import_node_fs7.default.rmSync(file, { force: true });
+          if (again !== null && again < cutoff) import_node_fs8.default.rmSync(file, { force: true });
         }, { timeoutMs: 200 });
       } else if (/\.(tmp|lock|steal)$/.test(name)) {
         const m = mtimeOf(file);
-        if (m !== null && m < leftoverCutoff) import_node_fs7.default.rmSync(file, { force: true });
+        if (m !== null && m < leftoverCutoff) import_node_fs8.default.rmSync(file, { force: true });
       }
     } catch {
     }
@@ -8847,9 +8914,9 @@ function pruneStates(now, maxAgeDays = 30) {
 }
 
 // src/vault/vault.ts
-var import_node_fs8 = __toESM(require("node:fs"), 1);
+var import_node_fs9 = __toESM(require("node:fs"), 1);
 var import_node_os3 = __toESM(require("node:os"), 1);
-var import_node_path9 = __toESM(require("node:path"), 1);
+var import_node_path10 = __toESM(require("node:path"), 1);
 function must(root, kind, id) {
   const e = readEntry(root, kind, id);
   if (isBroken(e)) throw new Error(`Cannot read ${kind} ${id}: ${e.error}`);
@@ -8857,16 +8924,16 @@ function must(root, kind, id) {
 }
 function canHostVault(root) {
   const r = canonicalPath(root);
-  if (import_node_path9.default.dirname(r) === r) return false;
+  if (import_node_path10.default.dirname(r) === r) return false;
   if (samePath(r, import_node_os3.default.homedir())) return false;
   return !samePath(vaultDir(r), binkgoHome());
 }
 function vaultExists(root) {
-  return import_node_fs8.default.existsSync(entryPath(root, "project", "project"));
+  return import_node_fs9.default.existsSync(entryPath(root, "project", "project"));
 }
 function writeGitignore(root) {
   try {
-    import_node_fs8.default.writeFileSync(import_node_path9.default.join(vaultDir(root), ".gitignore"), ["*.lock", "*.steal", "*.tmp", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
+    import_node_fs9.default.writeFileSync(import_node_path10.default.join(vaultDir(root), ".gitignore"), ["*.lock", "*.steal", "*.tmp", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
   } catch (e) {
     if (e.code !== "EEXIST") throw e;
   }
@@ -8876,7 +8943,7 @@ function initVault(root, input, now = /* @__PURE__ */ new Date(), opts = {}) {
   noControl("The goal", input.goal, true);
   if (!canHostVault(root)) throw new Error(`Binkgo cannot create a vault in ${root}`);
   for (const k of KINDS) {
-    if (k !== "project" && k !== "milestone" && k !== "map") import_node_fs8.default.mkdirSync(import_node_path9.default.join(vaultDir(root), DIRS[k]), { recursive: true });
+    if (k !== "project" && k !== "milestone" && k !== "map") import_node_fs9.default.mkdirSync(import_node_path10.default.join(vaultDir(root), DIRS[k]), { recursive: true });
   }
   if (!vaultExists(root)) {
     const t = localIso(now);
@@ -8931,7 +8998,7 @@ function stateFor(input) {
 function editedFile(input, root) {
   const raw = input.tool_input?.file_path ?? input.tool_input?.notebook_path;
   if (typeof raw !== "string" || !raw) return null;
-  return toRelPath(root, import_node_path10.default.resolve(input.cwd || root, raw));
+  return toRelPath(root, import_node_path11.default.resolve(input.cwd || root, raw));
 }
 function additionalContext(event, text) {
   return { hookSpecificOutput: { hookEventName: event, additionalContext: text } };
@@ -8954,9 +9021,9 @@ function commitCount(root) {
   }
 }
 function autoCreate(root, now) {
-  if (vaultExists(root) || !import_node_fs9.default.existsSync(import_node_path10.default.join(root, ".git")) || !canHostVault(root)) return null;
+  if (vaultExists(root) || !import_node_fs10.default.existsSync(import_node_path11.default.join(root, ".git")) || !canHostVault(root)) return null;
   try {
-    const name = import_node_path10.default.basename(root);
+    const name = import_node_path11.default.basename(root);
     initVault(root, { name }, now, { auto: true });
     return createdNote(name, commitCount(root));
   } catch {
@@ -8981,13 +9048,17 @@ function sessionStart(input, now = /* @__PURE__ */ new Date()) {
   mutateState(input.session_id, () => fresh(input), (s) => {
     s.root = root;
     s.ended = false;
+    if (input.source === "compact") {
+      s.map_shown = [];
+      s.warned_files = [];
+    }
     if (typeof input.transcript_path === "string" && input.transcript_path) s.transcript_path = input.transcript_path;
     if (entry2) s.entry_id = entry2;
   });
   let out;
   if (entry2) {
     const brief = buildBrief(root, now);
-    let name = import_node_path10.default.basename(root);
+    let name = import_node_path11.default.basename(root);
     try {
       name = readProject(root).data.name;
       registerProject(root, name, now, { auto: true });
@@ -9050,20 +9121,20 @@ var MAP_DETAILS = 600;
 function exploreTarget(input, root) {
   const ti = input.tool_input ?? {};
   const base = typeof ti.file_path === "string" && ti.file_path ? ti.file_path : typeof ti.path === "string" && ti.path ? ti.path : "";
-  let full = base ? import_node_path10.default.resolve(input.cwd || root, base) : input.cwd || root;
+  let full = base ? import_node_path11.default.resolve(input.cwd || root, base) : input.cwd || root;
   if (typeof ti.pattern === "string" && !base) {
     const b = patternBase(ti.pattern.split(String.fromCharCode(92)).join("/"));
-    if (b && !import_node_path10.default.isAbsolute(b)) full = import_node_path10.default.resolve(input.cwd || root, b);
+    if (b && !import_node_path11.default.isAbsolute(b)) full = import_node_path11.default.resolve(input.cwd || root, b);
   }
   const rel = toRelPath(root, full);
   if (rel !== null) return rel;
-  return import_node_path10.default.relative(canonicalPath(root), canonicalPath(full)) === "" ? "." : null;
+  return import_node_path11.default.relative(canonicalPath(root), canonicalPath(full)) === "" ? "." : null;
 }
 function preExplore(input, _now = /* @__PURE__ */ new Date()) {
   const read = readState(input.session_id);
   const root = read?.root ?? findProjectRoot(input.cwd);
   const dir = vaultDir(root);
-  if (!import_node_fs9.default.existsSync(import_node_path10.default.join(dir, "map"))) return void 0;
+  if (!import_node_fs10.default.existsSync(import_node_path11.default.join(dir, "map"))) return void 0;
   const rel = exploreTarget(input, root);
   if (rel === null) return void 0;
   const shown = new Set(read?.map_shown ?? []);
@@ -9083,14 +9154,18 @@ function preExplore(input, _now = /* @__PURE__ */ new Date()) {
   });
   return additionalContext("PreToolUse", mapNote(listed.map(line), details));
 }
+function isScratchFolder(root) {
+  const home = import_node_os4.default.homedir();
+  return [import_node_path11.default.join(home, "Desktop"), import_node_path11.default.join(home, "Downloads"), import_node_path11.default.join(home, "Documents"), import_node_os4.default.tmpdir()].some((p) => samePath(root, p));
+}
 function postEdit(input, now = /* @__PURE__ */ new Date()) {
   const state = stateFor(input);
   const root = state.root;
   const rel = editedFile(input, root);
   if (!rel) return void 0;
   if (!vaultExists(root)) {
-    if (!canHostVault(root)) return void 0;
-    initVault(root, { name: import_node_path10.default.basename(root) }, now, { auto: true });
+    if (!canHostVault(root) || isScratchFolder(root)) return void 0;
+    initVault(root, { name: import_node_path11.default.basename(root) }, now, { auto: true });
   }
   const entry2 = state.entry_id && entryExists(root, "session", state.entry_id) ? state.entry_id : openSession(root, input.session_id, { model: null }, sessionBegan(input.transcript_path ?? state.transcript_path, now));
   touchFile(root, entry2, rel);
@@ -9179,10 +9254,10 @@ function describeError(e) {
 }
 function logError(name, sessionId, e) {
   try {
-    const dir = import_node_path11.default.join(binkgoHome(), "logs");
-    import_node_fs10.default.mkdirSync(dir, { recursive: true });
-    import_node_fs10.default.appendFileSync(
-      import_node_path11.default.join(dir, "hooks.log"),
+    const dir = import_node_path12.default.join(binkgoHome(), "logs");
+    import_node_fs11.default.mkdirSync(dir, { recursive: true });
+    import_node_fs11.default.appendFileSync(
+      import_node_path12.default.join(dir, "hooks.log"),
       `${(/* @__PURE__ */ new Date()).toISOString()} ${name} ${sessionId || "-"}: ${describeError(e)}
 `
     );

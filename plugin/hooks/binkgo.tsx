@@ -9,6 +9,7 @@ const RUN_MS = 5000;
 const POLL_MAX_MS = 10 * 60 * 1000;
 const view = { plugin: 'binkgo', key: 'view' } as const;
 const login = { plugin: 'binkgo', key: 'login' } as const;
+const announced = { plugin: 'binkgo', key: 'announced' } as const;
 
 let lastRefresh = 0;
 let lastCwd = '';
@@ -164,6 +165,32 @@ function summary(v: BinkgoView | undefined): string {
   return lines.join('\n');
 }
 
+/** The brief posted into the chat when a session starts; plain text, since a notice draws no Markdown. Null posts nothing. */
+export function startNotice(v: BinkgoView | undefined): string | null {
+  if (!v || v.kind === 'error' || v.kind === 'no-vault') return null;
+  if (v.kind === 'locked') return 'Binkgo is locked · /binkgo login starts a free 7-day trial';
+  const b = v.brief;
+  const lines = [`Binkgo · ${b.name}`];
+  if (b.focus) lines.push(cut(b.focus, 160));
+  if (b.sprint) lines.push(`${bar(b.sprint.done, b.sprint.total)} ${b.sprint.done}/${b.sprint.total} ${b.sprint.title}${b.sprint.ends ? ` · ends ${niceDate(b.sprint.ends)}` : ''}`);
+  if (b.doing.length) lines.push('In progress', ...b.doing.slice(0, 3).map((t) => `  ▸ ${cut(t.title, 80)}`));
+  if (b.todo.length) lines.push('Next up', ...b.todo.slice(0, 3).map((t) => `  · ${cut(t.title, 80)}${t.priority === 'urgent' ? ' (urgent)' : ''}`));
+  lines.push('/binkgo for the card · /binkgo dashboard');
+  return lines.join('\n');
+}
+
+/** Posts the brief once per session; a hot reload fires session.start again, so the flag lives in `$.state`. */
+async function announce($: EngineInterface): Promise<void> {
+  try {
+    if ((await $.state.get(announced)).value) return;
+    await $.state.set(announced, true);
+    await refresh($, true);
+    const text = startNotice((await $.state.get(view)).value ?? undefined);
+    if (!text) return;
+    await $.session.append({ message: { type: 'system', content: [{ type: 'text', text }] } });
+  } catch { /* the notice is a convenience: never break the session */ }
+}
+
 const PRIORITY_COLOR: Record<string, string> = { urgent: 'red', high: '#e8892b' };
 
 export const register: Register = (on) => {
@@ -177,7 +204,8 @@ export const register: Register = (on) => {
     } catch { /* a name clash only costs the command */ }
     lastCwd = e.cwd;
     node = await hooksRuntime($);
-    void refresh($, true);
+    if (e.isInteractive) void announce($);
+    else void refresh($, true);
     return next(e);
   });
 

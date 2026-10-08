@@ -20,6 +20,6 @@ export type BinkgoView =
 
 declare module 'claude-code' {
   interface PluginState {
-    binkgo: { view: BinkgoView | null; login: { code: string } | null };
+    binkgo: { view: BinkgoView | null; login: { code: string } | null; announced: boolean | null };
   }
 }
