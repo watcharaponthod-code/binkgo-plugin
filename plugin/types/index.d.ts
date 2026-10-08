@@ -5,7 +5,7 @@ export type BinkgoBrief = {
   name: string;
   goal: string;
   focus: string;
-  sprint: { title: string; ends: string | null; done: number; total: number } | null;
+  milestone: { title: string; ends: string | null; done: number; total: number } | null;
   doing: Array<{ id: string; title: string; priority: string | null }>;
   todo: Array<{ id: string; title: string; priority: string | null; due: string | null }>;
   recentFixes: Array<{ id: string; title: string }>;

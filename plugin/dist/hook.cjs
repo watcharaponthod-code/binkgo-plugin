@@ -7657,8 +7657,6 @@ var maybeDate = dateOnly.nullish();
 var maybeIso = external_exports.preprocess(dateToString, external_exports.string().min(1)).nullish();
 var PRIORITIES = ["urgent", "high", "medium", "low"];
 var MILESTONE_STATUSES = ["planned", "active", "done"];
-var MILESTONE_KINDS = ["sprint", "milestone"];
-var milestoneKind = (d) => d.kind ?? (/^sprint\b/i.test(d.title) ? "sprint" : "milestone");
 var historyItem = external_exports.object({
   at: iso,
   field: external_exports.string(),
@@ -7737,6 +7735,7 @@ var SCHEMAS = {
     labels: lax(external_exports.array(external_exports.string()).optional()),
     parent: external_exports.string().nullish(),
     blocked_by: lax(external_exports.array(external_exports.string()).optional()),
+    // Older files: a former "sprint" reference. It reads as the milestone and is dropped the next time the task is written.
     sprint: external_exports.string().nullish(),
     milestone: external_exports.string().nullish(),
     completed: maybeIso,
@@ -7746,7 +7745,8 @@ var SCHEMAS = {
   }),
   milestone: entry({
     title: external_exports.string().min(1),
-    kind: lax(external_exports.enum(MILESTONE_KINDS).optional()),
+    // Older files had `sprint` or `milestone` here. It is ignored, and dropped the next time the milestone is written.
+    kind: lax(external_exports.string().optional()),
     goal: lax(external_exports.string().default("")),
     start: maybeDate,
     end: maybeDate,
@@ -7821,6 +7821,9 @@ var SECTIONS = {
   milestone: ["Notes"],
   map: ["Details"]
 };
+function effectiveMilestone(d) {
+  return d.milestone || d.sprint || null;
+}
 
 // src/vault/io.ts
 var sleepBuffer = new Int32Array(new SharedArrayBuffer(4));
@@ -8250,7 +8253,7 @@ function licenseStatus(now, appVersion, opts = {}) {
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.7",
+  version: "1.0.8",
   private: true,
   type: "module",
   engines: {
@@ -8627,7 +8630,7 @@ function computeUsage(transcriptPath) {
 var import_node_crypto4 = require("node:crypto");
 var import_node_fs6 = __toESM(require("node:fs"), 1);
 var import_node_path6 = __toESM(require("node:path"), 1);
-var VERSION = 1;
+var VERSION = 2;
 function cacheFile(root) {
   const key = (0, import_node_crypto4.createHash)("sha1").update(canonicalPath(root).toLowerCase()).digest("hex").slice(0, 16);
   return import_node_path6.default.join(binkgoHome(), "cache", `tasks-${key}.json`);
@@ -8649,8 +8652,8 @@ function rowOf(root, id, m, s) {
   if (typeof d.rank === "number") row.rank = d.rank;
   if (d.parent) row.parent = d.parent;
   if (d.blocked_by?.length) row.blocked_by = d.blocked_by;
-  if (d.sprint) row.sprint = d.sprint;
-  if (d.milestone) row.milestone = d.milestone;
+  const milestone = effectiveMilestone(d);
+  if (milestone) row.milestone = milestone;
   if (d.status !== "done") row.data = d;
   return row;
 }
@@ -8775,12 +8778,11 @@ function scanTasks(root) {
     const isDone = row.status === "done";
     if (isDone) done.add(id);
     else if (row.data) open.push({ kind: "task", id, data: row.data, sections: {} });
-    for (const ref of /* @__PURE__ */ new Set([row.milestone, row.sprint])) {
-      if (!ref) continue;
-      const counts = perMilestone.get(ref) ?? { done: 0, total: 0 };
+    if (row.milestone) {
+      const counts = perMilestone.get(row.milestone) ?? { done: 0, total: 0 };
       counts.total++;
       if (isDone) counts.done++;
-      perMilestone.set(ref, counts);
+      perMilestone.set(row.milestone, counts);
     }
   }
   return { open, done, known, perMilestone };
@@ -8795,9 +8797,9 @@ function byPriorityThenRank(a, b) {
   if (ra === void 0 !== (rb === void 0)) return ra === void 0 ? 1 : -1;
   return byUpdated(a, b);
 }
-function activeSprint(root, today) {
+function activeMilestone(root, today) {
   const over = (m) => m.data.end && m.data.end < today ? 1 : 0;
-  return listGood(root, "milestone").filter((m) => milestoneKind(m.data) === "sprint" && m.data.status === "active").sort((a, b) => over(a) - over(b) || (a.data.end ?? "9999").localeCompare(b.data.end ?? "9999") || (a.id < b.id ? -1 : 1))[0];
+  return listGood(root, "milestone").filter((m) => m.data.status === "active").sort((a, b) => over(a) - over(b) || (a.data.end ?? "9999").localeCompare(b.data.end ?? "9999") || (a.id < b.id ? -1 : 1))[0];
 }
 var cap = (s, n) => {
   const one = s.replace(/\s+/g, " ").trim();
@@ -8841,14 +8843,14 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
   }
   const { open: tasks, done: doneIds, known, perMilestone } = scanTasks(root);
   const today = dateStamp(now);
-  const sprint = activeSprint(root, today);
-  if (sprint) {
-    const counts = perMilestone.get(sprint.id) ?? { done: 0, total: 0 };
-    const ends = sprint.data.end ? `ends ${sprint.data.end}` : "no end date";
-    units.push(`Current sprint: ${sprint.id} \u2014 ${cap(sprint.data.title, 50)}, ${ends}, ${counts.done}/${counts.total} done`);
+  const current = activeMilestone(root, today);
+  if (current) {
+    const counts = perMilestone.get(current.id) ?? { done: 0, total: 0 };
+    const ends = current.data.end ? `ends ${current.data.end}` : "no end date";
+    units.push(`Current milestone: ${current.id} \u2014 ${cap(current.data.title, 50)}, ${ends}, ${counts.done}/${counts.total} done`);
   }
   const soon = dateStamp(new Date(now.getTime() + 30 * 864e5));
-  const due = listGood(root, "milestone").filter((m) => milestoneKind(m.data) === "milestone" && m.data.status !== "done" && m.data.end && m.data.end >= today && m.data.end <= soon).sort((a, b) => a.data.end.localeCompare(b.data.end));
+  const due = listGood(root, "milestone").filter((m) => m.data.status !== "done" && m.id !== current?.id && m.data.end && m.data.end >= today && m.data.end <= soon).sort((a, b) => a.data.end.localeCompare(b.data.end));
   if (due.length) units.push(`Milestones due soon: ${due.slice(0, LIST).map((m) => `${m.id} (${m.data.end})`).join(", ")}${due.length > LIST ? ` (+${due.length - LIST})` : ""}`);
   const late2 = listGood(root, "milestone").filter((m) => m.data.status !== "done" && m.data.end && m.data.end < today).sort((a, b) => a.data.end.localeCompare(b.data.end) || (a.id < b.id ? -1 : 1));
   if (late2.length) units.push(`Milestones overdue: ${late2.slice(0, LIST).map((m) => `${m.id} (${m.data.end})`).join(", ")}${late2.length > LIST ? ` (+${late2.length - LIST})` : ""}`);

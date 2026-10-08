@@ -3675,7 +3675,7 @@ var import_node_path14 = __toESM(require("node:path"), 1);
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.7",
+  version: "1.0.8",
   private: true,
   type: "module",
   engines: {
@@ -7929,9 +7929,7 @@ var maybeDate = dateOnly.nullish();
 var maybeIso = external_exports.preprocess(dateToString, external_exports.string().min(1)).nullish();
 var PRIORITIES = ["urgent", "high", "medium", "low"];
 var MILESTONE_STATUSES = ["planned", "active", "done"];
-var MILESTONE_KINDS = ["sprint", "milestone"];
-var milestoneKind = (d) => d.kind ?? (/^sprint\b/i.test(d.title) ? "sprint" : "milestone");
-var HISTORY_FIELDS = ["status", "title", "topic", "priority", "due", "start", "estimate", "sprint", "milestone", "parent", "blocked_by", "labels"];
+var HISTORY_FIELDS = ["status", "title", "topic", "priority", "due", "start", "estimate", "milestone", "parent", "blocked_by", "labels"];
 var historyItem = external_exports.object({
   at: iso,
   field: external_exports.string(),
@@ -8009,6 +8007,7 @@ var SCHEMAS = {
     labels: lax(external_exports.array(external_exports.string()).optional()),
     parent: external_exports.string().nullish(),
     blocked_by: lax(external_exports.array(external_exports.string()).optional()),
+    // Older files: a former "sprint" reference. It reads as the milestone and is dropped the next time the task is written.
     sprint: external_exports.string().nullish(),
     milestone: external_exports.string().nullish(),
     completed: maybeIso,
@@ -8018,7 +8017,8 @@ var SCHEMAS = {
   }),
   milestone: entry({
     title: external_exports.string().min(1),
-    kind: lax(external_exports.enum(MILESTONE_KINDS).optional()),
+    // Older files had `sprint` or `milestone` here. It is ignored, and dropped the next time the milestone is written.
+    kind: lax(external_exports.string().optional()),
     goal: lax(external_exports.string().default("")),
     start: maybeDate,
     end: maybeDate,
@@ -8093,9 +8093,8 @@ var SECTIONS = {
   milestone: ["Notes"],
   map: ["Details"]
 };
-function effectiveRefs(d, kindOf) {
-  if (!d.sprint && d.milestone && kindOf(d.milestone) === "sprint") return { sprint: d.milestone, milestone: null };
-  return { sprint: d.sprint ?? null, milestone: d.milestone ?? null };
+function effectiveMilestone(d) {
+  return d.milestone || d.sprint || null;
 }
 
 // src/vault/io.ts
@@ -8613,7 +8612,7 @@ var import_node_path9 = __toESM(require("node:path"), 1);
 var import_node_crypto5 = require("node:crypto");
 var import_node_fs8 = __toESM(require("node:fs"), 1);
 var import_node_path8 = __toESM(require("node:path"), 1);
-var VERSION = 1;
+var VERSION = 2;
 function cacheFile(root) {
   const key = (0, import_node_crypto5.createHash)("sha1").update(canonicalPath(root).toLowerCase()).digest("hex").slice(0, 16);
   return import_node_path8.default.join(binkgoHome(), "cache", `tasks-${key}.json`);
@@ -8635,8 +8634,8 @@ function rowOf(root, id, m, s) {
   if (typeof d.rank === "number") row.rank = d.rank;
   if (d.parent) row.parent = d.parent;
   if (d.blocked_by?.length) row.blocked_by = d.blocked_by;
-  if (d.sprint) row.sprint = d.sprint;
-  if (d.milestone) row.milestone = d.milestone;
+  const milestone = effectiveMilestone(d);
+  if (milestone) row.milestone = milestone;
   if (d.status !== "done") row.data = d;
   return row;
 }
@@ -8727,22 +8726,16 @@ function refId(kind, value, what) {
 function blockerGraph(root) {
   return new Map([...taskRows(root)].map(([id, r]) => [id, r.blocked_by ?? []]));
 }
-function checkRef(root, field, value) {
-  const id = refId("milestone", value, `The ${field}`);
-  if (!entryExists(root, "milestone", id)) return rule(`The ${field} ${id} does not exist`);
-  const e = readEntry(root, "milestone", id);
-  if (isBroken(e)) return rule(`The ${field} ${id} cannot be read`);
-  if (milestoneKind(e.data) !== field) return rule(`${id} is a ${milestoneKind(e.data)}, not a ${field}`);
+function checkRef(root, value) {
+  const id = refId("milestone", value, "The milestone");
+  if (!entryExists(root, "milestone", id)) return rule(`The milestone ${id} does not exist`);
+  if (isBroken(readEntry(root, "milestone", id))) return rule(`The milestone ${id} cannot be read`);
   return id;
 }
-function milestoneKinds(root) {
-  return new Map(listGood(root, "milestone").map((m) => [m.id, milestoneKind(m.data)]));
-}
-function migrateSprint(d, kinds) {
-  if (!d.sprint && d.milestone && kinds.get(d.milestone) === "sprint") {
-    d.sprint = d.milestone;
-    delete d.milestone;
-  }
+function migrateSprint(d) {
+  if (d.sprint === void 0) return;
+  if (!d.milestone && d.sprint) d.milestone = d.sprint;
+  delete d.sprint;
 }
 function checkFields(root, selfId, input) {
   const out = {};
@@ -8797,11 +8790,7 @@ function checkFields(root, selfId, input) {
       out.blocked_by = ids;
     }
   }
-  for (const field of ["sprint", "milestone"]) {
-    const value = input[field];
-    if (value === void 0) continue;
-    out[field] = value === null ? null : checkRef(root, field, value);
-  }
+  if (input.milestone !== void 0) out.milestone = input.milestone === null ? null : checkRef(root, input.milestone);
   return out;
 }
 var isEmpty = (v) => v === null || v === void 0 || Array.isArray(v) && v.length === 0;
@@ -8975,10 +8964,7 @@ function applyMilestone(e, f, t) {
   }
   noControl("The goal", f.goal, true);
   if (f.goal !== void 0) e.data.goal = f.goal;
-  if (f.kind !== void 0) {
-    if (!MILESTONE_KINDS.includes(f.kind)) rule(`Kind must be ${MILESTONE_KINDS.join(" or ")}`);
-    e.data.kind = f.kind;
-  }
+  delete e.data.kind;
   if (f.status !== void 0) {
     if (!MILESTONE_STATUSES.includes(f.status)) rule(`Milestone status must be ${MILESTONE_STATUSES.join(", ")}`);
     e.data.status = f.status;
@@ -9010,7 +8996,7 @@ function upsertMilestone(root, input, now = /* @__PURE__ */ new Date()) {
     kind: "milestone",
     id: "",
     sections: { Notes: "" },
-    data: { title: input.title, kind: input.kind ?? milestoneKind({ title: input.title }), goal: "", status: "planned", created: t, updated: t }
+    data: { title: input.title, goal: "", status: "planned", created: t, updated: t }
   };
   applyMilestone(e, input, t);
   const made = createEntry(root, "milestone", topicId(input.title), e.data, e.sections);
@@ -9025,12 +9011,12 @@ function deleteMilestone(root, ref, by = "agent", now = /* @__PURE__ */ new Date
   });
   withLock(tasksDir(root), () => {
     for (const task of tasksMentioning(root, id)) {
-      if (task.data.milestone !== id && task.data.sprint !== id) continue;
+      if (effectiveMilestone(task.data) !== id) continue;
       refreshLocks();
       mutateEntry(root, "task", task.id, (e) => {
+        migrateSprint(e.data);
         const before = snapshot(e.data);
         if (e.data.milestone === id) delete e.data.milestone;
-        if (e.data.sprint === id) delete e.data.sprint;
         recordHistory(e.data, before, by, localIso(now));
         e.data.updated = localIso(now);
       });
@@ -9073,7 +9059,7 @@ function topRank(root, status) {
   const ranks = [...taskRows(root).values()].filter((t) => t.status === status).map((t) => t.rank).filter((r) => typeof r === "number");
   return ranks.length ? Math.min(...ranks) - 1e3 : 0;
 }
-var FIELD_KEYS = ["priority", "due", "start", "estimate", "labels", "parent", "blocked_by", "sprint", "milestone"];
+var FIELD_KEYS = ["priority", "due", "start", "estimate", "labels", "parent", "blocked_by", "milestone"];
 var fieldsOf = (input) => Object.fromEntries(FIELD_KEYS.filter((k) => input[k] !== void 0).map((k) => [k, input[k]]));
 function updateLocked(root, id, input, now) {
   checkText(input);
@@ -9082,12 +9068,11 @@ function updateLocked(root, id, input, now) {
   const patch = checkFields(root, id, fieldsOf(input));
   const topic = input.topic === null ? null : input.topic ? resolveTopic(root, input.topic, now) : void 0;
   const rank = input.order ? rankForMove(root, id, input.order) : input.rank;
-  const kinds = milestoneKinds(root);
-  return mutateEntry(root, "task", id, (e) => changeTask(e, input, patch, topic, rank, now, kinds));
+  return mutateEntry(root, "task", id, (e) => changeTask(e, input, patch, topic, rank, now));
 }
-function changeTask(e, input, patch, topic, rank, now, kinds) {
+function changeTask(e, input, patch, topic, rank, now) {
   const t = localIso(now);
-  migrateSprint(e.data, kinds);
+  migrateSprint(e.data);
   const noteLine = input.note ? `- ${dateStamp(now)}: ${input.note}` : "";
   const before = snapshot(e.data);
   const was = e.data.status;
@@ -9214,7 +9199,6 @@ function bulkUpdateTasks(root, ids, patch, by = "agent", now = /* @__PURE__ */ n
         id,
         status: patch.status,
         priority: patch.priority,
-        sprint: patch.sprint,
         milestone: patch.milestone,
         due: patch.due,
         labels,
@@ -9224,12 +9208,11 @@ function bulkUpdateTasks(root, ids, patch, by = "agent", now = /* @__PURE__ */ n
     });
     const topicsBefore = new Set(listIds(root, "topic"));
     const topic = patch.topic === null ? null : patch.topic ? resolveTopic(root, patch.topic, now) : void 0;
-    const kinds = milestoneKinds(root);
     const staged = plans.map(({ input, patch: fields }) => {
       const id = input.id;
       const e = must(root, "task", id);
       const was = { status: e.data.status, topic: e.data.topic ?? null };
-      changeTask(e, input, fields, topic, void 0, now, kinds);
+      changeTask(e, input, fields, topic, void 0, now);
       if (was.status !== e.data.status || was.topic !== (e.data.topic ?? null)) touched.push(was.topic, e.data.topic);
       return { entry: e, file: entryPath(root, "task", id), text: renderEntry("task", e.data, e.sections), original: readRaw(root, "task", id) };
     });
@@ -9491,7 +9474,6 @@ function topicTitles(root) {
 }
 function taskViews(root) {
   const titles = topicTitles(root);
-  const kinds = new Map(listGood(root, "milestone").map((m) => [m.id, milestoneKind(m.data)]));
   return listGood(root, "task").map((t) => ({
     id: t.id,
     title: t.data.title,
@@ -9510,7 +9492,7 @@ function taskViews(root) {
     labels: t.data.labels ?? [],
     parent: t.data.parent ?? null,
     blocked_by: t.data.blocked_by ?? [],
-    ...effectiveRefs(t.data, (id) => kinds.get(id)),
+    milestone: effectiveMilestone(t.data),
     completed: t.data.completed ?? null,
     session: t.data.session ?? null,
     history: t.data.history ?? []
@@ -9648,11 +9630,9 @@ function tasks(root) {
   const loose = views.filter((v) => !v.topic || !known.has(v.topic));
   if (loose.length) groups.push({ id: null, title: "", goal: "", notes: "", status: "active", start: null, target: null, color: null, tasks: loose });
   const milestones = listGood(root, "milestone").map((m) => {
-    const kind = milestoneKind(m.data);
-    const mine = views.filter((v) => (kind === "sprint" ? v.sprint : v.milestone) === m.id);
+    const mine = views.filter((v) => v.milestone === m.id);
     return {
       id: m.id,
-      kind,
       title: m.data.title,
       goal: m.data.goal,
       status: m.data.status,
@@ -9894,8 +9874,9 @@ function briefJson(root, port = 4319, lic = {}) {
   const ov = overview(dir);
   const t = tasks(dir);
   const today = dateStamp(lic.now ?? /* @__PURE__ */ new Date());
-  const active = t.milestones.filter((m) => m.kind === "sprint" && m.status === "active");
-  const sprint = active.find((m) => !m.end || m.end >= today) ?? active[0];
+  const active = t.milestones.filter((m) => m.status === "active");
+  const notPast = (m) => m.end && m.end < today ? 1 : 0;
+  const milestone = [...active].sort((a, b) => notPast(a) - notPast(b) || (a.end ?? "9999").localeCompare(b.end ?? "9999") || (a.id < b.id ? -1 : 1))[0];
   const todo = t.topics.flatMap((g) => g.tasks).filter((x) => x.status === "todo").sort((a, b) => rankOf(a) - rankOf(b) || (a.rank ?? Infinity) - (b.rank ?? Infinity)).slice(0, 8);
   const k = knowledge(dir);
   const recent = (list) => list.filter((x) => x.status === "active").slice(0, 5).map((x) => ({ id: x.id, title: x.title }));
@@ -9906,7 +9887,7 @@ function briefJson(root, port = 4319, lic = {}) {
     name: ov.project.name,
     goal: ov.project.goal,
     focus: ov.project.focus,
-    sprint: sprint ? { title: sprint.title, ends: sprint.end, done: sprint.done, total: sprint.total } : null,
+    milestone: milestone ? { title: milestone.title, ends: milestone.end, done: milestone.done, total: milestone.total } : null,
     doing: ov.doing.slice(0, 8).map((x) => ({ id: x.id, title: x.title, priority: x.priority })),
     todo: todo.map((x) => ({ id: x.id, title: x.title, priority: x.priority, due: x.due })),
     recentFixes: recent(k.fixes),
@@ -10205,7 +10186,6 @@ var taskFields = {
   labels: external_exports.array(text("each label", 1, MAX_LABEL, true), { invalid_type_error: "labels must be a list of text" }).max(MAX_LABELS2, `labels has more than ${MAX_LABELS2} entries`).nullable(),
   parent: idOf("parent").nullable(),
   blocked_by: external_exports.array(idOf("each blocked_by entry"), { invalid_type_error: "blocked_by must be a list of task ids" }).max(MAX_BLOCKERS2, `blocked_by has more than ${MAX_BLOCKERS2} entries`).nullable(),
-  sprint: idOf("sprint").nullable(),
   milestone: idOf("milestone").nullable()
 };
 var createTaskSchema = external_exports.object({
@@ -10221,7 +10201,6 @@ var createTaskSchema = external_exports.object({
   labels: taskFields.labels.optional(),
   parent: taskFields.parent.optional(),
   blocked_by: taskFields.blocked_by.optional(),
-  sprint: taskFields.sprint.optional(),
   milestone: taskFields.milestone.optional()
 }).strict("unknown field in the request");
 var orderField = external_exports.array(idOf("each order entry"), { invalid_type_error: "order must be a list of task ids" }).min(1, "order cannot be empty").max(MAX_ORDER, `order has more than ${MAX_ORDER} ids`).refine((ids) => new Set(ids).size === ids.length, "order lists a task twice");
@@ -10232,7 +10211,6 @@ var bulkSchema = external_exports.object({
     status: taskFields.status.optional(),
     topic: taskFields.topic.optional(),
     priority: taskFields.priority.optional(),
-    sprint: taskFields.sprint.optional(),
     milestone: taskFields.milestone.optional(),
     due: taskFields.due.optional(),
     labelsAdd: external_exports.array(text("each label", 1, MAX_LABEL, true)).max(MAX_LABELS2, `labelsAdd has more than ${MAX_LABELS2} entries`).optional(),
@@ -10251,7 +10229,6 @@ var updateTopicSchema = createTopicSchema.partial().extend({ status: oneOf("stat
 var mergeTopicSchema = external_exports.object({ into: idOf("into") }).strict("unknown field in the request");
 var createMilestoneSchema = external_exports.object({
   title: text("title", 1, MAX_TITLE, true),
-  kind: oneOf("kind", MILESTONE_KINDS).optional(),
   goal: text("goal", 0, MAX_GOAL2, true, true).optional(),
   start: date("start").nullable().optional(),
   end: date("end").nullable().optional(),
@@ -10308,7 +10285,6 @@ function taskResponse(root, e) {
     topicTitle = isBroken(topic) ? null : topic.data.title;
   }
   const d = e.data;
-  const kinds = new Map(listGood(root, "milestone").map((m) => [m.id, milestoneKind(m.data)]));
   return {
     id: e.id,
     title: d.title,
@@ -10325,7 +10301,7 @@ function taskResponse(root, e) {
     labels: d.labels ?? [],
     parent: d.parent ?? null,
     blocked_by: d.blocked_by ?? [],
-    ...effectiveRefs(d, (id) => kinds.get(id)),
+    milestone: effectiveMilestone(d),
     completed: d.completed ?? null,
     history: d.history ?? [],
     created: d.created,
@@ -10351,7 +10327,6 @@ function milestoneResponse(e) {
   const d = e.data;
   return {
     id: e.id,
-    kind: milestoneKind(d),
     title: d.title,
     goal: d.goal,
     status: d.status,

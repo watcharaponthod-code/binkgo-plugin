@@ -69,7 +69,7 @@ export function statusLine(v: BinkgoView): string | undefined {
   if (v.kind !== 'ok') return undefined;
   const b = v.brief;
   const parts = ['Binkgo'];
-  if (b.sprint) parts.push(`${b.sprint.title} ${b.sprint.done}/${b.sprint.total}`);
+  if (b.milestone) parts.push(`${b.milestone.title} ${b.milestone.done}/${b.milestone.total}`);
   const first = b.doing[0];
   parts.push(first ? `doing: ${cut(first.title, 40)}` : `${b.todo.length} to do`);
   return parts.join(' · ');
@@ -187,7 +187,7 @@ function summary(v: BinkgoView | undefined): string {
   const b = v.brief;
   const lines = [`**Binkgo** · ${b.name}`];
   if (b.focus) lines.push(b.focus);
-  if (b.sprint) lines.push(`${b.sprint.title}: ${b.sprint.done}/${b.sprint.total} done${b.sprint.ends ? `, ends ${niceDate(b.sprint.ends)}` : ''}`);
+  if (b.milestone) lines.push(`${b.milestone.title}: ${b.milestone.done}/${b.milestone.total} done${b.milestone.ends ? `, ends ${niceDate(b.milestone.ends)}` : ''}`);
   if (b.doing.length) lines.push('', '**In progress**', ...b.doing.slice(0, 5).map((t) => `- ${t.title}`));
   if (b.todo.length) lines.push('', '**Next up**', ...b.todo.slice(0, 5).map((t) => `- ${t.title}`));
   const notice = noticeText(b);
@@ -207,7 +207,7 @@ export function startNotice(v: BinkgoView | undefined): string | null {
   const b = v.brief;
   const lines = [`Binkgo · ${b.name}`];
   if (b.focus) lines.push(cut(b.focus, 160));
-  if (b.sprint) lines.push(`${bar(b.sprint.done, b.sprint.total)} ${b.sprint.done}/${b.sprint.total} ${b.sprint.title}${b.sprint.ends ? ` · ends ${niceDate(b.sprint.ends)}` : ''}`);
+  if (b.milestone) lines.push(`${bar(b.milestone.done, b.milestone.total)} ${b.milestone.done}/${b.milestone.total} ${b.milestone.title}${b.milestone.ends ? ` · ends ${niceDate(b.milestone.ends)}` : ''}`);
   if (b.doing.length) lines.push('In progress', ...b.doing.slice(0, 3).map((t) => `  ▸ ${cut(t.title, 80)}`));
   if (b.todo.length) lines.push('Next up', ...b.todo.slice(0, 3).map((t) => `  · ${cut(t.title, 80)}${t.priority === 'urgent' ? ' (urgent)' : ''}`));
   const notice = noticeText(b);
@@ -327,10 +327,10 @@ export const register: Register = (on) => {
     return card(
       title(b.name),
       b.focus !== '' && <Text wrap="truncate-end">{b.focus}</Text>,
-      b.sprint && (
+      b.milestone && (
         <Text>
-          <Text color={GREEN}>{bar(b.sprint.done, b.sprint.total)}</Text>
-          <Text> {b.sprint.done}/{b.sprint.total}{b.sprint.ends ? ` · ends ${niceDate(b.sprint.ends)}` : ''}</Text>
+          <Text color={GREEN}>{bar(b.milestone.done, b.milestone.total)}</Text>
+          <Text> {b.milestone.done}/{b.milestone.total}{b.milestone.ends ? ` · ends ${niceDate(b.milestone.ends)}` : ''}</Text>
         </Text>
       ),
       section('In progress', b.doing.slice(0, 4).map((x) => <Text wrap="truncate-end"><Text color={GREEN}>▸ </Text>{x.title}</Text>)),
