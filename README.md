@@ -43,6 +43,12 @@ Requires Node.js 18+. Open Claude Code in any git project and you'll see:
 A board, roadmap, timeline and live AI status for the person in charge: see what every AI session did, correct it, and decide what happens next.
 7-day free trial at **https://binkgo.vercel.app**
 
+Inside Claude Code:
+
+- `/binkgo` shows a project card in the chat: sprint, work in progress, what's next, recent fixes, plus a live status line
+- `/binkgo dashboard` opens the web dashboard at once
+- `/binkgo login` starts the 7-day trial: approve the code in your browser and it unlocks by itself
+
 ## Data
 
-Everything stays in your repository and on your machine. No account is needed for the plugin.
+Everything stays in your repository and on your machine. No account is needed for the memory tools; the card and dashboard need a sign-in.

@@ -3530,7 +3530,7 @@ var require_gray_matter = __commonJS({
 });
 
 // src/dashboard/main.ts
-var import_node_path16 = __toESM(require("node:path"), 1);
+var import_node_path17 = __toESM(require("node:path"), 1);
 
 // src/dashboard/autoconnect.ts
 var import_node_fs3 = __toESM(require("node:fs"), 1);
@@ -3656,10 +3656,10 @@ function autoConnect(webDir, version, markerFile, run = realRunner, log = () => 
 // src/dashboard/browser.ts
 var import_node_child_process2 = require("node:child_process");
 function openBrowser(url) {
-  if (!/^https?:\/\//i.test(url)) return;
-  const [cmd, args] = process.platform === "win32" ? ["cmd", ["/c", "start", url]] : process.platform === "darwin" ? ["open", [url]] : ["xdg-open", [url]];
+  if (!/^https?:\/\//i.test(url) || url.includes('"')) return;
+  const [cmd, args] = process.platform === "win32" ? ["cmd", ["/c", "start", '""', `"${url}"`]] : process.platform === "darwin" ? ["open", [url]] : ["xdg-open", [url]];
   try {
-    const child = (0, import_node_child_process2.spawn)(cmd, args, { stdio: "ignore", detached: true });
+    const child = (0, import_node_child_process2.spawn)(cmd, args, { stdio: "ignore", detached: true, windowsHide: true, windowsVerbatimArguments: process.platform === "win32" });
     child.on("error", () => {
     });
     child.unref();
@@ -3667,16 +3667,130 @@ function openBrowser(url) {
   }
 }
 
-// src/dashboard/server.ts
-var import_node_crypto8 = require("node:crypto");
-var import_node_fs16 = __toESM(require("node:fs"), 1);
+// src/dashboard/launcher.ts
+var import_node_child_process3 = require("node:child_process");
 var import_node_http = __toESM(require("node:http"), 1);
-var import_node_path15 = __toESM(require("node:path"), 1);
+var import_node_path13 = __toESM(require("node:path"), 1);
+
+// package.json
+var package_default = {
+  name: "binkgo",
+  version: "1.0.4",
+  private: true,
+  type: "module",
+  engines: {
+    node: ">=20"
+  },
+  scripts: {
+    pretest: "node scripts/build.mjs",
+    test: "vitest run",
+    typecheck: "tsc --noEmit && tsc --noEmit -p web",
+    build: "node scripts/build.mjs && vite build web",
+    dashboard: "node plugin/dist/dashboard.cjs",
+    "codex:install": "node scripts/codex-install.mjs",
+    "build:web": "vite build web",
+    "seed:demo": "node scripts/seed-demo.mjs",
+    overhead: "node scripts/overhead.mjs",
+    "bench:tokens": "node scripts/bench-tokens.mjs",
+    "desktop:install": "node scripts/desktop-install.mjs",
+    "build:desktop": "npm run build && npm run desktop:install",
+    "desktop:uninstall": "node scripts/desktop-install.mjs --uninstall"
+  },
+  dependencies: {
+    "@fontsource-variable/anuphan": "^5.3.0",
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "gray-matter": "^4.0.3",
+    zod: "^3.25.76"
+  },
+  devDependencies: {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@radix-ui/react-alert-dialog": "^1.1.23",
+    "@radix-ui/react-checkbox": "^1.3.11",
+    "@radix-ui/react-dialog": "^1.1.23",
+    "@radix-ui/react-dropdown-menu": "^2.1.24",
+    "@radix-ui/react-label": "^2.1.15",
+    "@radix-ui/react-popover": "^1.1.23",
+    "@radix-ui/react-scroll-area": "^1.2.18",
+    "@radix-ui/react-select": "^2.3.7",
+    "@radix-ui/react-separator": "^1.1.15",
+    "@radix-ui/react-slot": "^1.3.3",
+    "@radix-ui/react-tabs": "^1.1.21",
+    "@radix-ui/react-tooltip": "^1.2.16",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "class-variance-authority": "^0.7.1",
+    clsx: "^2.1.1",
+    cmdk: "^1.1.1",
+    dompurify: "^3.4.16",
+    esbuild: "^0.28.2",
+    jsdom: "^29.1.1",
+    "lucide-react": "^1.49.0",
+    marked: "^18.0.14",
+    react: "^19.3.0",
+    "react-day-picker": "^10.0.2",
+    "react-dom": "^19.3.0",
+    recharts: "^3.10.1",
+    sonner: "^2.0.8",
+    "tailwind-merge": "^3.7.0",
+    tailwindcss: "^4.3.3",
+    "tw-animate-css": "^1.4.0",
+    typescript: "^7.0.2",
+    vite: "^8.3.1",
+    vitest: "^4.1.11"
+  }
+};
+
+// src/license/key.ts
+var LICENSE_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEA0UXJpq5QTNgNaPMB3ZhdyRQo6C7vz36zgXHoqt4oBF0=
+-----END PUBLIC KEY-----
+`;
+var SUPABASE_URL = "https://jbcavoqjkwaopczxwlpf.supabase.co";
+var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiY2F2b3Fqa3dhb3Bjenh3bHBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwOTQ1NTMsImV4cCI6MjEwNjY3MDU1M30.r_9zurcbhFvQq2OV7vLIZoWEXmDuTNA2y8NfPLqcfDI";
+var siteUrl = () => (process.env.BINKGO_SITE_URL || "https://binkgo.vercel.app").replace(/\/+$/, "");
+
+// src/license/verify.ts
+var import_node_crypto = require("node:crypto");
+function isPayload(x) {
+  if (typeof x !== "object" || x === null) return false;
+  const p = x;
+  return p.v === 1 && typeof p.sub === "string" && typeof p.email === "string" && (p.kind === "trial" || p.kind === "full") && typeof p.max_major === "number" && Number.isFinite(p.max_major) && (p.trial_until === null || typeof p.trial_until === "string") && typeof p.device_id === "string";
+}
+function verifyLicense(token, publicKeyPem = LICENSE_PUBLIC_KEY) {
+  try {
+    if (typeof token !== "string") return null;
+    const parts = token.split(".");
+    if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
+    const key = typeof publicKeyPem === "string" ? (0, import_node_crypto.createPublicKey)(publicKeyPem) : publicKeyPem;
+    if (!(0, import_node_crypto.verify)(null, Buffer.from(parts[0]), key, Buffer.from(parts[1], "base64url"))) return null;
+    const payload = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
+    return isPayload(payload) ? payload : null;
+  } catch {
+    return null;
+  }
+}
+
+// src/license/store.ts
+var import_node_crypto4 = require("node:crypto");
+var import_node_fs7 = __toESM(require("node:fs"), 1);
+var import_node_os3 = __toESM(require("node:os"), 1);
+var import_node_path7 = __toESM(require("node:path"), 1);
+
+// src/vault/io.ts
+var import_node_fs5 = __toESM(require("node:fs"), 1);
+var import_node_path5 = __toESM(require("node:path"), 1);
+var import_node_crypto3 = require("node:crypto");
+var import_gray_matter = __toESM(require_gray_matter(), 1);
 
 // src/vault/paths.ts
 var import_node_fs4 = __toESM(require("node:fs"), 1);
 var import_node_path4 = __toESM(require("node:path"), 1);
-var import_node_crypto = require("node:crypto");
+var import_node_crypto2 = require("node:crypto");
 var VAULT_DIRNAME = ".binkgo";
 var RESERVED = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/;
 function canonicalPath(p) {
@@ -3723,7 +3837,7 @@ function samePath(a, b) {
 }
 function slugify(title) {
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/, "");
-  if (!slug) return (0, import_node_crypto.createHash)("sha1").update(title).digest("hex").slice(0, 6);
+  if (!slug) return (0, import_node_crypto2.createHash)("sha1").update(title).digest("hex").slice(0, 6);
   return RESERVED.test(slug) ? `${slug}-x` : slug;
 }
 function uniqueId(dir, base) {
@@ -3732,16 +3846,6 @@ function uniqueId(dir, base) {
   while (import_node_fs4.default.existsSync(import_node_path4.default.join(dir, `${id}.md`))) id = `${base}-${n++}`;
   return id;
 }
-
-// src/vault/live.ts
-var import_node_fs7 = __toESM(require("node:fs"), 1);
-var import_node_path7 = __toESM(require("node:path"), 1);
-
-// src/vault/io.ts
-var import_node_fs5 = __toESM(require("node:fs"), 1);
-var import_node_path5 = __toESM(require("node:path"), 1);
-var import_node_crypto2 = require("node:crypto");
-var import_gray_matter = __toESM(require_gray_matter(), 1);
 
 // node_modules/zod/v3/external.js
 var external_exports = {};
@@ -4221,8 +4325,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path17, errorMaps, issueData } = params;
-  const fullPath = [...path17, ...issueData.path || []];
+  const { data, path: path18, errorMaps, issueData } = params;
+  const fullPath = [...path18, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -4338,11 +4442,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path17, key) {
+  constructor(parent, value, path18, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path17;
+    this._path = path18;
     this._key = key;
   }
   get path() {
@@ -8097,7 +8201,7 @@ function withLock(target, fn, opts = {}) {
   const staleMs = opts.staleMs ?? lockStaleMs;
   const timeoutMs = opts.timeoutMs ?? lockTimeoutMs;
   const lock = `${target}.lock`;
-  const token = `${process.pid}:${(0, import_node_crypto2.randomBytes)(8).toString("hex")}`;
+  const token = `${process.pid}:${(0, import_node_crypto3.randomBytes)(8).toString("hex")}`;
   import_node_fs5.default.mkdirSync(import_node_path5.default.dirname(lock), { recursive: true });
   let lastCode;
   const tryAcquire = () => {
@@ -8318,101 +8422,119 @@ function unregisterProject(root) {
   });
 }
 
-// src/vault/live.ts
-var CLAUDE_WORKING_MS = 10 * 60 * 1e3;
-var CODEX_WORKING_MS = 5 * 60 * 1e3;
-var CLAUDE_WAITING_MS = 30 * 60 * 1e3;
-var CLOSED_VISIBLE_MS = 60 * 60 * 1e3;
-var LIVE_MAX_AGE_MS = 24 * 60 * 60 * 1e3;
-function liveDir() {
-  return import_node_path7.default.join(binkgoHome(), "live");
-}
-function isRecord(v) {
-  if (!v || typeof v !== "object") return false;
-  const r = v;
-  const task = r.task;
-  return (r.agent === "claude" || r.agent === "codex") && typeof r.session_id === "string" && typeof r.root === "string" && typeof r.at === "string" && (r.state === "working" || r.state === "waiting" || r.state === "closed") && (task === null || typeof task === "object" && typeof task.id === "string" && typeof task.title === "string") && (r.transcript_path === void 0 || typeof r.transcript_path === "string") && (r.pid === void 0 || typeof r.pid === "number");
-}
-function readFile(file) {
+// src/license/store.ts
+var licenseFile = () => import_node_path7.default.join(binkgoHome(), "license.json");
+var deviceFile = () => import_node_path7.default.join(binkgoHome(), "device.json");
+function readJson(file) {
   try {
-    const parsed = JSON.parse(import_node_fs7.default.readFileSync(file, "utf8"));
-    return isRecord(parsed) ? parsed : null;
+    const v = JSON.parse(import_node_fs7.default.readFileSync(file, "utf8"));
+    return typeof v === "object" && v !== null && !Array.isArray(v) ? v : null;
   } catch {
     return null;
   }
 }
-function allRecords() {
-  let names;
+function readLicenseToken() {
+  const t = readJson(licenseFile())?.token;
+  return typeof t === "string" && t !== "" ? t : null;
+}
+function saveLicenseToken(token) {
+  import_node_fs7.default.mkdirSync(binkgoHome(), { recursive: true });
+  writeAtomic(licenseFile(), JSON.stringify({ token }, null, 2) + "\n");
+}
+function clearLicense() {
   try {
-    names = import_node_fs7.default.readdirSync(liveDir()).filter((n) => n.endsWith(".json"));
+    import_node_fs7.default.rmSync(licenseFile(), { force: true });
   } catch {
-    return [];
   }
-  const out = [];
-  for (const name of names) {
-    const rec = readFile(import_node_path7.default.join(liveDir(), name));
-    if (rec) out.push(rec);
-  }
-  return out;
 }
-function deriveStatus(r, now, transcriptMtime, pidAlive3) {
-  if (r.state === "closed") return "closed";
-  const at = Date.parse(r.at);
-  const age = now.getTime() - at;
-  if (r.agent === "codex") {
-    if (pidAlive3 === false) return "closed";
-    return r.state === "working" && age <= CODEX_WORKING_MS ? "working" : "waiting";
+function deviceInfo() {
+  const saved = readJson(deviceFile())?.device_id;
+  let id = typeof saved === "string" && saved !== "" ? saved : "";
+  if (!id) {
+    id = (0, import_node_crypto4.randomUUID)();
+    import_node_fs7.default.mkdirSync(binkgoHome(), { recursive: true });
+    writeAtomic(deviceFile(), JSON.stringify({ device_id: id }, null, 2) + "\n");
   }
-  const seen = Math.max(at, transcriptMtime ?? 0);
-  const quiet = now.getTime() - seen;
-  if (r.state === "working") return quiet <= CLAUDE_WORKING_MS ? "working" : "idle";
-  return quiet <= CLAUDE_WAITING_MS ? "waiting" : "idle";
+  return { device_id: id, device_name: import_node_os3.default.hostname() || "This computer" };
 }
-function pidAlive2(pid) {
+
+// src/license/status.ts
+function appMajorOf(appVersion) {
+  const n = Number.parseInt(/^v?(\d+)/.exec(appVersion.trim())?.[1] ?? "", 10);
+  return Number.isFinite(n) ? Math.max(1, n) : 1;
+}
+var isUsable = (s) => s.state === "trial" || s.state === "full";
+function licenseStatus(now, appVersion, opts = {}) {
+  const appMajor = appMajorOf(appVersion);
+  const token = opts.token === void 0 ? readLicenseToken() : opts.token;
+  const p = token ? verifyLicense(token, opts.publicKey) : null;
+  if (!p || p.device_id !== deviceInfo().device_id) return { state: "none", appMajor };
+  const base = { email: p.email, maxMajor: p.max_major, appMajor };
+  if (p.kind === "full" && p.max_major >= 1) {
+    return { ...base, state: appMajor > p.max_major ? "needs_upgrade" : "full" };
+  }
+  const until = p.trial_until ? Date.parse(p.trial_until) : NaN;
+  const msLeft = Number.isFinite(until) ? Math.max(0, until - now.getTime()) : 0;
+  return { ...base, state: msLeft > 0 ? "trial" : "trial_expired", msLeft, trialUntil: p.trial_until ?? void 0 };
+}
+
+// src/license/client.ts
+async function call(action, body, fetchImpl) {
+  const res = await fetchImpl(`${SUPABASE_URL}/functions/v1/device-auth`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_ANON_KEY}`, apikey: SUPABASE_ANON_KEY },
+    body: JSON.stringify({ action, ...body })
+  });
+  const json = await res.json().catch(() => ({}));
+  return typeof json === "object" && json !== null ? json : {};
+}
+var realFetch = (url, init) => fetch(url, init);
+async function startSignin(opts = {}) {
+  const r = await call("start", { ...deviceInfo(), app_version: opts.appVersion ?? "" }, opts.fetch ?? realFetch);
+  if (typeof r.code !== "string" || typeof r.poll_token !== "string" || typeof r.verify_url !== "string") {
+    throw new Error("The sign-in service did not answer. Try again in a moment.");
+  }
+  return { code: r.code, poll_token: r.poll_token, verify_url: r.verify_url, interval: typeof r.interval === "number" ? r.interval : 5 };
+}
+async function pollSignin(pollToken, opts = {}) {
+  let r;
   try {
-    process.kill(pid, 0);
-    return true;
-  } catch (e) {
-    return e.code === "EPERM";
-  }
-}
-function liveStatuses(now) {
-  const out = [];
-  for (const record of allRecords()) {
-    let mtime;
-    if (record.agent === "claude" && record.transcript_path) {
-      try {
-        mtime = import_node_fs7.default.statSync(record.transcript_path).mtimeMs;
-      } catch {
-      }
-    }
-    const alive = record.agent === "codex" && record.pid !== void 0 ? pidAlive2(record.pid) : void 0;
-    const status = deriveStatus(record, now, mtime, alive);
-    if (status === "closed" && now.getTime() - Date.parse(record.at) > CLOSED_VISIBLE_MS) continue;
-    out.push({ record, status });
-  }
-  return out;
-}
-function pruneLive(now) {
-  let names;
-  try {
-    names = import_node_fs7.default.readdirSync(liveDir());
+    r = await call("poll", { poll_token: pollToken }, opts.fetch ?? realFetch);
   } catch {
-    return;
+    return { status: "error" };
   }
-  const cutoff = now.getTime() - LIVE_MAX_AGE_MS;
-  for (const name of names) {
-    const file = import_node_path7.default.join(liveDir(), name);
-    try {
-      if (import_node_fs7.default.statSync(file).mtimeMs < cutoff) import_node_fs7.default.rmSync(file, { force: true });
-    } catch {
-    }
+  if (r.status === "approved") {
+    if (typeof r.license !== "string" || !verifyLicense(r.license, opts.publicKey)) return { status: "error" };
+    saveLicenseToken(r.license);
+    return { status: "approved" };
   }
+  if (r.status === "denied") return { status: "denied", reason: typeof r.reason === "string" ? r.reason : "denied" };
+  if (r.status === "expired") return { status: "expired" };
+  return r.status === "pending" ? { status: "pending" } : { status: "error" };
+}
+async function refreshLicense(opts = {}) {
+  const token = readLicenseToken();
+  if (!token) return "none";
+  let r;
+  try {
+    r = await call("refresh", { license: token }, opts.fetch ?? realFetch);
+  } catch {
+    return "offline";
+  }
+  if (r.error === "revoked") {
+    clearLicense();
+    return "revoked";
+  }
+  if (typeof r.license === "string" && verifyLicense(r.license, opts.publicKey)) {
+    saveLicenseToken(r.license);
+    return "refreshed";
+  }
+  return "offline";
 }
 
 // src/vault/vault.ts
 var import_node_fs9 = __toESM(require("node:fs"), 1);
-var import_node_os3 = __toESM(require("node:os"), 1);
+var import_node_os4 = __toESM(require("node:os"), 1);
 var import_node_path9 = __toESM(require("node:path"), 1);
 
 // src/vault/refs.ts
@@ -8434,7 +8556,7 @@ function idOfKind(ref, kind) {
 }
 
 // src/vault/work.ts
-var import_node_crypto3 = require("node:crypto");
+var import_node_crypto5 = require("node:crypto");
 var import_node_fs8 = __toESM(require("node:fs"), 1);
 var import_node_path8 = __toESM(require("node:path"), 1);
 var RuleError = class extends Error {
@@ -8618,7 +8740,7 @@ function tasksMentioning(root, needle) {
 function topicId(title) {
   if (!/[^\x00-\x7f]/.test(title)) return slugify(title);
   const ascii = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/, "");
-  const hash = (0, import_node_crypto3.createHash)("sha1").update(title.trim()).digest("hex").slice(0, 6);
+  const hash = (0, import_node_crypto5.createHash)("sha1").update(title.trim()).digest("hex").slice(0, 6);
   return ascii ? `${ascii}-${hash}` : hash;
 }
 function checkTopicFields(f) {
@@ -8946,7 +9068,7 @@ function must2(root, kind, id) {
 function canHostVault(root) {
   const r = canonicalPath(root);
   if (import_node_path9.default.dirname(r) === r) return false;
-  if (samePath(r, import_node_os3.default.homedir())) return false;
+  if (samePath(r, import_node_os4.default.homedir())) return false;
   return !samePath(vaultDir(r), binkgoHome());
 }
 function vaultExists(root) {
@@ -8999,14 +9121,10 @@ function updateProject(root, patch, now = /* @__PURE__ */ new Date()) {
 }
 var MAX_COPY_BYTES = 20 * 1024 * 1024;
 
-// src/dashboard/actions.ts
-var import_node_fs13 = __toESM(require("node:fs"), 1);
-var import_node_path13 = __toESM(require("node:path"), 1);
-
 // src/dashboard/data.ts
 var import_node_fs12 = __toESM(require("node:fs"), 1);
 var import_node_path12 = __toESM(require("node:path"), 1);
-var import_node_crypto5 = require("node:crypto");
+var import_node_crypto7 = require("node:crypto");
 
 // src/vault/map.ts
 var import_node_fs10 = __toESM(require("node:fs"), 1);
@@ -9049,7 +9167,7 @@ function listMapNotes(root, max = 500) {
 // src/dashboard/covers.ts
 var import_node_fs11 = __toESM(require("node:fs"), 1);
 var import_node_path11 = __toESM(require("node:path"), 1);
-var import_node_crypto4 = require("node:crypto");
+var import_node_crypto6 = require("node:crypto");
 
 // src/dashboard/cover-types.ts
 var COVER_SOURCES = ["glasshouse", "birds", "upload", "none"];
@@ -9107,7 +9225,7 @@ function saveCover(id, input) {
     const next = { source: input.source, x: input.x, y: input.y };
     if (next.source === "upload") {
       if (image) {
-        next.revision = (0, import_node_crypto4.createHash)("sha256").update(image.bytes).digest("hex");
+        next.revision = (0, import_node_crypto6.createHash)("sha256").update(image.bytes).digest("hex");
         next.mime = image.mime;
         const imageFile = import_node_path11.default.join(dir, `${next.revision}.image`);
         if (!import_node_fs11.default.existsSync(imageFile)) writeAtomic(imageFile, image.bytes);
@@ -9141,7 +9259,7 @@ function readCoverImage(id) {
 
 // src/dashboard/data.ts
 function projectId(root) {
-  return (0, import_node_crypto5.createHash)("sha1").update(canonicalPath(root).toLowerCase()).digest("hex").slice(0, 10);
+  return (0, import_node_crypto7.createHash)("sha1").update(canonicalPath(root).toLowerCase()).digest("hex").slice(0, 10);
 }
 function resolveProject(id) {
   return readRegistry().find((p) => projectId(p.path) === id)?.path ?? null;
@@ -9500,7 +9618,200 @@ function problems(root) {
   );
 }
 
+// src/dashboard/launcher.ts
+var PRIORITY_ORDER = ["urgent", "high", "medium", "low"];
+function probeDashboard(port, timeoutMs = 1e3) {
+  return new Promise((resolve) => {
+    const req = import_node_http.default.get({ host: "127.0.0.1", port, path: "/api/setup", timeout: timeoutMs }, (res) => {
+      let body = "";
+      res.setEncoding("utf8");
+      res.on("data", (c) => {
+        if (body.length < 8192) body += c;
+      });
+      res.on("end", () => {
+        try {
+          const j = JSON.parse(body);
+          resolve(res.statusCode === 200 && "codexInstaller" in j && "pluginDirectory" in j);
+        } catch {
+          resolve(false);
+        }
+      });
+    });
+    req.on("timeout", () => req.destroy());
+    req.on("error", () => resolve(false));
+  });
+}
+async function waitForDashboard(port, totalMs = 5e3) {
+  const end = Date.now() + totalMs;
+  while (Date.now() < end) {
+    if (await probeDashboard(port, 500)) return true;
+    await new Promise((r) => setTimeout(r, 150));
+  }
+  return false;
+}
+function spawnDetachedServer(script, argv) {
+  const args = argv.filter((a) => a !== "--detach" && a !== "--open");
+  const child = (0, import_node_child_process3.spawn)(process.execPath, [script, ...args], { detached: true, stdio: "ignore", windowsHide: true });
+  child.on("error", () => {
+  });
+  child.unref();
+}
+var DAY_MS = 864e5;
+function licenceInfo(s) {
+  return {
+    state: s.state,
+    ...s.email ? { email: s.email } : {},
+    ...s.msLeft !== void 0 ? { daysLeft: Math.ceil(s.msLeft / DAY_MS) } : {}
+  };
+}
+function currentLicence(o) {
+  const status = licenseStatus(o.now ?? /* @__PURE__ */ new Date(), o.appVersion ?? package_default.version, { publicKey: o.publicKey });
+  const gate = o.gate ?? process.env.BINKGO_LICENSE !== "off";
+  return { status, usable: !gate || isUsable(status) };
+}
+function licenceJson(o = {}) {
+  const { status, usable } = currentLicence(o);
+  return { ...licenceInfo(status), siteUrl: siteUrl(), usable };
+}
+async function signinStartJson(o = {}) {
+  const s = await startSignin({ fetch: o.fetch, appVersion: o.appVersion ?? package_default.version });
+  (o.openUrl ?? openBrowser)(s.verify_url);
+  return s;
+}
+var signinPollJson = (pollToken, o = {}) => pollSignin(pollToken, { fetch: o.fetch, publicKey: o.publicKey, appVersion: o.appVersion ?? package_default.version });
+var rankOf = (t) => {
+  const i = PRIORITY_ORDER.indexOf(t.priority ?? "");
+  return i === -1 ? PRIORITY_ORDER.length : i;
+};
+function briefJson(root, port = 4319, lic = {}) {
+  const { status, usable } = currentLicence(lic);
+  if (!usable) return { ok: false, reason: "licence", state: status.state, siteUrl: siteUrl() };
+  const dir = import_node_path13.default.resolve(root);
+  if (!vaultExists(dir)) return { ok: false, reason: "no-vault" };
+  const ov = overview(dir);
+  const t = tasks(dir);
+  const sprint = t.milestones.find((m) => m.kind === "sprint" && m.status === "active");
+  const todo = t.topics.flatMap((g) => g.tasks).filter((x) => x.status === "todo").sort((a, b) => rankOf(a) - rankOf(b) || (a.rank ?? Infinity) - (b.rank ?? Infinity)).slice(0, 8);
+  const k = knowledge(dir);
+  const recent = (list) => list.filter((x) => x.status === "active").slice(0, 5).map((x) => ({ id: x.id, title: x.title }));
+  return {
+    ok: true,
+    licence: licenceInfo(status),
+    name: ov.project.name,
+    goal: ov.project.goal,
+    focus: ov.project.focus,
+    sprint: sprint ? { title: sprint.title, ends: sprint.end, done: sprint.done, total: sprint.total } : null,
+    doing: ov.doing.slice(0, 8).map((x) => ({ id: x.id, title: x.title, priority: x.priority })),
+    todo: todo.map((x) => ({ id: x.id, title: x.title, priority: x.priority, due: x.due })),
+    recentFixes: recent(k.fixes),
+    recentDecisions: recent(k.decisions),
+    dashboardUrl: `http://127.0.0.1:${port}/#/p/${projectId(dir)}`
+  };
+}
+
+// src/dashboard/server.ts
+var import_node_crypto8 = require("node:crypto");
+var import_node_fs16 = __toESM(require("node:fs"), 1);
+var import_node_http2 = __toESM(require("node:http"), 1);
+var import_node_path16 = __toESM(require("node:path"), 1);
+
+// src/vault/live.ts
+var import_node_fs13 = __toESM(require("node:fs"), 1);
+var import_node_path14 = __toESM(require("node:path"), 1);
+var CLAUDE_WORKING_MS = 10 * 60 * 1e3;
+var CODEX_WORKING_MS = 5 * 60 * 1e3;
+var CLAUDE_WAITING_MS = 30 * 60 * 1e3;
+var CLOSED_VISIBLE_MS = 60 * 60 * 1e3;
+var LIVE_MAX_AGE_MS = 24 * 60 * 60 * 1e3;
+function liveDir() {
+  return import_node_path14.default.join(binkgoHome(), "live");
+}
+function isRecord(v) {
+  if (!v || typeof v !== "object") return false;
+  const r = v;
+  const task = r.task;
+  return (r.agent === "claude" || r.agent === "codex") && typeof r.session_id === "string" && typeof r.root === "string" && typeof r.at === "string" && (r.state === "working" || r.state === "waiting" || r.state === "closed") && (task === null || typeof task === "object" && typeof task.id === "string" && typeof task.title === "string") && (r.transcript_path === void 0 || typeof r.transcript_path === "string") && (r.pid === void 0 || typeof r.pid === "number");
+}
+function readFile(file) {
+  try {
+    const parsed = JSON.parse(import_node_fs13.default.readFileSync(file, "utf8"));
+    return isRecord(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+function allRecords() {
+  let names;
+  try {
+    names = import_node_fs13.default.readdirSync(liveDir()).filter((n) => n.endsWith(".json"));
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const name of names) {
+    const rec = readFile(import_node_path14.default.join(liveDir(), name));
+    if (rec) out.push(rec);
+  }
+  return out;
+}
+function deriveStatus(r, now, transcriptMtime, pidAlive3) {
+  if (r.state === "closed") return "closed";
+  const at = Date.parse(r.at);
+  const age = now.getTime() - at;
+  if (r.agent === "codex") {
+    if (pidAlive3 === false) return "closed";
+    return r.state === "working" && age <= CODEX_WORKING_MS ? "working" : "waiting";
+  }
+  const seen = Math.max(at, transcriptMtime ?? 0);
+  const quiet = now.getTime() - seen;
+  if (r.state === "working") return quiet <= CLAUDE_WORKING_MS ? "working" : "idle";
+  return quiet <= CLAUDE_WAITING_MS ? "waiting" : "idle";
+}
+function pidAlive2(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    return e.code === "EPERM";
+  }
+}
+function liveStatuses(now) {
+  const out = [];
+  for (const record of allRecords()) {
+    let mtime;
+    if (record.agent === "claude" && record.transcript_path) {
+      try {
+        mtime = import_node_fs13.default.statSync(record.transcript_path).mtimeMs;
+      } catch {
+      }
+    }
+    const alive = record.agent === "codex" && record.pid !== void 0 ? pidAlive2(record.pid) : void 0;
+    const status = deriveStatus(record, now, mtime, alive);
+    if (status === "closed" && now.getTime() - Date.parse(record.at) > CLOSED_VISIBLE_MS) continue;
+    out.push({ record, status });
+  }
+  return out;
+}
+function pruneLive(now) {
+  let names;
+  try {
+    names = import_node_fs13.default.readdirSync(liveDir());
+  } catch {
+    return;
+  }
+  const cutoff = now.getTime() - LIVE_MAX_AGE_MS;
+  for (const name of names) {
+    const file = import_node_path14.default.join(liveDir(), name);
+    try {
+      if (import_node_fs13.default.statSync(file).mtimeMs < cutoff) import_node_fs13.default.rmSync(file, { force: true });
+    } catch {
+    }
+  }
+}
+
 // src/dashboard/actions.ts
+var import_node_fs14 = __toESM(require("node:fs"), 1);
+var import_node_path15 = __toESM(require("node:path"), 1);
 var ActionError = class extends Error {
   constructor(status, message, extra = {}) {
     super(message);
@@ -9533,7 +9844,7 @@ function vaultState(root) {
     }
   }
   try {
-    import_node_fs13.default.lstatSync(import_node_path13.default.join(root, VAULT_DIRNAME));
+    import_node_fs14.default.lstatSync(import_node_path15.default.join(root, VAULT_DIRNAME));
     return "damaged";
   } catch {
     return "none";
@@ -9552,14 +9863,14 @@ function inspectFolder(input) {
     reason: "missing"
   };
   if (isNetworkPath(raw)) return { ...blank, reason: "network-path" };
-  if (!raw || raw.length > MAX_PATH || raw.includes("\0") || !import_node_path13.default.isAbsolute(raw)) return blank;
+  if (!raw || raw.length > MAX_PATH || raw.includes("\0") || !import_node_path15.default.isAbsolute(raw)) return blank;
   if (process.platform === "win32" && !WINDOWS_DRIVE.test(raw)) return blank;
   const root = canonicalPath(raw);
   if (isNetworkPath(root)) return { ...blank, reason: "network-path" };
-  const name = import_node_path13.default.basename(root) || root;
+  const name = import_node_path15.default.basename(root) || root;
   let stat = null;
   try {
-    stat = import_node_fs13.default.statSync(root);
+    stat = import_node_fs14.default.statSync(root);
   } catch {
   }
   if (!stat) return { ...blank, path: root, name };
@@ -9575,9 +9886,9 @@ function inspectFolder(input) {
     ...extra
   });
   if (!stat.isDirectory()) return done("not-directory");
-  const markers = MARKERS.filter((m) => import_node_fs13.default.existsSync(import_node_path13.default.join(root, m)));
+  const markers = MARKERS.filter((m) => import_node_fs14.default.existsSync(import_node_path15.default.join(root, m)));
   if (!canHostVault(root)) return done("home-or-root", { markers });
-  const insideVault = root.split(import_node_path13.default.sep).some((seg) => seg.toLowerCase() === VAULT_DIRNAME);
+  const insideVault = root.split(import_node_path15.default.sep).some((seg) => seg.toLowerCase() === VAULT_DIRNAME);
   if (insideVault) return done("inside-vault", { markers });
   const vault = vaultState(root);
   if (vault === "damaged") return done("damaged-vault", { markers });
@@ -9604,223 +9915,6 @@ function createProject(input) {
   initVault(root, { name, goal });
   return { id: projectId(root), created: true };
 }
-
-// src/license/key.ts
-var LICENSE_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEA0UXJpq5QTNgNaPMB3ZhdyRQo6C7vz36zgXHoqt4oBF0=
------END PUBLIC KEY-----
-`;
-var SUPABASE_URL = "https://jbcavoqjkwaopczxwlpf.supabase.co";
-var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiY2F2b3Fqa3dhb3Bjenh3bHBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwOTQ1NTMsImV4cCI6MjEwNjY3MDU1M30.r_9zurcbhFvQq2OV7vLIZoWEXmDuTNA2y8NfPLqcfDI";
-var siteUrl = () => (process.env.BINKGO_SITE_URL || "https://binkgo.vercel.app").replace(/\/+$/, "");
-
-// src/license/verify.ts
-var import_node_crypto6 = require("node:crypto");
-function isPayload(x) {
-  if (typeof x !== "object" || x === null) return false;
-  const p = x;
-  return p.v === 1 && typeof p.sub === "string" && typeof p.email === "string" && (p.kind === "trial" || p.kind === "full") && typeof p.max_major === "number" && Number.isFinite(p.max_major) && (p.trial_until === null || typeof p.trial_until === "string") && typeof p.device_id === "string";
-}
-function verifyLicense(token, publicKeyPem = LICENSE_PUBLIC_KEY) {
-  try {
-    if (typeof token !== "string") return null;
-    const parts = token.split(".");
-    if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
-    const key = typeof publicKeyPem === "string" ? (0, import_node_crypto6.createPublicKey)(publicKeyPem) : publicKeyPem;
-    if (!(0, import_node_crypto6.verify)(null, Buffer.from(parts[0]), key, Buffer.from(parts[1], "base64url"))) return null;
-    const payload = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
-    return isPayload(payload) ? payload : null;
-  } catch {
-    return null;
-  }
-}
-
-// src/license/store.ts
-var import_node_crypto7 = require("node:crypto");
-var import_node_fs14 = __toESM(require("node:fs"), 1);
-var import_node_os4 = __toESM(require("node:os"), 1);
-var import_node_path14 = __toESM(require("node:path"), 1);
-var licenseFile = () => import_node_path14.default.join(binkgoHome(), "license.json");
-var deviceFile = () => import_node_path14.default.join(binkgoHome(), "device.json");
-function readJson(file) {
-  try {
-    const v = JSON.parse(import_node_fs14.default.readFileSync(file, "utf8"));
-    return typeof v === "object" && v !== null && !Array.isArray(v) ? v : null;
-  } catch {
-    return null;
-  }
-}
-function readLicenseToken() {
-  const t = readJson(licenseFile())?.token;
-  return typeof t === "string" && t !== "" ? t : null;
-}
-function saveLicenseToken(token) {
-  import_node_fs14.default.mkdirSync(binkgoHome(), { recursive: true });
-  writeAtomic(licenseFile(), JSON.stringify({ token }, null, 2) + "\n");
-}
-function clearLicense() {
-  try {
-    import_node_fs14.default.rmSync(licenseFile(), { force: true });
-  } catch {
-  }
-}
-function deviceInfo() {
-  const saved = readJson(deviceFile())?.device_id;
-  let id = typeof saved === "string" && saved !== "" ? saved : "";
-  if (!id) {
-    id = (0, import_node_crypto7.randomUUID)();
-    import_node_fs14.default.mkdirSync(binkgoHome(), { recursive: true });
-    writeAtomic(deviceFile(), JSON.stringify({ device_id: id }, null, 2) + "\n");
-  }
-  return { device_id: id, device_name: import_node_os4.default.hostname() || "This computer" };
-}
-
-// src/license/status.ts
-function appMajorOf(appVersion) {
-  const n = Number.parseInt(/^v?(\d+)/.exec(appVersion.trim())?.[1] ?? "", 10);
-  return Number.isFinite(n) ? Math.max(1, n) : 1;
-}
-var isUsable = (s) => s.state === "trial" || s.state === "full";
-function licenseStatus(now, appVersion, opts = {}) {
-  const appMajor = appMajorOf(appVersion);
-  const token = opts.token === void 0 ? readLicenseToken() : opts.token;
-  const p = token ? verifyLicense(token, opts.publicKey) : null;
-  if (!p || p.device_id !== deviceInfo().device_id) return { state: "none", appMajor };
-  const base = { email: p.email, maxMajor: p.max_major, appMajor };
-  if (p.kind === "full" && p.max_major >= 1) {
-    return { ...base, state: appMajor > p.max_major ? "needs_upgrade" : "full" };
-  }
-  const until = p.trial_until ? Date.parse(p.trial_until) : NaN;
-  const msLeft = Number.isFinite(until) ? Math.max(0, until - now.getTime()) : 0;
-  return { ...base, state: msLeft > 0 ? "trial" : "trial_expired", msLeft, trialUntil: p.trial_until ?? void 0 };
-}
-
-// src/license/client.ts
-async function call(action, body, fetchImpl) {
-  const res = await fetchImpl(`${SUPABASE_URL}/functions/v1/device-auth`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_ANON_KEY}`, apikey: SUPABASE_ANON_KEY },
-    body: JSON.stringify({ action, ...body })
-  });
-  const json = await res.json().catch(() => ({}));
-  return typeof json === "object" && json !== null ? json : {};
-}
-var realFetch = (url, init) => fetch(url, init);
-async function startSignin(opts = {}) {
-  const r = await call("start", { ...deviceInfo(), app_version: opts.appVersion ?? "" }, opts.fetch ?? realFetch);
-  if (typeof r.code !== "string" || typeof r.poll_token !== "string" || typeof r.verify_url !== "string") {
-    throw new Error("The sign-in service did not answer. Try again in a moment.");
-  }
-  return { code: r.code, poll_token: r.poll_token, verify_url: r.verify_url, interval: typeof r.interval === "number" ? r.interval : 5 };
-}
-async function pollSignin(pollToken, opts = {}) {
-  let r;
-  try {
-    r = await call("poll", { poll_token: pollToken }, opts.fetch ?? realFetch);
-  } catch {
-    return { status: "error" };
-  }
-  if (r.status === "approved") {
-    if (typeof r.license !== "string" || !verifyLicense(r.license, opts.publicKey)) return { status: "error" };
-    saveLicenseToken(r.license);
-    return { status: "approved" };
-  }
-  if (r.status === "denied") return { status: "denied", reason: typeof r.reason === "string" ? r.reason : "denied" };
-  if (r.status === "expired") return { status: "expired" };
-  return r.status === "pending" ? { status: "pending" } : { status: "error" };
-}
-async function refreshLicense(opts = {}) {
-  const token = readLicenseToken();
-  if (!token) return "none";
-  let r;
-  try {
-    r = await call("refresh", { license: token }, opts.fetch ?? realFetch);
-  } catch {
-    return "offline";
-  }
-  if (r.error === "revoked") {
-    clearLicense();
-    return "revoked";
-  }
-  if (typeof r.license === "string" && verifyLicense(r.license, opts.publicKey)) {
-    saveLicenseToken(r.license);
-    return "refreshed";
-  }
-  return "offline";
-}
-
-// package.json
-var package_default = {
-  name: "binkgo",
-  version: "1.0.3",
-  private: true,
-  type: "module",
-  engines: {
-    node: ">=20"
-  },
-  scripts: {
-    pretest: "node scripts/build.mjs",
-    test: "vitest run",
-    typecheck: "tsc --noEmit && tsc --noEmit -p web",
-    build: "node scripts/build.mjs && vite build web",
-    dashboard: "node plugin/dist/dashboard.cjs",
-    "codex:install": "node scripts/codex-install.mjs",
-    "build:web": "vite build web",
-    "seed:demo": "node scripts/seed-demo.mjs",
-    overhead: "node scripts/overhead.mjs",
-    "bench:tokens": "node scripts/bench-tokens.mjs",
-    "desktop:install": "node scripts/desktop-install.mjs",
-    "build:desktop": "npm run build && npm run desktop:install",
-    "desktop:uninstall": "node scripts/desktop-install.mjs --uninstall"
-  },
-  dependencies: {
-    "@fontsource-variable/anuphan": "^5.3.0",
-    "@modelcontextprotocol/sdk": "^1.31.0",
-    "gray-matter": "^4.0.3",
-    zod: "^3.25.76"
-  },
-  devDependencies: {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
-    "@radix-ui/react-alert-dialog": "^1.1.23",
-    "@radix-ui/react-checkbox": "^1.3.11",
-    "@radix-ui/react-dialog": "^1.1.23",
-    "@radix-ui/react-dropdown-menu": "^2.1.24",
-    "@radix-ui/react-label": "^2.1.15",
-    "@radix-ui/react-popover": "^1.1.23",
-    "@radix-ui/react-scroll-area": "^1.2.18",
-    "@radix-ui/react-select": "^2.3.7",
-    "@radix-ui/react-separator": "^1.1.15",
-    "@radix-ui/react-slot": "^1.3.3",
-    "@radix-ui/react-tabs": "^1.1.21",
-    "@radix-ui/react-tooltip": "^1.2.16",
-    "@tailwindcss/vite": "^4.3.3",
-    "@types/node": "^20.19.43",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.1",
-    "class-variance-authority": "^0.7.1",
-    clsx: "^2.1.1",
-    cmdk: "^1.1.1",
-    dompurify: "^3.4.16",
-    esbuild: "^0.28.2",
-    jsdom: "^29.1.1",
-    "lucide-react": "^1.49.0",
-    marked: "^18.0.14",
-    react: "^19.3.0",
-    "react-day-picker": "^10.0.2",
-    "react-dom": "^19.3.0",
-    recharts: "^3.10.1",
-    sonner: "^2.0.8",
-    "tailwind-merge": "^3.7.0",
-    tailwindcss: "^4.3.3",
-    "tw-animate-css": "^1.4.0",
-    typescript: "^7.0.2",
-    vite: "^8.3.1",
-    vitest: "^4.1.11"
-  }
-};
 
 // src/dashboard/license.ts
 function createLicenseApi(opts = {}) {
@@ -10157,7 +10251,7 @@ function milestoneDelete(root, id) {
 }
 
 // src/dashboard/picker.ts
-var import_node_child_process3 = require("node:child_process");
+var import_node_child_process4 = require("node:child_process");
 var PickerUnavailable = class extends Error {
   constructor() {
     super("no folder picker on this platform");
@@ -10255,7 +10349,7 @@ var osFolderPicker = () => {
   const cmd = pickerCommand(process.platform);
   if (!cmd) return Promise.reject(new PickerUnavailable());
   return new Promise((resolve, reject) => {
-    const child = (0, import_node_child_process3.execFile)(
+    const child = (0, import_node_child_process4.execFile)(
       cmd.file,
       cmd.args,
       { encoding: "buffer", timeout: PICK_TIMEOUT_MS, windowsHide: false, maxBuffer: 1024 * 1024 },
@@ -10448,8 +10542,8 @@ function serveProjectFile(res, root, rel, csp = FILE_CSP) {
   const target = resolveInside(root, rel);
   if (!target) throw new HttpError(403, "outside the project");
   const base = canonicalPath(root);
-  const hasGit = (p) => import_node_path15.default.relative(base, p).split(import_node_path15.default.sep).some((seg) => seg.toLowerCase() === ".git");
-  if (hasGit(import_node_path15.default.resolve(base, rel)) || hasGit(target)) throw new HttpError(403, "forbidden");
+  const hasGit = (p) => import_node_path16.default.relative(base, p).split(import_node_path16.default.sep).some((seg) => seg.toLowerCase() === ".git");
+  if (hasGit(import_node_path16.default.resolve(base, rel)) || hasGit(target)) throw new HttpError(403, "forbidden");
   let st;
   try {
     st = import_node_fs16.default.statSync(target);
@@ -10460,7 +10554,7 @@ function serveProjectFile(res, root, rel, csp = FILE_CSP) {
   if (st.size > MAX_FILE) throw new HttpError(413, "file too large");
   const body = import_node_fs16.default.readFileSync(target);
   res.writeHead(200, {
-    "Content-Type": FILE_TYPES[import_node_path15.default.extname(target).toLowerCase()] ?? "application/octet-stream",
+    "Content-Type": FILE_TYPES[import_node_path16.default.extname(target).toLowerCase()] ?? "application/octet-stream",
     "Content-Length": body.length,
     "Content-Security-Policy": csp,
     "X-Content-Type-Options": "nosniff",
@@ -10470,16 +10564,16 @@ function serveProjectFile(res, root, rel, csp = FILE_CSP) {
 }
 function webAppBuilt(webDir) {
   try {
-    return import_node_fs16.default.statSync(import_node_path15.default.join(webDir, "index.html")).isFile();
+    return import_node_fs16.default.statSync(import_node_path16.default.join(webDir, "index.html")).isFile();
   } catch {
     return false;
   }
 }
 function staticTarget(webDir, pathname) {
-  const base = import_node_path15.default.resolve(webDir);
-  const target = import_node_path15.default.resolve(base, pathname.replace(/^[/\\]+/, ""));
-  const rel = import_node_path15.default.relative(base, target);
-  if (rel === "" || rel === ".." || rel.startsWith(".." + import_node_path15.default.sep) || import_node_path15.default.isAbsolute(rel)) return null;
+  const base = import_node_path16.default.resolve(webDir);
+  const target = import_node_path16.default.resolve(base, pathname.replace(/^[/\\]+/, ""));
+  const rel = import_node_path16.default.relative(base, target);
+  if (rel === "" || rel === ".." || rel.startsWith(".." + import_node_path16.default.sep) || import_node_path16.default.isAbsolute(rel)) return null;
   return target;
 }
 function serveStatic(res, webDir, pathname) {
@@ -10496,7 +10590,7 @@ function serveStatic(res, webDir, pathname) {
   if (!file) throw new HttpError(404, "not found");
   const body = import_node_fs16.default.readFileSync(file);
   res.writeHead(200, {
-    "Content-Type": STATIC_TYPES[import_node_path15.default.extname(file).toLowerCase()] ?? "application/octet-stream",
+    "Content-Type": STATIC_TYPES[import_node_path16.default.extname(file).toLowerCase()] ?? "application/octet-stream",
     "Content-Length": body.length,
     "X-Content-Type-Options": "nosniff",
     ...APP_HEADERS
@@ -10840,7 +10934,7 @@ async function startDashboard(opts) {
     if (err instanceof CoverError) return sendJson(res, err.status, { error: err.message });
     sendJson(res, 500, { error: "internal error" });
   };
-  const server = import_node_http.default.createServer((req, res) => {
+  const server = import_node_http2.default.createServer((req, res) => {
     try {
       const done = route(req, res);
       if (done) done.catch((err) => fail(req, res, err));
@@ -10895,6 +10989,10 @@ function parsePort(argv) {
   }
   return n;
 }
+function parsePortOrDefault(argv) {
+  const n = Number(parseFlag(argv, "--port"));
+  return Number.isInteger(n) && n > 0 && n <= 65535 ? n : 4319;
+}
 function parseFlag(argv, name) {
   const i = argv.indexOf(name);
   return i === -1 ? void 0 : argv[i + 1];
@@ -10903,12 +11001,30 @@ async function main() {
   const argv = process.argv.slice(2);
   const ac = argv.indexOf("--auto-connect");
   if (ac !== -1) {
-    const done = autoConnect(import_node_path16.default.join(__dirname, "web"), argv[ac + 1] ?? "", argv[ac + 2] ?? "", void 0, (l) => console.error(l));
+    const done = autoConnect(import_node_path17.default.join(__dirname, "web"), argv[ac + 1] ?? "", argv[ac + 2] ?? "", void 0, (l) => console.error(l));
     if (done.length) console.log(`Connected: ${done.join(", ")}`);
     process.exit(0);
   }
+  const bj = argv.indexOf("--brief-json");
+  if (bj !== -1) {
+    console.log(JSON.stringify(briefJson(argv[bj + 1] ?? process.cwd(), parsePortOrDefault(argv))));
+    process.exit(0);
+  }
+  const printJson = async (make) => {
+    try {
+      console.log(JSON.stringify(await make()));
+      process.exit(0);
+    } catch (err) {
+      console.log(JSON.stringify({ error: err.message }));
+      process.exit(1);
+    }
+  };
+  if (argv.includes("--licence-json")) await printJson(() => licenceJson());
+  if (argv.includes("--signin-start")) await printJson(() => signinStartJson());
+  const sp = argv.indexOf("--signin-poll");
+  if (sp !== -1) await printJson(() => signinPollJson(argv[sp + 1] ?? ""));
   const port = parsePort(argv);
-  const webDir = import_node_path16.default.join(__dirname, "web");
+  const webDir = import_node_path17.default.join(__dirname, "web");
   if (!webAppBuilt(webDir)) {
     console.error("web app not built: run npm run build");
     process.exit(1);
@@ -10919,11 +11035,31 @@ async function main() {
     console.error("Invalid --host value: (missing)");
     process.exit(1);
   }
+  const open = argv.includes("--open");
+  const alreadyRunning = () => {
+    const url2 = `http://127.0.0.1:${port}/`;
+    console.log(`Binkgo dashboard: ${url2} (already running)`);
+    if (open) openBrowser(url2);
+    process.exit(0);
+  };
+  if (argv.includes("--detach") && port !== 0) {
+    if (await probeDashboard(port)) alreadyRunning();
+    spawnDetachedServer(process.argv[1] ?? __filename, argv);
+    if (!await waitForDashboard(port)) {
+      console.error(`The dashboard did not start on port ${port}. Try --port <n>.`);
+      process.exit(1);
+    }
+    const url2 = `http://127.0.0.1:${port}/`;
+    console.log(`Binkgo dashboard: ${url2}`);
+    if (open) openBrowser(url2);
+    process.exit(0);
+  }
   let server;
   try {
     server = await startDashboard({ port, webDir, host, accessKey });
   } catch (err) {
     if (err.code === "EADDRINUSE") {
+      if (await probeDashboard(port)) alreadyRunning();
       console.error(`Port ${port} is already in use. Is the dashboard already running? Try --port <n>.`);
     } else {
       console.error(`Could not start the dashboard: ${err.message}`);
@@ -10933,7 +11069,7 @@ async function main() {
   const url = `http://127.0.0.1:${server.port}/`;
   console.log(`Binkgo dashboard: ${url}`);
   if (host) console.log(`LAN mode on ${host}: other computers open http://<this computer>:${server.port}/?key=<access key> once.`);
-  if (argv.includes("--open")) openBrowser(url);
+  if (open) openBrowser(url);
   const stop = () => {
     void server.close().then(() => process.exit(0));
   };
