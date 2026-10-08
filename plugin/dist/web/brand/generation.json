@@ -1,0 +1,17 @@
+{
+  "generator": "built-in image_gen",
+  "assets": [
+    {
+      "file": "binkgo-studio.png",
+      "uses": ["brand mark", "empty-state folder", "home banner", "sidebar botanical illustration"],
+      "prompt": "Use case: logo-brand. Create a production brand asset sheet for Binkgo, a premium project management desktop web app. Wide landscape image, exactly 3 equal square tiles in a single horizontal row, no gutters. Each tile solid very dark forest #102c28 backdrop. Left tile: large centered ivory minimalist ginkgo fan leaf brand mark, confident geometric silhouette, simple memorable with a central notch and short stem, no text. Middle tile: refined sculptural emerald glass folded folder with ivory inner document, centered with generous margins, premium product photography, no text. Right tile: exquisite softly lit real ginkgo leaves in deep emerald green and warm ivory, botanical still life, dark forest background, subtle natural shadows. Restrained editorial art direction, no neon no purple no gradients behind tiles no lettering no watermark. These three square tiles will be displayed separately as the app logo, empty-state icon, and decorative background."
+    },
+    {
+      "file": "navigation.png",
+      "uses": ["overview", "board", "list", "roadmap", "calendar", "reports", "timeline", "knowledge", "artifacts", "usage", "home", "problems"],
+      "prompt": "Production UI icon sprite sheet for Binkgo project management. Exactly 4 columns and 3 rows uniform grid of 12 square cells, 4:3 landscape canvas. Each icon centered in its cell at same size occupying 60% cell, wide empty margins, perfectly uniform pure ivory #f2f5f2 background across entire image, no grid lines. Elegant minimal dimensional emerald green and brushed silver objects, crisp distinct silhouette readable at small sizes, restrained realistic soft shadows. Row 1 left to right: four-square overview dashboard, kanban board with three columns, checklist document, route with three milestone points. Row 2 left to right: calendar, bar chart, clock, open book. Row 3 left to right: file folder, circular usage gauge, house, alert triangle. No words, letters, numbers, labels, extra objects, or watermark. Professional cohesive premium product icon family."
+    }
+  ],
+  "derived": ["../binkgo-icon-64.png", "../binkgo-icon-192.png"],
+  "export": "Browser-rendered square brand mark exported at favicon and application-icon sizes."
+}

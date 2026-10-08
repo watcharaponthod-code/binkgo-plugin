@@ -1,0 +1,8 @@
+{
+  "generator": "built-in image_gen",
+  "date": "2026-10-02",
+  "asset": "web/public/brand/color-icons/seedling.png",
+  "original": "output/brand-sources/seedling-clean.png",
+  "prompt": "Edit target: the attached small Binkgo potted seedling icon. Remove the isolated green sliver/debris at the far left edge completely. Preserve the existing pot, stem, two leaves, forest green outline, mint and green fills, shape, proportions and flat illustrated style. The finished image contains ONLY the single clean potted seedling, centered with balanced empty padding, and no disconnected fragments or decorative marks. Preserve a genuinely transparent alpha background, no white matte or checkerboard. Crisp edges suitable for a 28px UI icon. Output one square transparent PNG.",
+  "export": "Trim transparent margins and center the generated symbol in a 128px PNG, with 8px minimum padding. Preserve generated alpha."
+}

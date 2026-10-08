@@ -1,0 +1,12 @@
+{
+  "name": "binkgo",
+  "owner": { "name": "watcharapon" },
+  "description": "Binkgo: project memory for Claude Code and Codex.",
+  "plugins": [
+    {
+      "name": "binkgo",
+      "source": "./plugin",
+      "description": "Free project memory for AI agents: session log, tasks, decisions and fixes kept as Markdown in .binkgo/."
+    }
+  ]
+}

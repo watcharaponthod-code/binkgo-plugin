@@ -1,0 +1,12 @@
+{
+  "claude": {
+    "file": "claude.svg",
+    "source": "https://claude.ai/favicon.svg"
+  },
+  "codex": {
+    "file": "codex.svg",
+    "source": "https://raw.githubusercontent.com/lobehub/lobe-icons/master/packages/static-svg/icons/codex.svg",
+    "license": "MIT",
+    "note": "Codex brand mark distributed by Lobe Icons. Trademarks belong to their respective owners."
+  }
+}

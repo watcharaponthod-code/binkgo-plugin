@@ -1,0 +1,13 @@
+{
+  "generator": "built-in image_gen",
+  "date": "2026-10-02",
+  "prompt": "Generate at native 3840 by 1280 pixels, extremely crisp high resolution panoramic editorial illustration for the narrow full-width header of a professional project workspace. This will be displayed at up to 1800 CSS pixels wide on a retina monitor. Scene: a serene contemporary glasshouse opening onto a terraced botanical garden, seen straight on, a continuous very wide composition with dark slender architectural mullions, carefully delineated monstera foliage, small ivory flowers, pale stone steps, and distant sage trees. Place the recognizable greenhouse windows and leaf silhouettes across the CENTRAL horizontal third because the website crops it to a shallow banner. Refined geometric cut-paper illustration with clean sharp edges and large confident shapes, restrained subtle print texture, no blur, no haze, no depth-of-field, no soft focus. Muted forest-grey green, sage and ivory, near-black architectural details, tiny warm ochre highlights. Less saturated and quieter than a lush neon-green jungle. No text, no lettering, no people, no icons, no frames, no collage or tiles. Single cohesive 3:1 panoramic image, edge to edge.",
+  "actualGeneratedDimensions": { "width": 2172, "height": 724 },
+  "original": "output/brand-sources/garden-panorama.png",
+  "assets": [
+    "web/public/brand/garden/panorama-768.jpg",
+    "web/public/brand/garden/panorama-1536.jpg",
+    "web/public/brand/garden/panorama-2172.jpg"
+  ],
+  "export": "JPEG quality 94, downsampled from the generated original without upscaling. Responsive srcset selects a file for the viewport and display density."
+}

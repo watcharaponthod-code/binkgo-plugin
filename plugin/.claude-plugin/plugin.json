@@ -1,0 +1,6 @@
+{
+  "name": "binkgo",
+  "version": "1.0.3",
+  "author": { "name": "watcharapon" },
+  "description": "Project vault for AI agents: automatic session log, decisions, fixes, tasks and artifacts in .binkgo/."
+}
