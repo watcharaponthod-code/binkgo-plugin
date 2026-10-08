@@ -33,9 +33,9 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
-// ../../../../../../../../Desktop/binkgo/node_modules/kind-of/index.js
+// node_modules/kind-of/index.js
 var require_kind_of = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/kind-of/index.js"(exports2, module2) {
+  "node_modules/kind-of/index.js"(exports2, module2) {
     var toString = Object.prototype.toString;
     module2.exports = function kindOf(val) {
       if (val === void 0) return "undefined";
@@ -154,9 +154,9 @@ var require_kind_of = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/is-extendable/index.js
+// node_modules/is-extendable/index.js
 var require_is_extendable = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/is-extendable/index.js"(exports2, module2) {
+  "node_modules/is-extendable/index.js"(exports2, module2) {
     "use strict";
     module2.exports = function isExtendable(val) {
       return typeof val !== "undefined" && val !== null && (typeof val === "object" || typeof val === "function");
@@ -164,9 +164,9 @@ var require_is_extendable = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/extend-shallow/index.js
+// node_modules/extend-shallow/index.js
 var require_extend_shallow = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/extend-shallow/index.js"(exports2, module2) {
+  "node_modules/extend-shallow/index.js"(exports2, module2) {
     "use strict";
     var isObject = require_is_extendable();
     module2.exports = function extend(o) {
@@ -195,9 +195,9 @@ var require_extend_shallow = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/section-matter/index.js
+// node_modules/section-matter/index.js
 var require_section_matter = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/section-matter/index.js"(exports2, module2) {
+  "node_modules/section-matter/index.js"(exports2, module2) {
     "use strict";
     var typeOf = require_kind_of();
     var extend = require_extend_shallow();
@@ -302,9 +302,9 @@ var require_section_matter = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/common.js
+// node_modules/js-yaml/lib/js-yaml/common.js
 var require_common = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/common.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/common.js"(exports2, module2) {
     "use strict";
     function isNothing(subject) {
       return typeof subject === "undefined" || subject === null;
@@ -347,9 +347,9 @@ var require_common = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/exception.js
+// node_modules/js-yaml/lib/js-yaml/exception.js
 var require_exception = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/exception.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/exception.js"(exports2, module2) {
     "use strict";
     function YAMLException(reason, mark) {
       Error.call(this);
@@ -377,9 +377,9 @@ var require_exception = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/mark.js
+// node_modules/js-yaml/lib/js-yaml/mark.js
 var require_mark = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/mark.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/mark.js"(exports2, module2) {
     "use strict";
     var common = require_common();
     function Mark(name, buffer, position, line, column) {
@@ -435,9 +435,9 @@ var require_mark = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type.js
+// node_modules/js-yaml/lib/js-yaml/type.js
 var require_type = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type.js"(exports2, module2) {
     "use strict";
     var YAMLException = require_exception();
     var TYPE_CONSTRUCTOR_OPTIONS = [
@@ -494,9 +494,9 @@ var require_type = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema.js
+// node_modules/js-yaml/lib/js-yaml/schema.js
 var require_schema = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/schema.js"(exports2, module2) {
     "use strict";
     var common = require_common();
     var YAMLException = require_exception();
@@ -582,9 +582,9 @@ var require_schema = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/str.js
+// node_modules/js-yaml/lib/js-yaml/type/str.js
 var require_str = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/str.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/str.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     module2.exports = new Type("tag:yaml.org,2002:str", {
@@ -596,9 +596,9 @@ var require_str = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/seq.js
+// node_modules/js-yaml/lib/js-yaml/type/seq.js
 var require_seq = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/seq.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/seq.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     module2.exports = new Type("tag:yaml.org,2002:seq", {
@@ -610,9 +610,9 @@ var require_seq = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/map.js
+// node_modules/js-yaml/lib/js-yaml/type/map.js
 var require_map = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/map.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/map.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     module2.exports = new Type("tag:yaml.org,2002:map", {
@@ -624,9 +624,9 @@ var require_map = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/failsafe.js
+// node_modules/js-yaml/lib/js-yaml/schema/failsafe.js
 var require_failsafe = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/failsafe.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/schema/failsafe.js"(exports2, module2) {
     "use strict";
     var Schema = require_schema();
     module2.exports = new Schema({
@@ -639,9 +639,9 @@ var require_failsafe = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/null.js
+// node_modules/js-yaml/lib/js-yaml/type/null.js
 var require_null = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/null.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/null.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     function resolveYamlNull(data) {
@@ -679,9 +679,9 @@ var require_null = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/bool.js
+// node_modules/js-yaml/lib/js-yaml/type/bool.js
 var require_bool = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/bool.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/bool.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     function resolveYamlBoolean(data) {
@@ -716,9 +716,9 @@ var require_bool = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/int.js
+// node_modules/js-yaml/lib/js-yaml/type/int.js
 var require_int = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/int.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/int.js"(exports2, module2) {
     "use strict";
     var common = require_common();
     var Type = require_type();
@@ -849,9 +849,9 @@ var require_int = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/float.js
+// node_modules/js-yaml/lib/js-yaml/type/float.js
 var require_float = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/float.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/float.js"(exports2, module2) {
     "use strict";
     var common = require_common();
     var Type = require_type();
@@ -944,9 +944,9 @@ var require_float = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/json.js
+// node_modules/js-yaml/lib/js-yaml/schema/json.js
 var require_json = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/json.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/schema/json.js"(exports2, module2) {
     "use strict";
     var Schema = require_schema();
     module2.exports = new Schema({
@@ -963,9 +963,9 @@ var require_json = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/core.js
+// node_modules/js-yaml/lib/js-yaml/schema/core.js
 var require_core = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/core.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/schema/core.js"(exports2, module2) {
     "use strict";
     var Schema = require_schema();
     module2.exports = new Schema({
@@ -976,9 +976,9 @@ var require_core = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/timestamp.js
+// node_modules/js-yaml/lib/js-yaml/type/timestamp.js
 var require_timestamp = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/timestamp.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/timestamp.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     var YAML_DATE_REGEXP = new RegExp(
@@ -1037,9 +1037,9 @@ var require_timestamp = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/merge.js
+// node_modules/js-yaml/lib/js-yaml/type/merge.js
 var require_merge = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/merge.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/merge.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     function resolveYamlMerge(data) {
@@ -1052,9 +1052,9 @@ var require_merge = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/binary.js
+// node_modules/js-yaml/lib/js-yaml/type/binary.js
 var require_binary = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/binary.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/binary.js"(exports2, module2) {
     "use strict";
     var NodeBuffer;
     try {
@@ -1145,9 +1145,9 @@ var require_binary = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/omap.js
+// node_modules/js-yaml/lib/js-yaml/type/omap.js
 var require_omap = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/omap.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/omap.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     var _hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -1182,9 +1182,9 @@ var require_omap = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/pairs.js
+// node_modules/js-yaml/lib/js-yaml/type/pairs.js
 var require_pairs = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/pairs.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/pairs.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     var _toString = Object.prototype.toString;
@@ -1220,9 +1220,9 @@ var require_pairs = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/set.js
+// node_modules/js-yaml/lib/js-yaml/type/set.js
 var require_set = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/set.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/set.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     var _hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -1247,9 +1247,9 @@ var require_set = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/default_safe.js
+// node_modules/js-yaml/lib/js-yaml/schema/default_safe.js
 var require_default_safe = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/default_safe.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/schema/default_safe.js"(exports2, module2) {
     "use strict";
     var Schema = require_schema();
     module2.exports = new Schema({
@@ -1270,9 +1270,9 @@ var require_default_safe = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/js/undefined.js
+// node_modules/js-yaml/lib/js-yaml/type/js/undefined.js
 var require_undefined = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/js/undefined.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/js/undefined.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     function resolveJavascriptUndefined() {
@@ -1297,9 +1297,9 @@ var require_undefined = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/js/regexp.js
+// node_modules/js-yaml/lib/js-yaml/type/js/regexp.js
 var require_regexp = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/js/regexp.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/js/regexp.js"(exports2, module2) {
     "use strict";
     var Type = require_type();
     function resolveJavascriptRegExp(data) {
@@ -1341,9 +1341,9 @@ var require_regexp = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/js/function.js
+// node_modules/js-yaml/lib/js-yaml/type/js/function.js
 var require_function = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/type/js/function.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/type/js/function.js"(exports2, module2) {
     "use strict";
     var esprima;
     try {
@@ -1396,9 +1396,9 @@ var require_function = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/default_full.js
+// node_modules/js-yaml/lib/js-yaml/schema/default_full.js
 var require_default_full = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/schema/default_full.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/schema/default_full.js"(exports2, module2) {
     "use strict";
     var Schema = require_schema();
     module2.exports = Schema.DEFAULT = new Schema({
@@ -1414,9 +1414,9 @@ var require_default_full = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/loader.js
+// node_modules/js-yaml/lib/js-yaml/loader.js
 var require_loader = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/loader.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/loader.js"(exports2, module2) {
     "use strict";
     var common = require_common();
     var YAMLException = require_exception();
@@ -2546,9 +2546,9 @@ var require_loader = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/dumper.js
+// node_modules/js-yaml/lib/js-yaml/dumper.js
 var require_dumper = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml/dumper.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml/dumper.js"(exports2, module2) {
     "use strict";
     var common = require_common();
     var YAMLException = require_exception();
@@ -3094,9 +3094,9 @@ var require_dumper = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml.js
+// node_modules/js-yaml/lib/js-yaml.js
 var require_js_yaml = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/lib/js-yaml.js"(exports2, module2) {
+  "node_modules/js-yaml/lib/js-yaml.js"(exports2, module2) {
     "use strict";
     var loader = require_loader();
     var dumper = require_dumper();
@@ -3129,18 +3129,18 @@ var require_js_yaml = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/js-yaml/index.js
+// node_modules/js-yaml/index.js
 var require_js_yaml2 = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/js-yaml/index.js"(exports2, module2) {
+  "node_modules/js-yaml/index.js"(exports2, module2) {
     "use strict";
     var yaml2 = require_js_yaml();
     module2.exports = yaml2;
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/engines.js
+// node_modules/gray-matter/lib/engines.js
 var require_engines = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/engines.js"(exports, module) {
+  "node_modules/gray-matter/lib/engines.js"(exports, module) {
     "use strict";
     var yaml = require_js_yaml2();
     var engines = exports = module.exports;
@@ -3176,9 +3176,9 @@ var require_engines = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/strip-bom-string/index.js
+// node_modules/strip-bom-string/index.js
 var require_strip_bom_string = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/strip-bom-string/index.js"(exports2, module2) {
+  "node_modules/strip-bom-string/index.js"(exports2, module2) {
     "use strict";
     module2.exports = function(str2) {
       if (typeof str2 === "string" && str2.charAt(0) === "\uFEFF") {
@@ -3189,9 +3189,9 @@ var require_strip_bom_string = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/utils.js
+// node_modules/gray-matter/lib/utils.js
 var require_utils = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/utils.js"(exports2) {
+  "node_modules/gray-matter/lib/utils.js"(exports2) {
     "use strict";
     var stripBom = require_strip_bom_string();
     var typeOf = require_kind_of();
@@ -3229,9 +3229,9 @@ var require_utils = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/defaults.js
+// node_modules/gray-matter/lib/defaults.js
 var require_defaults = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/defaults.js"(exports2, module2) {
+  "node_modules/gray-matter/lib/defaults.js"(exports2, module2) {
     "use strict";
     var engines2 = require_engines();
     var utils = require_utils();
@@ -3248,9 +3248,9 @@ var require_defaults = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/engine.js
+// node_modules/gray-matter/lib/engine.js
 var require_engine = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/engine.js"(exports2, module2) {
+  "node_modules/gray-matter/lib/engine.js"(exports2, module2) {
     "use strict";
     module2.exports = function(name, options2) {
       let engine = options2.engines[name] || options2.engines[aliase(name)];
@@ -3282,9 +3282,9 @@ var require_engine = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/stringify.js
+// node_modules/gray-matter/lib/stringify.js
 var require_stringify = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/stringify.js"(exports2, module2) {
+  "node_modules/gray-matter/lib/stringify.js"(exports2, module2) {
     "use strict";
     var typeOf = require_kind_of();
     var getEngine = require_engine();
@@ -3335,9 +3335,9 @@ var require_stringify = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/excerpt.js
+// node_modules/gray-matter/lib/excerpt.js
 var require_excerpt = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/excerpt.js"(exports2, module2) {
+  "node_modules/gray-matter/lib/excerpt.js"(exports2, module2) {
     "use strict";
     var defaults = require_defaults();
     module2.exports = function(file, options2) {
@@ -3362,9 +3362,9 @@ var require_excerpt = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/to-file.js
+// node_modules/gray-matter/lib/to-file.js
 var require_to_file = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/to-file.js"(exports2, module2) {
+  "node_modules/gray-matter/lib/to-file.js"(exports2, module2) {
     "use strict";
     var typeOf = require_kind_of();
     var stringify = require_stringify();
@@ -3396,9 +3396,9 @@ var require_to_file = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/parse.js
+// node_modules/gray-matter/lib/parse.js
 var require_parse = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/lib/parse.js"(exports2, module2) {
+  "node_modules/gray-matter/lib/parse.js"(exports2, module2) {
     "use strict";
     var getEngine = require_engine();
     var defaults = require_defaults();
@@ -3413,9 +3413,9 @@ var require_parse = __commonJS({
   }
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/gray-matter/index.js
+// node_modules/gray-matter/index.js
 var require_gray_matter = __commonJS({
-  "../../../../../../../../Desktop/binkgo/node_modules/gray-matter/index.js"(exports2, module2) {
+  "node_modules/gray-matter/index.js"(exports2, module2) {
     "use strict";
     var fs12 = require("fs");
     var sections = require_section_matter();
@@ -3589,7 +3589,7 @@ function uniqueId(dir, base) {
   return id;
 }
 
-// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/external.js
+// node_modules/zod/v3/external.js
 var external_exports = {};
 __export(external_exports, {
   BRAND: () => BRAND,
@@ -3701,7 +3701,7 @@ __export(external_exports, {
   void: () => voidType
 });
 
-// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/helpers/util.js
+// node_modules/zod/v3/helpers/util.js
 var util;
 (function(util2) {
   util2.assertEqual = (_) => {
@@ -3835,7 +3835,7 @@ var getParsedType = (data) => {
   }
 };
 
-// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/ZodError.js
+// node_modules/zod/v3/ZodError.js
 var ZodIssueCode = util.arrayToEnum([
   "invalid_type",
   "invalid_literal",
@@ -3953,7 +3953,7 @@ ZodError.create = (issues) => {
   return error;
 };
 
-// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/locales/en.js
+// node_modules/zod/v3/locales/en.js
 var errorMap = (issue, _ctx) => {
   let message;
   switch (issue.code) {
@@ -4056,7 +4056,7 @@ var errorMap = (issue, _ctx) => {
 };
 var en_default = errorMap;
 
-// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/errors.js
+// node_modules/zod/v3/errors.js
 var overrideErrorMap = en_default;
 function setErrorMap(map) {
   overrideErrorMap = map;
@@ -4065,7 +4065,7 @@ function getErrorMap() {
   return overrideErrorMap;
 }
 
-// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/helpers/parseUtil.js
+// node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
   const { data, path: path13, errorMaps, issueData } = params;
   const fullPath = [...path13, ...issueData.path || []];
@@ -4175,14 +4175,14 @@ var isDirty = (x) => x.status === "dirty";
 var isValid = (x) => x.status === "valid";
 var isAsync = (x) => typeof Promise !== "undefined" && x instanceof Promise;
 
-// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/helpers/errorUtil.js
+// node_modules/zod/v3/helpers/errorUtil.js
 var errorUtil;
 (function(errorUtil2) {
   errorUtil2.errToObj = (message) => typeof message === "string" ? { message } : message || {};
   errorUtil2.toString = (message) => typeof message === "string" ? message : message?.message;
 })(errorUtil || (errorUtil = {}));
 
-// ../../../../../../../../Desktop/binkgo/node_modules/zod/v3/types.js
+// node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
   constructor(parent, value, path13, key) {
     this._cachedPath = [];
