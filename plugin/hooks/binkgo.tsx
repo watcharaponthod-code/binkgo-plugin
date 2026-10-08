@@ -18,6 +18,26 @@ let stopPolling: { cancel: () => void } | null = null;
 
 const cut = (s: string, n: number): string => (s.length > n ? `${s.slice(0, n - 1)}…` : s);
 
+/** The trial notice starts when this many days or fewer are left. */
+const TRIAL_NOTICE_DAYS = 2;
+const PRICE = '350 THB / $10 once';
+/** Shown once the trial is over. The person is signed in, so project memory still works; the dashboard and this card need Binkgo. */
+export const TRIAL_ENDED = `Trial ended · project memory keeps working · the dashboard and this card need Binkgo (${PRICE})`;
+const SIGN_IN_FIRST = 'Binkgo is not signed in, so project memory is off. Sign in once (free) with /binkgo login.';
+
+/** `Trial: N days left · Binkgo is 350 THB / $10 once` when the trial is nearly over; null otherwise. The buy link is added by the caller. */
+export function trialLine(b: BinkgoBrief): string | null {
+  const days = b.licence?.daysLeft;
+  if (b.licence?.state !== 'trial' || days === undefined || days > TRIAL_NOTICE_DAYS) return null;
+  return `Trial: ${days} ${days === 1 ? 'day' : 'days'} left · Binkgo is ${PRICE}`;
+}
+
+/** The notice for a project card or session start, in plain text with the buy link at the end, or null when there is nothing to say. */
+function noticeText(b: BinkgoBrief): string | null {
+  const line = b.licence?.state === 'trial_expired' ? TRIAL_ENDED : trialLine(b);
+  return line === null ? null : b.siteUrl ? `${line} · ${b.siteUrl}` : line;
+}
+
 function parseBrief(stdout: string): BinkgoView {
   try {
     const j = JSON.parse(stdout.trim().split('\n').pop() ?? '');
@@ -43,7 +63,9 @@ async function readView($: EngineInterface, cwd: string): Promise<BinkgoView> {
 }
 
 export function statusLine(v: BinkgoView): string | undefined {
-  if (v.kind === 'locked') return 'Binkgo · locked — /binkgo login';
+  if (v.kind === 'locked') {
+    return v.state === 'none' ? 'Binkgo · sign in: /binkgo login' : v.state === 'trial_expired' ? 'Binkgo · trial ended' : 'Binkgo · licence needs an upgrade';
+  }
   if (v.kind !== 'ok') return undefined;
   const b = v.brief;
   const parts = ['Binkgo'];
@@ -123,7 +145,7 @@ async function startLogin($: EngineInterface): Promise<string> {
         const r = await runJson($, ['--signin-poll', token], RUN_MS);
         const status = r?.status;
         if (status === 'approved') {
-          await finish('Binkgo unlocked');
+          await finish('Binkgo is on');
           await refresh($, true);
         } else if (status === 'denied' || status === 'expired') {
           await finish(status === 'denied' ? 'Sign-in was denied.' : 'The sign-in code expired. Run /binkgo login again.');
@@ -133,7 +155,7 @@ async function startLogin($: EngineInterface): Promise<string> {
       } catch { /* try again on the next tick */ } finally { busy = false; }
     })();
   });
-  return `Approve code ${s.code} in your browser (${s.verify_url}). Binkgo unlocks here by itself.`;
+  return `Approve code ${s.code} in your browser (${s.verify_url}). Binkgo turns on here by itself.`;
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -150,10 +172,17 @@ export function bar(done: number, total: number, cells = 12): string {
   return '█'.repeat(filled) + '░'.repeat(cells - filled);
 }
 
+/** What a locked card says in plain text: sign in first (memory is off), or the trial ended or the licence is too old (memory still works). */
+function lockedText(v: Extract<BinkgoView, { kind: 'locked' }>): string {
+  if (v.state === 'none') return `${SIGN_IN_FIRST} The 7-day dashboard trial starts at sign-in.`;
+  if (v.state === 'trial_expired') return `${TRIAL_ENDED} · ${v.siteUrl}`;
+  return `Your licence does not cover this version. Project memory keeps working. Upgrade: ${v.siteUrl}`;
+}
+
 /** The plain-text (Markdown) form of the card, also what the model-free command answers with. */
 function summary(v: BinkgoView | undefined): string {
   if (!v || v.kind === 'error') return 'Binkgo: no project data yet.';
-  if (v.kind === 'locked') return 'Binkgo is locked. `/binkgo login` starts a free 7-day trial; memory tools keep working.';
+  if (v.kind === 'locked') return lockedText(v);
   if (v.kind === 'no-vault') return 'Binkgo: no vault here. Ask Claude to run project_init to create one.';
   const b = v.brief;
   const lines = [`**Binkgo** · ${b.name}`];
@@ -161,6 +190,8 @@ function summary(v: BinkgoView | undefined): string {
   if (b.sprint) lines.push(`${b.sprint.title}: ${b.sprint.done}/${b.sprint.total} done${b.sprint.ends ? `, ends ${niceDate(b.sprint.ends)}` : ''}`);
   if (b.doing.length) lines.push('', '**In progress**', ...b.doing.slice(0, 5).map((t) => `- ${t.title}`));
   if (b.todo.length) lines.push('', '**Next up**', ...b.todo.slice(0, 5).map((t) => `- ${t.title}`));
+  const notice = noticeText(b);
+  if (notice) lines.push('', notice);
   lines.push('', '`/binkgo dashboard` opens the web dashboard.');
   return lines.join('\n');
 }
@@ -168,13 +199,19 @@ function summary(v: BinkgoView | undefined): string {
 /** The brief posted into the chat when a session starts; plain text, since a notice draws no Markdown. Null posts nothing. */
 export function startNotice(v: BinkgoView | undefined): string | null {
   if (!v || v.kind === 'error' || v.kind === 'no-vault') return null;
-  if (v.kind === 'locked') return 'Binkgo is locked · /binkgo login starts a free 7-day trial';
+  if (v.kind === 'locked') {
+    if (v.state === 'none') return 'Binkgo: sign in to turn on project memory (free) · /binkgo login';
+    if (v.state === 'trial_expired') return `${TRIAL_ENDED} · ${v.siteUrl}`;
+    return `Binkgo: your licence does not cover this version · project memory keeps working · ${v.siteUrl}`;
+  }
   const b = v.brief;
   const lines = [`Binkgo · ${b.name}`];
   if (b.focus) lines.push(cut(b.focus, 160));
   if (b.sprint) lines.push(`${bar(b.sprint.done, b.sprint.total)} ${b.sprint.done}/${b.sprint.total} ${b.sprint.title}${b.sprint.ends ? ` · ends ${niceDate(b.sprint.ends)}` : ''}`);
   if (b.doing.length) lines.push('In progress', ...b.doing.slice(0, 3).map((t) => `  ▸ ${cut(t.title, 80)}`));
   if (b.todo.length) lines.push('Next up', ...b.todo.slice(0, 3).map((t) => `  · ${cut(t.title, 80)}${t.priority === 'urgent' ? ' (urgent)' : ''}`));
+  const notice = noticeText(b);
+  if (notice) lines.push(notice);
   lines.push('/binkgo for the card · /binkgo dashboard');
   return lines.join('\n');
 }
@@ -270,21 +307,23 @@ export const register: Register = (on) => {
       return card(title(), <Text color="warning">{v ? `Could not read this project: ${v.message}` : 'Reading the project…'}</Text>);
     }
     if (v.kind === 'locked') {
-      const why = v.state === 'trial_expired' ? 'Your free trial has ended.' : v.state === 'needs_upgrade' ? 'Your licence does not cover this version.' : 'Sign in to see your project here.';
+      const signedOut = v.state === 'none';
+      const why = v.state === 'trial_expired' ? TRIAL_ENDED : v.state === 'needs_upgrade' ? 'Your licence does not cover this version.' : SIGN_IN_FIRST;
       const link = v.state === 'trial_expired' ? 'Buy Binkgo' : v.state === 'needs_upgrade' ? 'Upgrade Binkgo' : null;
       return card(
-        title('locked'),
+        title(signedOut ? 'signed out' : 'locked'),
         <Text>{why}</Text>,
         link && <Link href={v.siteUrl} label={link} />,
         pending && <Text bold>Approve code {pending.code} in your browser…</Text>,
-        <Box marginTop={1}><Button key="login" label="Sign in — 7-day free trial" variant="primary" hotkey="s" onPress={signIn} /></Box>,
-        <Text dimColor>Memory tools keep working while this is locked.  ·  /binkgo login</Text>,
+        <Box marginTop={1}><Button key="login" label={signedOut ? 'Sign in (free)' : 'Sign in again'} variant="primary" hotkey="s" onPress={signIn} /></Box>,
+        <Text dimColor>{signedOut ? '/binkgo login' : 'Project memory keeps working.  ·  /binkgo login'}</Text>,
       );
     }
     if (v.kind === 'no-vault') {
       return card(title(), <Text>No vault in this folder yet.</Text>, <Text dimColor>Ask Claude to run project_init to create one.</Text>);
     }
     const b = v.brief;
+    const trial = trialLine(b);
     return card(
       title(b.name),
       b.focus !== '' && <Text wrap="truncate-end">{b.focus}</Text>,
@@ -300,6 +339,12 @@ export const register: Register = (on) => {
       ))),
       section('Recent fixes', b.recentFixes.slice(0, 3).map((x) => <Text wrap="truncate-end" dimColor>· {x.title}</Text>)),
       section('Recent decisions', b.recentDecisions.slice(0, 3).map((x) => <Text wrap="truncate-end" dimColor>· {x.title}</Text>)),
+      trial && (
+        <Box marginTop={1}>
+          <Text>{`${trial} · `}</Text>
+          {b.siteUrl ? <Link href={b.siteUrl} label="Buy Binkgo" /> : null}
+        </Box>
+      ),
       <Box marginTop={1}><Button key="open" label="Open dashboard" variant="primary" hotkey="d" onPress={open} /></Box>,
       hints,
     );

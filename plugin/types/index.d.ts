@@ -1,5 +1,7 @@
 export type BinkgoBrief = {
   licence: { state: string; email?: string; daysLeft?: number };
+  /** The site that sells Binkgo (the buy link). */
+  siteUrl?: string;
   name: string;
   goal: string;
   focus: string;

@@ -3262,8 +3262,8 @@ var require_utils = __commonJS({
       }
       return ind;
     }
-    function removeDotSegments(path11) {
-      let input = path11;
+    function removeDotSegments(path12) {
+      let input = path12;
       const output = [];
       let nextSlash = -1;
       let len = 0;
@@ -3672,8 +3672,8 @@ var require_schemes = __commonJS({
       }
       if (wsComponent.resourceName) {
         const queryIndex = wsComponent.resourceName.indexOf("?");
-        const path11 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
-        wsComponent.path = path11 && path11 !== "/" ? path11 : void 0;
+        const path12 = queryIndex === -1 ? wsComponent.resourceName : wsComponent.resourceName.slice(0, queryIndex);
+        wsComponent.path = path12 && path12 !== "/" ? path12 : void 0;
         wsComponent.query = queryIndex === -1 ? void 0 : wsComponent.resourceName.slice(queryIndex + 1);
         wsComponent.resourceName = void 0;
       }
@@ -7186,12 +7186,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs11, exportName) {
+    function addFormats(ajv, list, fs12, exportName) {
       var _a;
       var _b;
       (_a = (_b = ajv.opts.code).formats) !== null && _a !== void 0 ? _a : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs11[f]);
+        ajv.addFormat(f, fs12[f]);
     }
     module2.exports = exports2 = formatsPlugin;
     Object.defineProperty(exports2, "__esModule", { value: true });
@@ -10583,7 +10583,7 @@ var require_parse = __commonJS({
 var require_gray_matter = __commonJS({
   "node_modules/gray-matter/index.js"(exports2, module2) {
     "use strict";
-    var fs11 = require("fs");
+    var fs12 = require("fs");
     var sections = require_section_matter();
     var defaults = require_defaults2();
     var stringify = require_stringify();
@@ -10667,7 +10667,7 @@ var require_gray_matter = __commonJS({
       return stringify(file, data, options2);
     };
     matter2.read = function(filepath, options2) {
-      const str2 = fs11.readFileSync(filepath, "utf8");
+      const str2 = fs12.readFileSync(filepath, "utf8");
       const file = matter2(str2, options2);
       file.path = filepath;
       return file;
@@ -10697,7 +10697,7 @@ var require_gray_matter = __commonJS({
 
 // src/mcp/server.ts
 var import_node_url = require("node:url");
-var import_node_crypto6 = require("node:crypto");
+var import_node_crypto8 = require("node:crypto");
 
 // node_modules/zod/v3/external.js
 var external_exports = {};
@@ -11177,8 +11177,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path11, errorMaps, issueData } = params;
-  const fullPath = [...path11, ...issueData.path || []];
+  const { data, path: path12, errorMaps, issueData } = params;
+  const fullPath = [...path12, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -11294,11 +11294,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path11, key) {
+  constructor(parent, value, path12, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path11;
+    this._path = path12;
     this._key = key;
   }
   get path() {
@@ -14935,10 +14935,10 @@ function assignProp(target, prop, value) {
     configurable: true
   });
 }
-function getElementAtPath(obj, path11) {
-  if (!path11)
+function getElementAtPath(obj, path12) {
+  if (!path12)
     return obj;
-  return path11.reduce((acc, key) => acc?.[key], obj);
+  return path12.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -15258,11 +15258,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path11, issues) {
+function prefixIssues(path12, issues) {
   return issues.map((iss) => {
     var _a;
     (_a = iss).path ?? (_a.path = []);
-    iss.path.unshift(path11);
+    iss.path.unshift(path12);
     return iss;
   });
 }
@@ -18673,11 +18673,11 @@ function normalizeObjectSchema(schema) {
   }
   return void 0;
 }
-function getDotPath(path11) {
-  if (path11.length === 0) {
+function getDotPath(path12) {
+  if (path12.length === 0) {
     return "object root";
   }
-  return path11.reduce((acc, seg, index) => {
+  return path12.reduce((acc, seg, index) => {
     if (index === 0) {
       return String(seg);
     }
@@ -25002,10 +25002,118 @@ var INSTRUCTIONS = [
   "- A deliverable file: save_artifact. Before ending a turn that changed files: session_summary."
 ].join("\n");
 
+// package.json
+var package_default = {
+  name: "binkgo",
+  version: "1.0.7",
+  private: true,
+  type: "module",
+  engines: {
+    node: ">=20"
+  },
+  scripts: {
+    pretest: "node scripts/build.mjs --test-seam",
+    test: "vitest run",
+    typecheck: "tsc --noEmit && tsc --noEmit -p web",
+    build: "node scripts/build.mjs && vite build web",
+    dashboard: "node plugin/dist/dashboard.cjs",
+    "codex:install": "node scripts/codex-install.mjs",
+    "build:web": "vite build web",
+    "seed:demo": "node scripts/seed-demo.mjs",
+    overhead: "node scripts/overhead.mjs",
+    "bench:tokens": "node scripts/bench-tokens.mjs",
+    "desktop:install": "node scripts/desktop-install.mjs",
+    "build:desktop": "npm run build && npm run desktop:install",
+    "desktop:uninstall": "node scripts/desktop-install.mjs --uninstall"
+  },
+  dependencies: {
+    "@fontsource-variable/anuphan": "^5.3.0",
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "gray-matter": "^4.0.3",
+    zod: "^3.25.76"
+  },
+  devDependencies: {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@radix-ui/react-alert-dialog": "^1.1.23",
+    "@radix-ui/react-checkbox": "^1.3.11",
+    "@radix-ui/react-dialog": "^1.1.23",
+    "@radix-ui/react-dropdown-menu": "^2.1.24",
+    "@radix-ui/react-label": "^2.1.15",
+    "@radix-ui/react-popover": "^1.1.23",
+    "@radix-ui/react-scroll-area": "^1.2.18",
+    "@radix-ui/react-select": "^2.3.7",
+    "@radix-ui/react-separator": "^1.1.15",
+    "@radix-ui/react-slot": "^1.3.3",
+    "@radix-ui/react-tabs": "^1.1.21",
+    "@radix-ui/react-tooltip": "^1.2.16",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "class-variance-authority": "^0.7.1",
+    clsx: "^2.1.1",
+    cmdk: "^1.1.1",
+    dompurify: "^3.4.16",
+    esbuild: "^0.28.2",
+    jsdom: "^29.1.1",
+    "lucide-react": "^1.49.0",
+    marked: "^18.0.14",
+    react: "^19.3.0",
+    "react-day-picker": "^10.0.2",
+    "react-dom": "^19.3.0",
+    recharts: "^3.10.1",
+    sonner: "^2.0.8",
+    "tailwind-merge": "^3.7.0",
+    tailwindcss: "^4.3.3",
+    "tw-animate-css": "^1.4.0",
+    typescript: "^7.0.2",
+    vite: "^8.3.1",
+    vitest: "^4.1.11"
+  }
+};
+
+// src/license/key.ts
+var LICENSE_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEA0UXJpq5QTNgNaPMB3ZhdyRQo6C7vz36zgXHoqt4oBF0=
+-----END PUBLIC KEY-----
+`;
+var SUPABASE_URL = "https://jbcavoqjkwaopczxwlpf.supabase.co";
+var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiY2F2b3Fqa3dhb3Bjenh3bHBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwOTQ1NTMsImV4cCI6MjEwNjY3MDU1M30.r_9zurcbhFvQq2OV7vLIZoWEXmDuTNA2y8NfPLqcfDI";
+
+// src/license/verify.ts
+var import_node_crypto2 = require("node:crypto");
+function isPayload(x) {
+  if (typeof x !== "object" || x === null) return false;
+  const p = x;
+  return p.v === 1 && typeof p.sub === "string" && typeof p.email === "string" && (p.kind === "trial" || p.kind === "full") && typeof p.max_major === "number" && Number.isFinite(p.max_major) && (p.trial_until === null || typeof p.trial_until === "string") && typeof p.device_id === "string";
+}
+function verifyLicense(token, publicKeyPem = LICENSE_PUBLIC_KEY) {
+  try {
+    if (typeof token !== "string") return null;
+    const parts = token.split(".");
+    if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
+    const key = typeof publicKeyPem === "string" ? (0, import_node_crypto2.createPublicKey)(publicKeyPem) : publicKeyPem;
+    if (!(0, import_node_crypto2.verify)(null, Buffer.from(parts[0]), key, Buffer.from(parts[1], "base64url"))) return null;
+    const payload = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
+    return isPayload(payload) ? payload : null;
+  } catch {
+    return null;
+  }
+}
+
+// src/license/store.ts
+var import_node_crypto4 = require("node:crypto");
+var import_node_fs4 = __toESM(require("node:fs"), 1);
+var import_node_os3 = __toESM(require("node:os"), 1);
+var import_node_path4 = __toESM(require("node:path"), 1);
+
 // src/vault/io.ts
 var import_node_fs2 = __toESM(require("node:fs"), 1);
 var import_node_path2 = __toESM(require("node:path"), 1);
-var import_node_crypto2 = require("node:crypto");
+var import_node_crypto3 = require("node:crypto");
 var import_gray_matter = __toESM(require_gray_matter(), 1);
 
 // src/vault/time.ts
@@ -25324,7 +25432,7 @@ function withLock(target, fn, opts = {}) {
   const staleMs = opts.staleMs ?? lockStaleMs;
   const timeoutMs = opts.timeoutMs ?? lockTimeoutMs;
   const lock = `${target}.lock`;
-  const token = `${process.pid}:${(0, import_node_crypto2.randomBytes)(8).toString("hex")}`;
+  const token = `${process.pid}:${(0, import_node_crypto3.randomBytes)(8).toString("hex")}`;
   import_node_fs2.default.mkdirSync(import_node_path2.default.dirname(lock), { recursive: true });
   let lastCode;
   const tryAcquire = () => {
@@ -25485,11 +25593,6 @@ function mutateEntry(root, kind, id, fn) {
   });
 }
 
-// src/vault/index.ts
-var import_node_crypto3 = require("node:crypto");
-var import_node_fs4 = __toESM(require("node:fs"), 1);
-var import_node_path4 = __toESM(require("node:path"), 1);
-
 // src/vault/registry.ts
 var import_node_fs3 = __toESM(require("node:fs"), 1);
 var import_node_os2 = __toESM(require("node:os"), 1);
@@ -25537,15 +25640,185 @@ function registerProject(root, name, now, opts = {}) {
   });
 }
 
+// src/license/store.ts
+var licenseFile = () => import_node_path4.default.join(binkgoHome(), "license.json");
+var deviceFile = () => import_node_path4.default.join(binkgoHome(), "device.json");
+var clockFile = () => import_node_path4.default.join(binkgoHome(), "clock.json");
+function readJson(file) {
+  try {
+    const v = JSON.parse(import_node_fs4.default.readFileSync(file, "utf8"));
+    return typeof v === "object" && v !== null && !Array.isArray(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+function readLicenseToken() {
+  const t = readJson(licenseFile())?.token;
+  return typeof t === "string" && t !== "" ? t : null;
+}
+function saveLicenseToken(token) {
+  import_node_fs4.default.mkdirSync(binkgoHome(), { recursive: true });
+  writeAtomic(licenseFile(), JSON.stringify({ token }, null, 2) + "\n");
+}
+function readDeviceFile(file) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const v = JSON.parse(import_node_fs4.default.readFileSync(file, "utf8"));
+      return typeof v === "object" && v !== null && !Array.isArray(v) ? v : "unreadable";
+    } catch (e) {
+      if (e.code === "ENOENT") return "missing";
+    }
+  }
+  return "unreadable";
+}
+function deviceInfo() {
+  const device_name = import_node_os3.default.hostname() || "This computer";
+  const file = readDeviceFile(deviceFile());
+  if (file === "unreadable") return { device_id: (0, import_node_crypto4.createHash)("sha256").update(`unreadable:${device_name}`).digest("hex").slice(0, 32), device_name };
+  const saved = file === "missing" ? void 0 : file.device_id;
+  let id = typeof saved === "string" && saved !== "" ? saved : "";
+  if (!id && file === "missing") {
+    id = (0, import_node_crypto4.randomUUID)();
+    import_node_fs4.default.mkdirSync(binkgoHome(), { recursive: true });
+    writeAtomic(deviceFile(), JSON.stringify({ device_id: id }, null, 2) + "\n");
+  }
+  return { device_id: id || (0, import_node_crypto4.createHash)("sha256").update(`noid:${device_name}`).digest("hex").slice(0, 32), device_name };
+}
+var CLOCK_SLACK_MS = 60 * 60 * 1e3;
+var CLOCK_WRITE_EVERY_MS = 60 * 1e3;
+function trustedNow(now) {
+  const t = now.getTime();
+  const seen = Number(readJson(clockFile())?.seen);
+  const high = Number.isFinite(seen) ? seen : null;
+  const use = high !== null && t < high - CLOCK_SLACK_MS ? high : t;
+  if (high === null || use > high + CLOCK_WRITE_EVERY_MS) {
+    try {
+      import_node_fs4.default.mkdirSync(binkgoHome(), { recursive: true });
+      writeAtomic(clockFile(), JSON.stringify({ seen: use }) + "\n");
+    } catch {
+    }
+  }
+  return use;
+}
+
+// src/license/status.ts
+function appMajorOf(appVersion) {
+  const n = Number.parseInt(/^v?(\d+)/.exec(appVersion.trim())?.[1] ?? "", 10);
+  return Number.isFinite(n) ? Math.max(1, n) : 1;
+}
+function licenseStatus(now, appVersion, opts = {}) {
+  const appMajor = appMajorOf(appVersion);
+  const token = opts.token === void 0 ? readLicenseToken() : opts.token;
+  const p = token ? verifyLicense(token, opts.publicKey) : null;
+  if (!p || p.device_id !== deviceInfo().device_id) return { state: "none", appMajor };
+  const base = { email: p.email, maxMajor: p.max_major, appMajor };
+  if (p.kind === "full" && p.max_major >= 1) {
+    return { ...base, state: appMajor > p.max_major ? "needs_upgrade" : "full" };
+  }
+  const until = p.trial_until ? Date.parse(p.trial_until) : NaN;
+  const msLeft = Number.isFinite(until) ? Math.max(0, until - trustedNow(now)) : 0;
+  return { ...base, state: msLeft > 0 ? "trial" : "trial_expired", msLeft, trialUntil: p.trial_until ?? void 0 };
+}
+
+// src/license/client.ts
+async function call(action, body, fetchImpl) {
+  const res = await fetchImpl(`${SUPABASE_URL}/functions/v1/device-auth`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_ANON_KEY}`, apikey: SUPABASE_ANON_KEY },
+    body: JSON.stringify({ action, ...body })
+  });
+  const json = await res.json().catch(() => ({}));
+  return typeof json === "object" && json !== null ? json : {};
+}
+var realFetch = (url, init) => fetch(url, init);
+async function startSignin(opts = {}) {
+  const r = await call("start", { ...deviceInfo(), app_version: opts.appVersion ?? "" }, opts.fetch ?? realFetch);
+  if (typeof r.code !== "string" || typeof r.poll_token !== "string" || typeof r.verify_url !== "string") {
+    throw new Error("The sign-in service did not answer. Try again in a moment.");
+  }
+  return { code: r.code, poll_token: r.poll_token, verify_url: r.verify_url, interval: typeof r.interval === "number" ? r.interval : 5 };
+}
+async function pollSignin(pollToken, opts = {}) {
+  let r;
+  try {
+    r = await call("poll", { poll_token: pollToken }, opts.fetch ?? realFetch);
+  } catch {
+    return { status: "error" };
+  }
+  if (r.status === "approved") {
+    if (typeof r.license !== "string" || !verifyLicense(r.license, opts.publicKey)) return { status: "error" };
+    saveLicenseToken(r.license);
+    return { status: "approved" };
+  }
+  if (r.status === "denied") return { status: "denied", reason: typeof r.reason === "string" ? r.reason : "denied" };
+  if (r.status === "expired") return { status: "expired" };
+  return r.status === "pending" ? { status: "pending" } : { status: "error" };
+}
+
+// src/license/gate.ts
+var testSeamSignedIn = () => false;
+function gateState(o = {}) {
+  try {
+    return licenseStatus(o.now ?? /* @__PURE__ */ new Date(), package_default.version, { publicKey: o.publicKey, token: o.token }).state;
+  } catch {
+    return "none";
+  }
+}
+function isSignedIn(o = {}) {
+  return testSeamSignedIn() || gateState(o) !== "none";
+}
+
+// src/mcp/signin.ts
+var NOT_SIGNED_IN = "Binkgo is not signed in, so project memory is off. Sign in once (free): call the sign_in tool, or run /binkgo login in Claude Code.";
+var pending = null;
+var waitingFor = (s) => `Open ${s.verify_url} in your browser and approve code ${s.code}, then ask me to call sign_in again.`;
+async function signInTool(o = {}) {
+  if (isSignedIn(o)) {
+    pending = null;
+    return "Binkgo is already signed in.";
+  }
+  if (!pending) {
+    try {
+      pending = await startSignin({ fetch: o.fetch, appVersion: package_default.version });
+    } catch (e) {
+      return e instanceof Error ? e.message : "The sign-in service did not answer. Try again in a moment.";
+    }
+    return `Sign-in code: ${pending.code}. ${waitingFor(pending)}`;
+  }
+  const r = await pollSignin(pending.poll_token, { fetch: o.fetch, publicKey: o.publicKey, appVersion: package_default.version });
+  switch (r.status) {
+    case "approved":
+      pending = null;
+      return "Signed in. Binkgo is on.";
+    case "pending":
+      return `Not approved yet. ${waitingFor(pending)}`;
+    case "denied":
+      pending = null;
+      return "The sign-in was denied. Call sign_in to start again.";
+    case "expired":
+      pending = null;
+      return "The sign-in code expired. Call sign_in to get a new one.";
+    default:
+      return "Could not check the sign-in just now. Call sign_in again in a moment.";
+  }
+}
+async function gateReply(name, o = {}) {
+  if (name === "sign_in") return signInTool(o);
+  return isSignedIn(o) ? null : NOT_SIGNED_IN;
+}
+
 // src/vault/index.ts
+var import_node_crypto5 = require("node:crypto");
+var import_node_fs5 = __toESM(require("node:fs"), 1);
+var import_node_path5 = __toESM(require("node:path"), 1);
 var VERSION = 1;
 function cacheFile(root) {
-  const key = (0, import_node_crypto3.createHash)("sha1").update(canonicalPath(root).toLowerCase()).digest("hex").slice(0, 16);
-  return import_node_path4.default.join(binkgoHome(), "cache", `tasks-${key}.json`);
+  const key = (0, import_node_crypto5.createHash)("sha1").update(canonicalPath(root).toLowerCase()).digest("hex").slice(0, 16);
+  return import_node_path5.default.join(binkgoHome(), "cache", `tasks-${key}.json`);
 }
 function load(root) {
   try {
-    const json = JSON.parse(import_node_fs4.default.readFileSync(cacheFile(root), "utf8"));
+    const json = JSON.parse(import_node_fs5.default.readFileSync(cacheFile(root), "utf8"));
     return json.v === VERSION && json.rows && typeof json.rows === "object" ? json.rows : {};
   } catch {
     return {};
@@ -25572,7 +25845,7 @@ function taskRows(root) {
   for (const id of listIds(root, "task")) {
     let st;
     try {
-      st = import_node_fs4.default.statSync(entryPath(root, "task", id));
+      st = import_node_fs5.default.statSync(entryPath(root, "task", id));
     } catch {
       continue;
     }
@@ -25594,13 +25867,13 @@ function taskRows(root) {
 }
 
 // src/vault/map.ts
-var import_node_crypto5 = require("node:crypto");
-var import_node_fs5 = __toESM(require("node:fs"), 1);
-var import_node_path6 = __toESM(require("node:path"), 1);
+var import_node_crypto7 = require("node:crypto");
+var import_node_fs6 = __toESM(require("node:fs"), 1);
+var import_node_path7 = __toESM(require("node:path"), 1);
 
 // src/vault/work.ts
-var import_node_crypto4 = require("node:crypto");
-var import_node_path5 = __toESM(require("node:path"), 1);
+var import_node_crypto6 = require("node:crypto");
+var import_node_path6 = __toESM(require("node:path"), 1);
 
 // src/vault/refs.ts
 var ID = /^[a-z0-9][a-z0-9-]*$/;
@@ -25641,7 +25914,7 @@ function must(root, kind, id) {
   if (isBroken(e)) throw new Error(`Cannot read ${kind} ${id}: ${e.error}`);
   return e;
 }
-var tasksDir = (root) => import_node_path5.default.join(vaultDir(root), DIRS.task);
+var tasksDir = (root) => import_node_path6.default.join(vaultDir(root), DIRS.task);
 var CONTROL_SINGLE_LINE = /[\x00-\x1F\x7F]/;
 var CONTROL_MULTI_LINE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/;
 function noControl(what, value, multiline = false) {
@@ -25793,7 +26066,7 @@ function syncCompleted(d, was, at) {
 function topicId(title) {
   if (!/[^\x00-\x7f]/.test(title)) return slugify(title);
   const ascii = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/, "");
-  const hash = (0, import_node_crypto4.createHash)("sha1").update(title.trim()).digest("hex").slice(0, 6);
+  const hash = (0, import_node_crypto6.createHash)("sha1").update(title.trim()).digest("hex").slice(0, 6);
   return ascii ? `${ascii}-${hash}` : hash;
 }
 function idForTitle(root, kind, title) {
@@ -25831,7 +26104,7 @@ function upsertTopic(root, input, now = /* @__PURE__ */ new Date()) {
   noControl("The title", input.title);
   const id = idForTitle(root, "topic", input.title);
   const t = localIso(now);
-  const created = withLock(import_node_path5.default.join(vaultDir(root), DIRS.topic), () => {
+  const created = withLock(import_node_path6.default.join(vaultDir(root), DIRS.topic), () => {
     if (entryExists(root, "topic", id)) return false;
     const e = {
       kind: "topic",
@@ -26041,17 +26314,17 @@ function normalizeMapPath(input) {
 function canonicalRel(root, rel) {
   return rel === "." ? rel : toRelPath(root, rel) ?? rel;
 }
-var mapId = (rel) => `${slugify(rel)}-${(0, import_node_crypto5.createHash)("sha1").update(rel).digest("hex").slice(0, 6)}`;
+var mapId = (rel) => `${slugify(rel)}-${(0, import_node_crypto7.createHash)("sha1").update(rel).digest("hex").slice(0, 6)}`;
 function stampOf(root, rel) {
-  const full = import_node_path6.default.join(canonicalPath(root), rel === "." ? "" : rel);
+  const full = import_node_path7.default.join(canonicalPath(root), rel === "." ? "" : rel);
   try {
-    const st = import_node_fs5.default.statSync(full);
+    const st = import_node_fs6.default.statSync(full);
     if (!st.isDirectory()) return `f:${st.size}:${Math.floor(st.mtimeMs)}`;
     let newest = 0;
-    const names = import_node_fs5.default.readdirSync(full).filter((n) => n !== VAULT_DIRNAME && n !== ".git" && n !== "node_modules");
+    const names = import_node_fs6.default.readdirSync(full).filter((n) => n !== VAULT_DIRNAME && n !== ".git" && n !== "node_modules");
     for (const n of names) {
       try {
-        newest = Math.max(newest, Math.floor(import_node_fs5.default.statSync(import_node_path6.default.join(full, n)).mtimeMs));
+        newest = Math.max(newest, Math.floor(import_node_fs6.default.statSync(import_node_path7.default.join(full, n)).mtimeMs));
       } catch {
       }
     }
@@ -26272,7 +26545,7 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
 }
 
 // src/vault/search.ts
-var import_node_fs6 = __toESM(require("node:fs"), 1);
+var import_node_fs7 = __toESM(require("node:fs"), 1);
 var SEARCHABLE = ["fix", "decision", "task", "topic", "milestone", "map", "artifact", "session"];
 function titleOf(e) {
   const data = e.data;
@@ -26327,7 +26600,7 @@ function readRef(root, ref) {
   const kinds = kind ? [kind] : KINDS.filter((k) => k !== "project");
   for (const k of kinds) {
     try {
-      return import_node_fs6.default.readFileSync(entryPath(root, k, id), "utf8");
+      return import_node_fs7.default.readFileSync(entryPath(root, k, id), "utf8");
     } catch {
     }
   }
@@ -26335,7 +26608,7 @@ function readRef(root, ref) {
 }
 
 // src/transcript/usage.ts
-var import_node_fs7 = __toESM(require("node:fs"), 1);
+var import_node_fs8 = __toESM(require("node:fs"), 1);
 var HAS_TIMESTAMP = '"timestamp"';
 var topTime = (r) => {
   if (typeof r.timestamp !== "string") return null;
@@ -26347,14 +26620,14 @@ function transcriptStart(transcriptPath) {
   let head;
   let cut = false;
   try {
-    const fd = import_node_fs7.default.openSync(transcriptPath, "r");
+    const fd = import_node_fs8.default.openSync(transcriptPath, "r");
     try {
       const buf = Buffer.alloc(256 * 1024);
-      const got = import_node_fs7.default.readSync(fd, buf, 0, buf.length, 0);
+      const got = import_node_fs8.default.readSync(fd, buf, 0, buf.length, 0);
       cut = got === buf.length;
       head = buf.toString("latin1", 0, got);
     } finally {
-      import_node_fs7.default.closeSync(fd);
+      import_node_fs8.default.closeSync(fd);
     }
   } catch {
     return null;
@@ -26378,18 +26651,18 @@ function sessionBegan(transcriptPath, now) {
 }
 
 // src/vault/live.ts
-var import_node_fs8 = __toESM(require("node:fs"), 1);
-var import_node_path7 = __toESM(require("node:path"), 1);
+var import_node_fs9 = __toESM(require("node:fs"), 1);
+var import_node_path8 = __toESM(require("node:path"), 1);
 var CLAUDE_WORKING_MS = 10 * 60 * 1e3;
 var CODEX_WORKING_MS = 5 * 60 * 1e3;
 var CLAUDE_WAITING_MS = 30 * 60 * 1e3;
 var CLOSED_VISIBLE_MS = 60 * 60 * 1e3;
 var LIVE_MAX_AGE_MS = 24 * 60 * 60 * 1e3;
 function liveDir() {
-  return import_node_path7.default.join(binkgoHome(), "live");
+  return import_node_path8.default.join(binkgoHome(), "live");
 }
 function liveFile(sessionId) {
-  return import_node_path7.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
+  return import_node_path8.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
 }
 function isRecord(v) {
   if (!v || typeof v !== "object") return false;
@@ -26399,7 +26672,7 @@ function isRecord(v) {
 }
 function readFile(file) {
   try {
-    const parsed = JSON.parse(import_node_fs8.default.readFileSync(file, "utf8"));
+    const parsed = JSON.parse(import_node_fs9.default.readFileSync(file, "utf8"));
     return isRecord(parsed) ? parsed : null;
   } catch {
     return null;
@@ -26441,13 +26714,13 @@ function closeLive(sessionId, now) {
 function allRecords() {
   let names;
   try {
-    names = import_node_fs8.default.readdirSync(liveDir()).filter((n) => n.endsWith(".json"));
+    names = import_node_fs9.default.readdirSync(liveDir()).filter((n) => n.endsWith(".json"));
   } catch {
     return [];
   }
   const out = [];
   for (const name of names) {
-    const rec = readFile(import_node_path7.default.join(liveDir(), name));
+    const rec = readFile(import_node_path8.default.join(liveDir(), name));
     if (rec) out.push(rec);
   }
   return out;
@@ -26467,9 +26740,9 @@ function setCurrentTask(root, agent, task, now) {
 }
 
 // src/vault/sessions.ts
-var import_node_path8 = __toESM(require("node:path"), 1);
+var import_node_path9 = __toESM(require("node:path"), 1);
 function openSession(root, sessionId, meta, now = /* @__PURE__ */ new Date()) {
-  const dir = import_node_path8.default.join(vaultDir(root), DIRS.session);
+  const dir = import_node_path9.default.join(vaultDir(root), DIRS.session);
   return withLock(dir, () => {
     const sid8 = sessionId.replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toLowerCase() || "session";
     const suffix = new RegExp(`-${sid8}(-\\d+)?$`);
@@ -26507,13 +26780,13 @@ function writeSummary(root, entryId, input) {
 }
 
 // src/vault/state.ts
-var import_node_fs9 = __toESM(require("node:fs"), 1);
-var import_node_path9 = __toESM(require("node:path"), 1);
+var import_node_fs10 = __toESM(require("node:fs"), 1);
+var import_node_path10 = __toESM(require("node:path"), 1);
 function stateDir() {
-  return import_node_path9.default.join(binkgoHome(), "state");
+  return import_node_path10.default.join(binkgoHome(), "state");
 }
 function stateFile(sessionId) {
-  return import_node_path9.default.join(stateDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
+  return import_node_path10.default.join(stateDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
 }
 function isState(v) {
   if (!v || typeof v !== "object") return false;
@@ -26522,7 +26795,7 @@ function isState(v) {
 }
 function readFile2(file) {
   try {
-    const parsed = JSON.parse(import_node_fs9.default.readFileSync(file, "utf8"));
+    const parsed = JSON.parse(import_node_fs10.default.readFileSync(file, "utf8"));
     return isState(parsed) ? parsed : null;
   } catch {
     return null;
@@ -26540,17 +26813,17 @@ function mutateState(sessionId, init, fn) {
 function allStates() {
   let names;
   try {
-    names = import_node_fs9.default.readdirSync(stateDir()).filter((n) => n.endsWith(".json"));
+    names = import_node_fs10.default.readdirSync(stateDir()).filter((n) => n.endsWith(".json"));
   } catch {
     return [];
   }
   const out = [];
   for (const name of names) {
-    const file = import_node_path9.default.join(stateDir(), name);
+    const file = import_node_path10.default.join(stateDir(), name);
     const state = readFile2(file);
     if (!state) continue;
     try {
-      out.push({ state, mtime: import_node_fs9.default.statSync(file).mtimeMs });
+      out.push({ state, mtime: import_node_fs10.default.statSync(file).mtimeMs });
     } catch {
     }
   }
@@ -26565,9 +26838,9 @@ function findStateByEntry(root, entryId) {
 }
 
 // src/vault/vault.ts
-var import_node_fs10 = __toESM(require("node:fs"), 1);
-var import_node_os3 = __toESM(require("node:os"), 1);
-var import_node_path10 = __toESM(require("node:path"), 1);
+var import_node_fs11 = __toESM(require("node:fs"), 1);
+var import_node_os4 = __toESM(require("node:os"), 1);
+var import_node_path11 = __toESM(require("node:path"), 1);
 function must2(root, kind, id) {
   const e = readEntry(root, kind, id);
   if (isBroken(e)) throw new Error(`Cannot read ${kind} ${id}: ${e.error}`);
@@ -26575,16 +26848,16 @@ function must2(root, kind, id) {
 }
 function canHostVault(root) {
   const r = canonicalPath(root);
-  if (import_node_path10.default.dirname(r) === r) return false;
-  if (samePath(r, import_node_os3.default.homedir())) return false;
+  if (import_node_path11.default.dirname(r) === r) return false;
+  if (samePath(r, import_node_os4.default.homedir())) return false;
   return !samePath(vaultDir(r), binkgoHome());
 }
 function vaultExists(root) {
-  return import_node_fs10.default.existsSync(entryPath(root, "project", "project"));
+  return import_node_fs11.default.existsSync(entryPath(root, "project", "project"));
 }
 function writeGitignore(root) {
   try {
-    import_node_fs10.default.writeFileSync(import_node_path10.default.join(vaultDir(root), ".gitignore"), ["*.lock", "*.steal", "*.tmp", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
+    import_node_fs11.default.writeFileSync(import_node_path11.default.join(vaultDir(root), ".gitignore"), ["*.lock", "*.steal", "*.tmp", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
   } catch (e) {
     if (e.code !== "EEXIST") throw e;
   }
@@ -26594,7 +26867,7 @@ function initVault(root, input, now = /* @__PURE__ */ new Date(), opts = {}) {
   noControl("The goal", input.goal, true);
   if (!canHostVault(root)) throw new Error(`Binkgo cannot create a vault in ${root}`);
   for (const k of KINDS) {
-    if (k !== "project" && k !== "milestone" && k !== "map") import_node_fs10.default.mkdirSync(import_node_path10.default.join(vaultDir(root), DIRS[k]), { recursive: true });
+    if (k !== "project" && k !== "milestone" && k !== "map") import_node_fs11.default.mkdirSync(import_node_path11.default.join(vaultDir(root), DIRS[k]), { recursive: true });
   }
   if (!vaultExists(root)) {
     const t = localIso(now);
@@ -26684,10 +26957,10 @@ function logFix(root, input, now = /* @__PURE__ */ new Date()) {
 }
 var MAX_COPY_BYTES = 20 * 1024 * 1024;
 function saveArtifact(root, input, now = /* @__PURE__ */ new Date()) {
-  const abs = import_node_path10.default.resolve(root, input.path);
+  const abs = import_node_path11.default.resolve(root, input.path);
   let stat;
   try {
-    stat = import_node_fs10.default.statSync(abs);
+    stat = import_node_fs11.default.statSync(abs);
   } catch {
     throw new Error(`File not found: ${input.path}`);
   }
@@ -26713,15 +26986,15 @@ function saveArtifact(root, input, now = /* @__PURE__ */ new Date()) {
     { Description: input.description ?? "" }
   );
   if (input.copy) {
-    const ext = import_node_path10.default.extname(abs);
+    const ext = import_node_path11.default.extname(abs);
     const name = `${id}${/^\.[A-Za-z0-9]{1,10}$/.test(ext) ? ext : ""}`;
-    const dest = import_node_path10.default.join(vaultDir(root), "artifacts", "files", name);
+    const dest = import_node_path11.default.join(vaultDir(root), "artifacts", "files", name);
     try {
-      import_node_fs10.default.mkdirSync(import_node_path10.default.dirname(dest), { recursive: true });
-      import_node_fs10.default.copyFileSync(abs, dest);
+      import_node_fs11.default.mkdirSync(import_node_path11.default.dirname(dest), { recursive: true });
+      import_node_fs11.default.copyFileSync(abs, dest);
     } catch (err) {
-      import_node_fs10.default.rmSync(entryPath(root, "artifact", id), { force: true });
-      import_node_fs10.default.rmSync(dest, { force: true });
+      import_node_fs11.default.rmSync(entryPath(root, "artifact", id), { force: true });
+      import_node_fs11.default.rmSync(dest, { force: true });
       throw err;
     }
     mutateEntry(root, "artifact", id, (e) => {
@@ -26737,6 +27010,10 @@ var SEARCH_KINDS = KINDS.filter((k) => k !== "project");
 var date3 = () => external_exports.string().nullable().optional().describe("YYYY-MM-DD or null");
 var session = () => external_exports.string().optional().describe("Session ref (default: current)");
 var TOOL_DEFS = {
+  sign_in: {
+    description: "Sign in to Binkgo (free). Call once for a code, again after approving it.",
+    shape: {}
+  },
   project_init: {
     description: "Create .binkgo/ for this project (safe to repeat).",
     shape: { name: external_exports.string().min(1), goal: external_exports.string().default("") }
@@ -26876,6 +27153,7 @@ function errorText(e) {
 function callTool(root, name, rawArgs, now = /* @__PURE__ */ new Date()) {
   const def = TOOL_DEFS[name];
   if (!def) throw new Error(`Unknown tool: ${name}`);
+  if (name === "sign_in") throw new Error("sign_in is answered by the server, not by callTool");
   const a = external_exports.object(def.shape).parse(rawArgs ?? {});
   if (name === "project_init") {
     const p = initVault(root, { name: a.name, goal: a.goal }, now);
@@ -27018,7 +27296,7 @@ ${n.details}` : ""}`).join("\n\n");
 
 // src/mcp/server.ts
 var server = new McpServer({ name: "binkgo", version: "0.1.0" }, { instructions: INSTRUCTIONS });
-var codexSessionId = `codex-${(0, import_node_crypto6.randomUUID)()}`;
+var codexSessionId = `codex-${(0, import_node_crypto8.randomUUID)()}`;
 var codexSessions = /* @__PURE__ */ new Map();
 async function resolveRoot() {
   if (process.env.BINKGO_ROOT) return findProjectRoot(process.env.BINKGO_ROOT);
@@ -27035,6 +27313,8 @@ async function resolveRoot() {
 for (const [name, def] of Object.entries(TOOL_DEFS)) {
   server.registerTool(name, { description: def.description, inputSchema: def.shape }, async (args) => {
     try {
+      const early = await gateReply(name);
+      if (early !== null) return { content: [{ type: "text", text: early }] };
       const root = await resolveRoot();
       let input = args;
       if (process.env.BINKGO_CLIENT === "codex") {

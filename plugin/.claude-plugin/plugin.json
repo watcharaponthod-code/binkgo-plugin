@@ -1,6 +1,6 @@
 {
   "name": "binkgo",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "types": "./types/index.d.ts",
   "author": { "name": "watcharapon" },
   "description": "Project vault for AI agents: automatic session log, decisions, fixes, tasks and artifacts in .binkgo/."

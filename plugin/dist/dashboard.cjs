@@ -3675,14 +3675,14 @@ var import_node_path14 = __toESM(require("node:path"), 1);
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.6",
+  version: "1.0.7",
   private: true,
   type: "module",
   engines: {
     node: ">=20"
   },
   scripts: {
-    pretest: "node scripts/build.mjs",
+    pretest: "node scripts/build.mjs --test-seam",
     test: "vitest run",
     typecheck: "tsc --noEmit && tsc --noEmit -p web",
     build: "node scripts/build.mjs && vite build web",
@@ -8578,6 +8578,9 @@ async function refreshLicense(opts = {}) {
   return "offline";
 }
 
+// src/license/gate.ts
+var dashboardGateOffForTests = () => false;
+
 // src/vault/vault.ts
 var import_node_fs10 = __toESM(require("node:fs"), 1);
 var import_node_os5 = __toESM(require("node:os"), 1);
@@ -9866,7 +9869,7 @@ function licenceInfo(s) {
 }
 function currentLicence(o) {
   const status = licenseStatus(o.now ?? /* @__PURE__ */ new Date(), o.appVersion ?? package_default.version, { publicKey: o.publicKey });
-  const gate = o.gate ?? process.env.BINKGO_LICENSE !== "off";
+  const gate = o.gate ?? !dashboardGateOffForTests();
   return { status, usable: !gate || isUsable(status) };
 }
 function licenceJson(o = {}) {
@@ -9899,6 +9902,7 @@ function briefJson(root, port = 4319, lic = {}) {
   return {
     ok: true,
     licence: licenceInfo(status),
+    siteUrl: siteUrl(),
     name: ov.project.name,
     goal: ov.project.goal,
     focus: ov.project.focus,
@@ -10120,7 +10124,7 @@ function createProject(input) {
 
 // src/dashboard/license.ts
 function createLicenseApi(opts = {}) {
-  const gateOn = opts.gate ?? process.env.BINKGO_LICENSE !== "off";
+  const gateOn = opts.gate ?? !dashboardGateOffForTests();
   const version = opts.appVersion ?? package_default.version;
   const open = opts.openUrl ?? openBrowser;
   const net = { fetch: opts.fetch, publicKey: opts.publicKey, appVersion: version };
