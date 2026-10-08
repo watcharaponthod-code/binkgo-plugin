@@ -5,9 +5,23 @@ Binkgo gives Claude Code and Codex a memory of the project (what's open, what wa
 
 ## Install
 
+Paste in a terminal:
+
 ```
-claude plugin marketplace add watcharaponthod-code/binkgo-plugin
-claude plugin install binkgo@binkgo
+claude plugin marketplace add watcharaponthod-code/binkgo-plugin && claude plugin install binkgo@binkgo
+```
+
+### For a team
+
+Commit this as `.claude/settings.json` in your repo. Teammates who open the project in Claude Code are asked to install Binkgo, one click:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "binkgo": { "source": { "source": "github", "repo": "watcharaponthod-code/binkgo-plugin" } }
+  },
+  "enabledPlugins": { "binkgo@binkgo": true }
+}
 ```
 
 Requires Node.js 18+. Open Claude Code in any git project and you'll see:
