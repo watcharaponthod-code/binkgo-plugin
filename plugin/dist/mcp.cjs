@@ -25005,7 +25005,7 @@ var INSTRUCTIONS = [
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.8",
+  version: "1.0.9",
   private: true,
   type: "module",
   engines: {
@@ -27092,8 +27092,16 @@ var TOOL_DEFS = {
     }
   },
   session_summary: {
-    description: "Write this session summary: what was done, what is next.",
-    shape: { summary: external_exports.string().min(1), done: external_exports.array(external_exports.string()), next: external_exports.array(external_exports.string()), session: session() }
+    description: "Write this session summary (done, next), plus in the same call what is not logged yet: checked fixes, real decisions, task status changes.",
+    shape: {
+      summary: external_exports.string().min(1),
+      done: external_exports.array(external_exports.string()),
+      next: external_exports.array(external_exports.string()),
+      session: session(),
+      fixes: external_exports.array(external_exports.object({ title: external_exports.string(), symptom: external_exports.string(), cause: external_exports.string(), fix: external_exports.string(), files: external_exports.array(external_exports.string()), verified: external_exports.boolean() })).optional(),
+      decisions: external_exports.array(external_exports.object({ title: external_exports.string(), decision: external_exports.string(), why: external_exports.string() })).optional(),
+      tasks: external_exports.array(external_exports.object({ id: external_exports.string(), status: external_exports.enum(TASK_STATUSES), note: external_exports.string().optional() })).optional()
+    }
   },
   search: {
     description: "Find fixes, decisions, tasks and more by text or file. Returns refs, one line each.",
@@ -27244,15 +27252,23 @@ function callTool(root, name, rawArgs, now = /* @__PURE__ */ new Date()) {
       const entry2 = sessionFor(root, a.session, now);
       if (!entry2) throw new Error("No active Binkgo session found for this project.");
       writeSummary(root, entry2, { summary: a.summary, done: a.done, next: a.next });
+      const saved = [refOf("session", entry2)];
+      for (const f of a.fixes ?? []) saved.push(refOf("fix", logFix(root, { ...f, session: entry2 }, now).id));
+      for (const d of a.decisions ?? []) saved.push(refOf("decision", logDecision(root, { ...d, session: entry2 }, now).id));
+      for (const t of a.tasks ?? []) {
+        const row = upsertTask(root, { id: t.id, status: t.status, note: t.note, by: "agent" }, now);
+        saved.push(`${refOf("task", row.id)} [${row.data.status}]`);
+      }
       const state = findStateByEntry(root, entry2);
       if (state) {
         mutateState(state.session_id, () => state, (s) => {
           s.dirty = false;
           s.reminded = false;
           s.summary_at = now.toISOString();
+          s.actions = [];
         });
       }
-      return `Saved ${refOf("session", entry2)}.`;
+      return `Saved ${saved.join(", ")}.`;
     }
     case "search": {
       const hits = searchVault(root, { query: a.query, type: a.type, file: a.file, limit: a.limit });

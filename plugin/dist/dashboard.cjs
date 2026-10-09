@@ -3566,7 +3566,9 @@ function setupInfo(webDir) {
 }
 
 // src/dashboard/connect.ts
-var MARKETPLACE_NAME = "binkgo-local";
+var GITHUB_MARKETPLACE = "binkgo";
+var GITHUB_REPO = "watcharaponthod-code/binkgo-plugin";
+var BUNDLED_MARKETPLACE = "binkgo-local";
 var win = process.platform === "win32";
 var quote = (a) => /[\s"&|<>^()]/.test(a) ? `"${a.replace(/"/g, '\\"')}"` : a;
 var realRunner = (cmd, args, env) => {
@@ -3574,7 +3576,11 @@ var realRunner = (cmd, args, env) => {
   return { code: r.status ?? 1, out: `${r.stdout ?? ""}${r.stderr ?? ""}` };
 };
 var onPath = (run, cmd) => run(win ? "where" : "which", [cmd]).code === 0;
-var claudeCommands = (info) => info.marketplace ? [`claude plugin marketplace add ${quote(info.marketplace)}`, `claude plugin install binkgo@${MARKETPLACE_NAME} --scope user`] : null;
+function pick(info, hasNode) {
+  if (hasNode) return { source: GITHUB_REPO, name: GITHUB_MARKETPLACE, other: BUNDLED_MARKETPLACE };
+  return info.marketplace && info.pluginDirectory ? { source: info.marketplace, name: BUNDLED_MARKETPLACE, other: GITHUB_MARKETPLACE } : null;
+}
+var claudeCommands = (use) => use ? [`claude plugin marketplace add ${quote(use.source)}`, `claude plugin install binkgo@${use.name} --scope user`] : null;
 function codexConnected() {
   try {
     return import_node_fs2.default.readFileSync(import_node_path2.default.join(import_node_os.default.homedir(), ".codex", "config.toml"), "utf8").includes("[mcp_servers.binkgo");
@@ -3583,27 +3589,29 @@ function codexConnected() {
   }
 }
 function connectStatus(webDir, run = realRunner) {
-  const info = setupInfo(webDir);
   const hasClaude = onPath(run, "claude");
   return {
     claude: { installed: hasClaude, connected: hasClaude && /binkgo@/i.test(run("claude", ["plugin", "list"]).out) },
     codex: { installed: onPath(run, "codex") || import_node_fs2.default.existsSync(import_node_path2.default.join(import_node_os.default.homedir(), ".codex")), connected: codexConnected() },
-    claudeCommands: claudeCommands(info)
+    claudeCommands: claudeCommands(pick(setupInfo(webDir), onPath(run, "node")))
   };
 }
 function connectClaude(webDir, run = realRunner) {
-  const info = setupInfo(webDir);
-  const commands = claudeCommands(info);
-  if (!info.marketplace || !info.pluginDirectory) return { ok: false, reason: "missing_files", detail: "The plugin files are missing from this copy of Binkgo." };
-  if (!onPath(run, "claude")) return { ok: false, reason: "not_installed", detail: "Claude Code was not found on this computer.", commands: commands ?? void 0 };
-  run("claude", ["plugin", "marketplace", "remove", MARKETPLACE_NAME]);
-  const added = run("claude", ["plugin", "marketplace", "add", info.marketplace]);
-  if (added.code !== 0) return { ok: false, reason: "failed", detail: added.out.trim().slice(-400), commands: commands ?? void 0 };
-  const installed = run("claude", ["plugin", "install", `binkgo@${MARKETPLACE_NAME}`, "--scope", "user"]);
-  if (installed.code !== 0 && !/already installed/i.test(installed.out)) {
-    return { ok: false, reason: "failed", detail: installed.out.trim().slice(-400), commands: commands ?? void 0 };
-  }
-  return { ok: true };
+  const use = pick(setupInfo(webDir), onPath(run, "node"));
+  const commands = claudeCommands(use) ?? void 0;
+  if (!use) return { ok: false, reason: "missing_files", detail: "The plugin files are missing from this copy of Binkgo." };
+  if (!onPath(run, "claude")) return { ok: false, reason: "not_installed", detail: "Claude Code was not found on this computer.", commands };
+  const fail = (r) => ({ ok: false, reason: "failed", detail: r.out.trim().slice(-400), commands });
+  run("claude", ["plugin", "uninstall", `binkgo@${use.other}`]);
+  run("claude", ["plugin", "marketplace", "remove", BUNDLED_MARKETPLACE]);
+  const added = run("claude", ["plugin", "marketplace", "add", use.source]);
+  if (added.code !== 0 && !/already/i.test(added.out)) return fail(added);
+  run("claude", ["plugin", "marketplace", "update", use.name]);
+  const installed = run("claude", ["plugin", "install", `binkgo@${use.name}`, "--scope", "user"]);
+  if (installed.code === 0) return { ok: true };
+  if (!/already installed/i.test(installed.out)) return fail(installed);
+  const updated = run("claude", ["plugin", "update", `binkgo@${use.name}`]);
+  return updated.code === 0 ? { ok: true } : fail(updated);
 }
 function connectCodex(webDir, run = realRunner) {
   const info = setupInfo(webDir);
@@ -3675,7 +3683,7 @@ var import_node_path14 = __toESM(require("node:path"), 1);
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.8",
+  version: "1.0.9",
   private: true,
   type: "module",
   engines: {
@@ -10769,7 +10777,7 @@ function staticTarget(webDir, pathname) {
   return target;
 }
 function serveStatic(res, webDir, pathname) {
-  const pick = (candidate) => {
+  const pick2 = (candidate) => {
     const full = staticTarget(webDir, candidate);
     if (!full) return null;
     try {
@@ -10778,7 +10786,7 @@ function serveStatic(res, webDir, pathname) {
       return null;
     }
   };
-  const file = pick(pathname) ?? pick("index.html");
+  const file = pick2(pathname) ?? pick2("index.html");
   if (!file) throw new HttpError(404, "not found");
   const body = import_node_fs17.default.readFileSync(file);
   res.writeHead(200, {

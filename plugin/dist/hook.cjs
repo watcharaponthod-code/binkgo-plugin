@@ -8253,7 +8253,7 @@ function licenseStatus(now, appVersion, opts = {}) {
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.8",
+  version: "1.0.9",
   private: true,
   type: "module",
   engines: {
@@ -8910,7 +8910,16 @@ ${fixLines.join("\n")}
 Read them (read tool), then retry the edit; it will be allowed.`;
 var advisoryNote = (rel, fixLines) => `Binkgo: ${rel} has earlier fixes; read them before changing it again:
 ${fixLines.join("\n")}`;
-var stopRequest = (sessionRef) => `Binkgo: call session_summary (session "${sessionRef}") with summary, done, next; then finish.`;
+var MAP_ASK_READS = 5;
+var stopRequest = (sessionRef, s = {}, doing = []) => {
+  const areas = Object.entries(s.unmapped ?? {}).filter(([, n]) => n >= MAP_ASK_READS).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([p]) => p);
+  return [
+    `Binkgo: call session_summary (session "${sessionRef}") with summary, done, next, and unlogged fixes[], decisions[]; then finish.`,
+    ...s.actions?.length ? ["Shell changes this session:", ...s.actions.map((a) => `- ${a}`)] : [],
+    ...doing.length ? ["In progress (tasks[] status done/blocked if that changed):", ...doing.map((t) => `- ${t}`)] : [],
+    ...areas.length ? [`project_map set: a note for ${areas.join(", ")} (read often, none yet).`] : []
+  ].join("\n");
+};
 var mapNote = (lines, details) => `Binkgo map (read before exploring further):
 ${lines.join("\n")}${details ? `
 ${details}` : ""}`;
@@ -9332,9 +9341,11 @@ function preExplore(input, _now = /* @__PURE__ */ new Date()) {
   const read = readState(input.session_id);
   const root = read?.root ?? findProjectRoot(input.cwd);
   const dir = vaultDir(root);
-  if (!import_node_fs11.default.existsSync(import_node_path12.default.join(dir, "map"))) return void 0;
   const rel = exploreTarget(input, root);
-  if (rel === null) return void 0;
+  if (rel === null || !vaultExists(root)) return void 0;
+  const hasMap = import_node_fs11.default.existsSync(import_node_path12.default.join(dir, "map"));
+  countUnmapped(input, rel, hasMap ? listMapNotes(root) : []);
+  if (!hasMap) return void 0;
   const shown = new Set(read?.map_shown ?? []);
   const above = (n) => n === "." || rel.startsWith(`${n}/`);
   const below = (n) => {
@@ -9355,6 +9366,33 @@ function preExplore(input, _now = /* @__PURE__ */ new Date()) {
 function isScratchFolder(root) {
   const home = import_node_os5.default.homedir();
   return [import_node_path12.default.join(home, "Desktop"), import_node_path12.default.join(home, "Downloads"), import_node_path12.default.join(home, "Documents"), import_node_os5.default.tmpdir()].some((p) => samePath(root, p));
+}
+function areaOf(rel) {
+  const parts = rel.split("/");
+  if (rel === "." || parts[0].startsWith(".") || parts[0] === "node_modules") return null;
+  const dirs = import_node_path12.default.extname(rel) ? parts.slice(0, -1) : parts;
+  return dirs.length ? dirs.slice(0, 2).join("/") : null;
+}
+function countUnmapped(input, rel, notes) {
+  const area = areaOf(rel);
+  if (!area || notes.some((n) => n.path === area || area.startsWith(`${n.path}/`) || n.path.startsWith(`${area}/`))) return;
+  mutateState(input.session_id, () => fresh(input), (s) => {
+    s.unmapped = { ...s.unmapped ?? {}, [area]: (s.unmapped?.[area] ?? 0) + 1 };
+  });
+}
+var CHANGING = /\b(git\b[^|;&\n]*?\s(commit|merge|rebase|revert|cherry-pick|push|reset)|kubectl\b[^|;&\n]*?\s(apply|patch|create|delete|scale|rollout|set|edit|replace|label|annotate)|helm\s+(install|upgrade|uninstall)|docker\s+(build|push)|sed\s+-i|npm\s+(install|publish)|pip\s+install|terraform\s+apply|vercel|wrangler\s+deploy|kaggle\s+(kernels\s+push|datasets\s+(create|version)))\b/;
+var ACTIONS = 8;
+function postShell(input, _now = /* @__PURE__ */ new Date()) {
+  const cmd = input.tool_input?.command;
+  if (typeof cmd !== "string" || !CHANGING.test(cmd)) return void 0;
+  const read = readState(input.session_id);
+  if (!vaultExists(read?.root ?? findProjectRoot(input.cwd))) return void 0;
+  const line = (cmd.match(CHANGING)?.[0] ?? "") + ": " + cmd.replace(/\s+/g, " ").slice(0, 90);
+  mutateState(input.session_id, () => fresh(input), (s) => {
+    s.dirty = true;
+    s.actions = [...s.actions ?? [], line].slice(-ACTIONS);
+  });
+  return void 0;
 }
 function postEdit(input, now = /* @__PURE__ */ new Date()) {
   const state = stateFor(input);
@@ -9382,6 +9420,19 @@ function withEntry(input, state, now) {
 }
 var SUMMARY_QUIET_MS = 10 * 60 * 1e3;
 var USAGE_EVERY_MS = 2 * 60 * 1e3;
+function unlogged(root, s) {
+  const notes = s.unmapped && Object.keys(s.unmapped).length ? listMapNotes(root) : [];
+  const unmapped = Object.fromEntries(Object.entries(s.unmapped ?? {}).filter(([a]) => !notes.some((n) => n.path === a || a.startsWith(`${n.path}/`))));
+  return { actions: s.actions, unmapped };
+}
+var DOING_SHOWN = 4;
+function inProgress(root) {
+  try {
+    return [...taskRows(root)].filter(([, r]) => r.status === "doing").slice(0, DOING_SHOWN).map(([id, r]) => `${id} \u2014 ${String(r.data?.title ?? "").slice(0, 60)}`);
+  } catch {
+    return [];
+  }
+}
 function stop(input, now = /* @__PURE__ */ new Date()) {
   const out = stopCheck(input, now);
   markLive(input, out ? "working" : "waiting", now);
@@ -9410,7 +9461,8 @@ function stopCheck(input, now) {
   if (!block) return void 0;
   return {
     decision: "block",
-    reason: stopRequest(refOf("session", state.entry_id))
+    reason: stopRequest(refOf("session", state.entry_id), unlogged(state.root, readState(input.session_id) ?? state), inProgress(state.root)),
+    systemMessage: notice("asked the AI to record this session (summary, fixes, decisions, task status).")
   };
 }
 function sessionEnd(input, now = /* @__PURE__ */ new Date()) {
@@ -9436,6 +9488,7 @@ var HANDLERS = {
   "pre-explore": preExplore,
   "post-edit": postEdit,
   "prompt-submit": promptSubmit,
+  "post-shell": postShell,
   stop,
   "session-end": sessionEnd
 };
