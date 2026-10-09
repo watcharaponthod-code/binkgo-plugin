@@ -351,11 +351,11 @@ var require_common = __commonJS({
 var require_exception = __commonJS({
   "node_modules/js-yaml/lib/js-yaml/exception.js"(exports2, module2) {
     "use strict";
-    function YAMLException(reason, mark) {
+    function YAMLException(reason, mark2) {
       Error.call(this);
       this.name = "YAMLException";
       this.reason = reason;
-      this.mark = mark;
+      this.mark = mark2;
       this.message = (this.reason || "(unknown reason)") + (this.mark ? " " + this.mark.toString() : "");
       if (Error.captureStackTrace) {
         Error.captureStackTrace(this, this.constructor);
@@ -382,10 +382,10 @@ var require_mark = __commonJS({
   "node_modules/js-yaml/lib/js-yaml/mark.js"(exports2, module2) {
     "use strict";
     var common = require_common();
-    function Mark(name, buffer, position2, line, column) {
+    function Mark(name, buffer, position, line, column) {
       this.name = name;
       this.buffer = buffer;
-      this.position = position2;
+      this.position = position;
       this.line = line;
       this.column = column;
     }
@@ -1067,11 +1067,11 @@ var require_binary = __commonJS({
     var BASE64_MAP = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=\n\r";
     function resolveYamlBinary(data) {
       if (data === null) return false;
-      var code, idx, bitlen = 0, max = data.length, map = BASE64_MAP;
+      var code2, idx, bitlen = 0, max = data.length, map = BASE64_MAP;
       for (idx = 0; idx < max; idx++) {
-        code = map.indexOf(data.charAt(idx));
-        if (code > 64) continue;
-        if (code < 0) return false;
+        code2 = map.indexOf(data.charAt(idx));
+        if (code2 > 64) continue;
+        if (code2 < 0) return false;
         bitlen += 6;
       }
       return bitlen % 8 === 0;
@@ -1371,8 +1371,8 @@ var require_function = __commonJS({
       if (ast.type !== "Program" || ast.body.length !== 1 || ast.body[0].type !== "ExpressionStatement" || ast.body[0].expression.type !== "ArrowFunctionExpression" && ast.body[0].expression.type !== "FunctionExpression") {
         throw new Error("Failed to resolve function");
       }
-      ast.body[0].expression.params.forEach(function(param2) {
-        params.push(param2.name);
+      ast.body[0].expression.params.forEach(function(param) {
+        params.push(param.name);
       });
       body = ast.body[0].expression.body.range;
       if (ast.body[0].expression.body.type === "BlockStatement") {
@@ -2670,15 +2670,15 @@ var require_dumper = __commonJS({
       this.usedDuplicates = null;
     }
     function indentString(string, spaces) {
-      var ind = common.repeat(" ", spaces), position2 = 0, next = -1, result = "", line, length = string.length;
-      while (position2 < length) {
-        next = string.indexOf("\n", position2);
+      var ind = common.repeat(" ", spaces), position = 0, next = -1, result = "", line, length = string.length;
+      while (position < length) {
+        next = string.indexOf("\n", position);
         if (next === -1) {
-          line = string.slice(position2);
-          position2 = length;
+          line = string.slice(position);
+          position = length;
         } else {
-          line = string.slice(position2, next + 1);
-          position2 = next + 1;
+          line = string.slice(position, next + 1);
+          position = next + 1;
         }
         if (line.length && line !== "\n") result += ind;
         result += line;
@@ -3417,7 +3417,7 @@ var require_parse = __commonJS({
 var require_gray_matter = __commonJS({
   "node_modules/gray-matter/index.js"(exports2, module2) {
     "use strict";
-    var fs18 = require("fs");
+    var fs13 = require("fs");
     var sections = require_section_matter();
     var defaults = require_defaults();
     var stringify = require_stringify();
@@ -3501,7 +3501,7 @@ var require_gray_matter = __commonJS({
       return stringify(file, data, options2);
     };
     matter2.read = function(filepath, options2) {
-      const str2 = fs18.readFileSync(filepath, "utf8");
+      const str2 = fs13.readFileSync(filepath, "utf8");
       const file = matter2(str2, options2);
       file.path = filepath;
       return file;
@@ -3529,343 +3529,8 @@ var require_gray_matter = __commonJS({
   }
 });
 
-// src/dashboard/main.ts
-var import_node_path18 = __toESM(require("node:path"), 1);
-
-// src/dashboard/autoconnect.ts
-var import_node_fs3 = __toESM(require("node:fs"), 1);
-var import_node_path3 = __toESM(require("node:path"), 1);
-
-// src/dashboard/connect.ts
-var import_node_child_process = require("node:child_process");
-var import_node_fs2 = __toESM(require("node:fs"), 1);
-var import_node_os = __toESM(require("node:os"), 1);
-var import_node_path2 = __toESM(require("node:path"), 1);
-
-// src/dashboard/setup.ts
-var import_node_fs = __toESM(require("node:fs"), 1);
-var import_node_path = __toESM(require("node:path"), 1);
-function setupInfo(webDir) {
-  const plugin = import_node_path.default.resolve(webDir, "../..");
-  const repo = import_node_path.default.dirname(plugin);
-  const file = (p) => {
-    try {
-      return import_node_fs.default.statSync(p).isFile();
-    } catch {
-      return false;
-    }
-  };
-  const installers = [import_node_path.default.join(repo, "scripts/codex-install.mjs"), import_node_path.default.join(plugin, "scripts/codex-install.mjs")];
-  return {
-    platform: process.platform,
-    node: process.execPath,
-    codexInstaller: file(import_node_path.default.join(plugin, "dist/mcp.cjs")) ? installers.find(file) ?? null : null,
-    marketplace: file(import_node_path.default.join(repo, ".claude-plugin/marketplace.json")) ? repo : null,
-    pluginDirectory: file(import_node_path.default.join(plugin, ".claude-plugin/plugin.json")) ? plugin : null
-  };
-}
-
-// src/dashboard/connect.ts
-var GITHUB_MARKETPLACE = "binkgo";
-var GITHUB_REPO = "watcharaponthod-code/binkgo-plugin";
-var BUNDLED_MARKETPLACE = "binkgo-local";
-var win = process.platform === "win32";
-var quote = (a) => /[\s"&|<>^()]/.test(a) ? `"${a.replace(/"/g, '\\"')}"` : a;
-var realRunner = (cmd, args, env) => {
-  const r = win ? (0, import_node_child_process.spawnSync)([cmd, ...args].map(quote).join(" "), { shell: true, encoding: "utf8", timeout: 9e4, env: { ...process.env, ...env } }) : (0, import_node_child_process.spawnSync)(cmd, args, { encoding: "utf8", timeout: 9e4, env: { ...process.env, ...env } });
-  return { code: r.status ?? 1, out: `${r.stdout ?? ""}${r.stderr ?? ""}` };
-};
-var onPath = (run, cmd) => run(win ? "where" : "which", [cmd]).code === 0;
-function pick(info, hasNode) {
-  if (hasNode) return { source: GITHUB_REPO, name: GITHUB_MARKETPLACE, other: BUNDLED_MARKETPLACE };
-  return info.marketplace && info.pluginDirectory ? { source: info.marketplace, name: BUNDLED_MARKETPLACE, other: GITHUB_MARKETPLACE } : null;
-}
-var claudeCommands = (use) => use ? [`claude plugin marketplace add ${quote(use.source)}`, `claude plugin install binkgo@${use.name} --scope user`] : null;
-function codexConnected() {
-  try {
-    return import_node_fs2.default.readFileSync(import_node_path2.default.join(import_node_os.default.homedir(), ".codex", "config.toml"), "utf8").includes("[mcp_servers.binkgo");
-  } catch {
-    return false;
-  }
-}
-function connectStatus(webDir, run = realRunner) {
-  const hasClaude = onPath(run, "claude");
-  return {
-    claude: { installed: hasClaude, connected: hasClaude && /binkgo@/i.test(run("claude", ["plugin", "list"]).out) },
-    codex: { installed: onPath(run, "codex") || import_node_fs2.default.existsSync(import_node_path2.default.join(import_node_os.default.homedir(), ".codex")), connected: codexConnected() },
-    claudeCommands: claudeCommands(pick(setupInfo(webDir), onPath(run, "node")))
-  };
-}
-function connectClaude(webDir, run = realRunner) {
-  const use = pick(setupInfo(webDir), onPath(run, "node"));
-  const commands = claudeCommands(use) ?? void 0;
-  if (!use) return { ok: false, reason: "missing_files", detail: "The plugin files are missing from this copy of Binkgo." };
-  if (!onPath(run, "claude")) return { ok: false, reason: "not_installed", detail: "Claude Code was not found on this computer.", commands };
-  const fail = (r) => ({ ok: false, reason: "failed", detail: r.out.trim().slice(-400), commands });
-  run("claude", ["plugin", "uninstall", `binkgo@${use.other}`]);
-  run("claude", ["plugin", "marketplace", "remove", BUNDLED_MARKETPLACE]);
-  const added = run("claude", ["plugin", "marketplace", "add", use.source]);
-  if (added.code !== 0 && !/already/i.test(added.out)) return fail(added);
-  run("claude", ["plugin", "marketplace", "update", use.name]);
-  const installed = run("claude", ["plugin", "install", `binkgo@${use.name}`, "--scope", "user"]);
-  if (installed.code === 0) return { ok: true };
-  if (!/already installed/i.test(installed.out)) return fail(installed);
-  const updated = run("claude", ["plugin", "update", `binkgo@${use.name}`]);
-  return updated.code === 0 ? { ok: true } : fail(updated);
-}
-function connectCodex(webDir, run = realRunner) {
-  const info = setupInfo(webDir);
-  if (!info.codexInstaller) return { ok: false, reason: "missing_files", detail: "The Codex installer is missing from this copy of Binkgo." };
-  const r = run(process.execPath, [info.codexInstaller, "--global"], { ELECTRON_RUN_AS_NODE: "1" });
-  return r.code === 0 ? { ok: true } : { ok: false, reason: "failed", detail: r.out.trim().slice(-400) };
-}
-
-// src/dashboard/autoconnect.ts
-function shouldAutoConnect(state, ranVersion, version) {
-  return state.installed && ranVersion !== version;
-}
-function readMarker(file) {
-  try {
-    const m = JSON.parse(import_node_fs3.default.readFileSync(file, "utf8"));
-    return typeof m.version === "string" ? m.version : null;
-  } catch {
-    return null;
-  }
-}
-function writeMarker(file, version) {
-  import_node_fs3.default.mkdirSync(import_node_path3.default.dirname(file), { recursive: true });
-  const marker = { version, at: (/* @__PURE__ */ new Date()).toISOString() };
-  import_node_fs3.default.writeFileSync(file, JSON.stringify(marker));
-}
-function autoConnect(webDir, version, markerFile, run = realRunner, log = () => {
-}) {
-  const done = [];
-  const ran = readMarker(markerFile);
-  if (ran === version) return done;
-  const status = connectStatus(webDir, run);
-  const targets = [
-    { name: "Claude Code", state: status.claude, connect: connectClaude },
-    { name: "Codex", state: status.codex, connect: connectCodex }
-  ];
-  for (const t of targets) {
-    if (!shouldAutoConnect(t.state, ran, version)) continue;
-    const r = t.connect(webDir, run);
-    if (r.ok) done.push(t.name);
-    else log(`auto-connect ${t.name}: ${r.reason} ${r.detail}`);
-  }
-  try {
-    writeMarker(markerFile, version);
-  } catch (e) {
-    log(`auto-connect marker: ${e.message}`);
-  }
-  return done;
-}
-
-// src/dashboard/browser.ts
-var import_node_child_process2 = require("node:child_process");
-function openBrowser(url) {
-  if (!/^https?:\/\//i.test(url) || url.includes('"')) return;
-  const [cmd, args] = process.platform === "win32" ? ["cmd", ["/c", "start", '""', `"${url}"`]] : process.platform === "darwin" ? ["open", [url]] : ["xdg-open", [url]];
-  try {
-    const child = (0, import_node_child_process2.spawn)(cmd, args, { stdio: "ignore", detached: true, windowsHide: true, windowsVerbatimArguments: process.platform === "win32" });
-    child.on("error", () => {
-    });
-    child.unref();
-  } catch {
-  }
-}
-
-// src/dashboard/launcher.ts
-var import_node_child_process3 = require("node:child_process");
-var import_node_http = __toESM(require("node:http"), 1);
-var import_node_path14 = __toESM(require("node:path"), 1);
-
-// package.json
-var package_default = {
-  name: "binkgo",
-  version: "1.0.12",
-  private: true,
-  type: "module",
-  engines: {
-    node: ">=20"
-  },
-  scripts: {
-    pretest: "node scripts/build.mjs --test-seam",
-    test: "vitest run",
-    typecheck: "tsc --noEmit && tsc --noEmit -p web",
-    build: "node scripts/build.mjs && vite build web",
-    dashboard: "node plugin/dist/dashboard.cjs",
-    "codex:install": "node scripts/codex-install.mjs",
-    "build:web": "vite build web",
-    "seed:demo": "node scripts/seed-demo.mjs",
-    overhead: "node scripts/overhead.mjs",
-    "bench:tokens": "node scripts/bench-tokens.mjs",
-    "desktop:install": "node scripts/desktop-install.mjs",
-    "build:desktop": "npm run build && npm run desktop:install",
-    "desktop:uninstall": "node scripts/desktop-install.mjs --uninstall"
-  },
-  dependencies: {
-    "@fontsource-variable/anuphan": "^5.3.0",
-    "@modelcontextprotocol/sdk": "^1.31.0",
-    "gray-matter": "^4.0.3",
-    zod: "^3.25.76"
-  },
-  devDependencies: {
-    "@dnd-kit/core": "^6.3.1",
-    "@dnd-kit/sortable": "^10.0.0",
-    "@dnd-kit/utilities": "^3.2.2",
-    "@radix-ui/react-alert-dialog": "^1.1.23",
-    "@radix-ui/react-checkbox": "^1.3.11",
-    "@radix-ui/react-dialog": "^1.1.23",
-    "@radix-ui/react-dropdown-menu": "^2.1.24",
-    "@radix-ui/react-label": "^2.1.15",
-    "@radix-ui/react-popover": "^1.1.23",
-    "@radix-ui/react-scroll-area": "^1.2.18",
-    "@radix-ui/react-select": "^2.3.7",
-    "@radix-ui/react-separator": "^1.1.15",
-    "@radix-ui/react-slot": "^1.3.3",
-    "@radix-ui/react-tabs": "^1.1.21",
-    "@radix-ui/react-tooltip": "^1.2.16",
-    "@tailwindcss/vite": "^4.3.3",
-    "@types/node": "^20.19.43",
-    "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0",
-    "@vitejs/plugin-react": "^6.1.1",
-    "class-variance-authority": "^0.7.1",
-    clsx: "^2.1.1",
-    cmdk: "^1.1.1",
-    dompurify: "^3.4.16",
-    esbuild: "^0.28.2",
-    jsdom: "^29.1.1",
-    "lucide-react": "^1.49.0",
-    marked: "^18.0.14",
-    react: "^19.3.0",
-    "react-day-picker": "^10.0.2",
-    "react-dom": "^19.3.0",
-    recharts: "^3.10.1",
-    sonner: "^2.0.8",
-    "tailwind-merge": "^3.7.0",
-    tailwindcss: "^4.3.3",
-    "tw-animate-css": "^1.4.0",
-    typescript: "^7.0.2",
-    vite: "^8.3.1",
-    vitest: "^4.1.11"
-  }
-};
-
-// src/license/key.ts
-var LICENSE_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
-MCowBQYDK2VwAyEA0UXJpq5QTNgNaPMB3ZhdyRQo6C7vz36zgXHoqt4oBF0=
------END PUBLIC KEY-----
-`;
-var SUPABASE_URL = "https://jbcavoqjkwaopczxwlpf.supabase.co";
-var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpiY2F2b3Fqa3dhb3Bjenh3bHBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwOTQ1NTMsImV4cCI6MjEwNjY3MDU1M30.r_9zurcbhFvQq2OV7vLIZoWEXmDuTNA2y8NfPLqcfDI";
-var siteUrl = () => (process.env.BINKGO_SITE_URL || "https://binkgo.vercel.app").replace(/\/+$/, "");
-
-// src/license/verify.ts
-var import_node_crypto = require("node:crypto");
-function isPayload(x) {
-  if (typeof x !== "object" || x === null) return false;
-  const p = x;
-  return p.v === 1 && typeof p.sub === "string" && typeof p.email === "string" && (p.kind === "trial" || p.kind === "full") && typeof p.max_major === "number" && Number.isFinite(p.max_major) && (p.trial_until === null || typeof p.trial_until === "string") && typeof p.device_id === "string";
-}
-function verifyLicense(token, publicKeyPem = LICENSE_PUBLIC_KEY) {
-  try {
-    if (typeof token !== "string") return null;
-    const parts = token.split(".");
-    if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
-    const key = typeof publicKeyPem === "string" ? (0, import_node_crypto.createPublicKey)(publicKeyPem) : publicKeyPem;
-    if (!(0, import_node_crypto.verify)(null, Buffer.from(parts[0]), key, Buffer.from(parts[1], "base64url"))) return null;
-    const payload = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
-    return isPayload(payload) ? payload : null;
-  } catch {
-    return null;
-  }
-}
-
-// src/license/store.ts
-var import_node_crypto4 = require("node:crypto");
-var import_node_fs7 = __toESM(require("node:fs"), 1);
-var import_node_os4 = __toESM(require("node:os"), 1);
-var import_node_path7 = __toESM(require("node:path"), 1);
-
-// src/vault/io.ts
-var import_node_fs5 = __toESM(require("node:fs"), 1);
-var import_node_path5 = __toESM(require("node:path"), 1);
-var import_node_crypto3 = require("node:crypto");
-var import_gray_matter = __toESM(require_gray_matter(), 1);
-
-// src/vault/paths.ts
-var import_node_fs4 = __toESM(require("node:fs"), 1);
-var import_node_os2 = __toESM(require("node:os"), 1);
-var import_node_path4 = __toESM(require("node:path"), 1);
-var import_node_crypto2 = require("node:crypto");
-var VAULT_DIRNAME = ".binkgo";
-var RESERVED = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/;
-function canonicalPath(p) {
-  const full = import_node_path4.default.resolve(p);
-  const tail = [];
-  let dir = full;
-  for (; ; ) {
-    try {
-      return import_node_path4.default.join(import_node_fs4.default.realpathSync.native(dir), ...tail);
-    } catch {
-      const parent = import_node_path4.default.dirname(dir);
-      if (parent === dir) return full;
-      tail.unshift(import_node_path4.default.basename(dir));
-      dir = parent;
-    }
-  }
-}
-function findProjectRoot(cwd) {
-  const start = canonicalPath(cwd);
-  let dir = start;
-  for (; ; ) {
-    const parent = import_node_path4.default.dirname(dir);
-    if (import_node_fs4.default.existsSync(import_node_path4.default.join(dir, VAULT_DIRNAME, "project.md")) && parent !== dir && !samePath(dir, import_node_os2.default.homedir())) return dir;
-    if (import_node_fs4.default.existsSync(import_node_path4.default.join(dir, ".git"))) return dir;
-    if (parent === dir) return start;
-    dir = parent;
-  }
-}
-var TWO_SEPARATORS = /^[\\/]{2}/;
-var escapes = (relative) => relative === ".." || relative.startsWith(".." + import_node_path4.default.sep) || import_node_path4.default.isAbsolute(relative);
-function resolveInside(root, rel) {
-  try {
-    if (typeof rel !== "string" || rel === "" || rel.includes("\0")) return null;
-    if (TWO_SEPARATORS.test(rel) || import_node_path4.default.isAbsolute(rel) || /^[a-zA-Z]:/.test(rel)) return null;
-    const base = canonicalPath(root);
-    const joined = import_node_path4.default.resolve(base, rel);
-    const lexical = import_node_path4.default.relative(base, joined);
-    if (lexical === "" || escapes(lexical)) return null;
-    const real = canonicalPath(joined);
-    if (TWO_SEPARATORS.test(real)) return null;
-    const relative = import_node_path4.default.relative(base, real);
-    if (relative === "" || escapes(relative)) return null;
-    return real;
-  } catch {
-    return null;
-  }
-}
-function vaultDir(root) {
-  return import_node_path4.default.join(root, VAULT_DIRNAME);
-}
-function samePath(a, b) {
-  const x = canonicalPath(a);
-  const y = canonicalPath(b);
-  return process.platform === "win32" ? x.toLowerCase() === y.toLowerCase() : x === y;
-}
-function slugify(title) {
-  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/, "");
-  if (!slug) return (0, import_node_crypto2.createHash)("sha1").update(title).digest("hex").slice(0, 6);
-  return RESERVED.test(slug) ? `${slug}-x` : slug;
-}
-function uniqueId(dir, base) {
-  let id = base;
-  let n = 2;
-  while (import_node_fs4.default.existsSync(import_node_path4.default.join(dir, `${id}.md`))) id = `${base}-${n++}`;
-  return id;
-}
+// src/cli/run.ts
+var import_node_fs12 = __toESM(require("node:fs"), 1);
 
 // node_modules/zod/v3/external.js
 var external_exports = {};
@@ -4345,8 +4010,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path19, errorMaps, issueData } = params;
-  const fullPath = [...path19, ...issueData.path || []];
+  const { data, path: path12, errorMaps, issueData } = params;
+  const fullPath = [...path12, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -4462,11 +4127,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path19, key) {
+  constructor(parent, value, path12, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path19;
+    this._path = path12;
     this._key = key;
   }
   get path() {
@@ -7908,6 +7573,106 @@ var coerce = {
 };
 var NEVER = INVALID;
 
+// src/license/key.ts
+var LICENSE_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MCowBQYDK2VwAyEA0UXJpq5QTNgNaPMB3ZhdyRQo6C7vz36zgXHoqt4oBF0=
+-----END PUBLIC KEY-----
+`;
+
+// src/license/verify.ts
+var import_node_crypto = require("node:crypto");
+function isPayload(x) {
+  if (typeof x !== "object" || x === null) return false;
+  const p = x;
+  return p.v === 1 && typeof p.sub === "string" && typeof p.email === "string" && (p.kind === "trial" || p.kind === "full") && typeof p.max_major === "number" && Number.isFinite(p.max_major) && (p.trial_until === null || typeof p.trial_until === "string") && typeof p.device_id === "string";
+}
+function verifyLicense(token, publicKeyPem = LICENSE_PUBLIC_KEY) {
+  try {
+    if (typeof token !== "string") return null;
+    const parts = token.split(".");
+    if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
+    const key = typeof publicKeyPem === "string" ? (0, import_node_crypto.createPublicKey)(publicKeyPem) : publicKeyPem;
+    if (!(0, import_node_crypto.verify)(null, Buffer.from(parts[0]), key, Buffer.from(parts[1], "base64url"))) return null;
+    const payload = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
+    return isPayload(payload) ? payload : null;
+  } catch {
+    return null;
+  }
+}
+
+// src/license/store.ts
+var import_node_crypto4 = require("node:crypto");
+var import_node_fs4 = __toESM(require("node:fs"), 1);
+var import_node_os3 = __toESM(require("node:os"), 1);
+var import_node_path4 = __toESM(require("node:path"), 1);
+
+// src/vault/io.ts
+var import_node_fs2 = __toESM(require("node:fs"), 1);
+var import_node_path2 = __toESM(require("node:path"), 1);
+var import_node_crypto3 = require("node:crypto");
+var import_gray_matter = __toESM(require_gray_matter(), 1);
+
+// src/vault/paths.ts
+var import_node_fs = __toESM(require("node:fs"), 1);
+var import_node_os = __toESM(require("node:os"), 1);
+var import_node_path = __toESM(require("node:path"), 1);
+var import_node_crypto2 = require("node:crypto");
+var VAULT_DIRNAME = ".binkgo";
+var RESERVED = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/;
+function canonicalPath(p) {
+  const full = import_node_path.default.resolve(p);
+  const tail = [];
+  let dir = full;
+  for (; ; ) {
+    try {
+      return import_node_path.default.join(import_node_fs.default.realpathSync.native(dir), ...tail);
+    } catch {
+      const parent = import_node_path.default.dirname(dir);
+      if (parent === dir) return full;
+      tail.unshift(import_node_path.default.basename(dir));
+      dir = parent;
+    }
+  }
+}
+function findProjectRoot(cwd) {
+  const start = canonicalPath(cwd);
+  let dir = start;
+  for (; ; ) {
+    const parent = import_node_path.default.dirname(dir);
+    if (import_node_fs.default.existsSync(import_node_path.default.join(dir, VAULT_DIRNAME, "project.md")) && parent !== dir && !samePath(dir, import_node_os.default.homedir())) return dir;
+    if (import_node_fs.default.existsSync(import_node_path.default.join(dir, ".git"))) return dir;
+    if (parent === dir) return start;
+    dir = parent;
+  }
+}
+function vaultDir(root) {
+  return import_node_path.default.join(root, VAULT_DIRNAME);
+}
+function samePath(a, b) {
+  const x = canonicalPath(a);
+  const y = canonicalPath(b);
+  return process.platform === "win32" ? x.toLowerCase() === y.toLowerCase() : x === y;
+}
+function toRelPath(root, file) {
+  const base = canonicalPath(root);
+  const rel = import_node_path.default.relative(base, canonicalPath(import_node_path.default.resolve(base, file)));
+  if (rel === "" || rel === ".." || rel.startsWith(".." + import_node_path.default.sep) || import_node_path.default.isAbsolute(rel)) return null;
+  const posix = rel.split(import_node_path.default.sep).join("/");
+  if (posix === VAULT_DIRNAME || posix.startsWith(VAULT_DIRNAME + "/")) return null;
+  return posix;
+}
+function slugify(title) {
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/, "");
+  if (!slug) return (0, import_node_crypto2.createHash)("sha1").update(title).digest("hex").slice(0, 6);
+  return RESERVED.test(slug) ? `${slug}-x` : slug;
+}
+function uniqueId(dir, base) {
+  let id = base;
+  let n = 2;
+  while (import_node_fs.default.existsSync(import_node_path.default.join(dir, `${id}.md`))) id = `${base}-${n++}`;
+  return id;
+}
+
 // src/vault/time.ts
 var pad = (n) => String(Math.abs(n)).padStart(2, "0");
 function localIso(d) {
@@ -7922,6 +7687,9 @@ function isValidDate(s) {
 }
 function dateStamp(d) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+function timeStamp(d) {
+  return `${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
 // src/vault/schema.ts
@@ -7977,6 +7745,7 @@ var usageSchema = external_exports.object({
     binkgoInjectedTokens: external_exports.number().default(0)
   }).optional()
 });
+var emptyUsage = () => usageSchema.parse({});
 var failureSchema = external_exports.object({
   command: external_exports.string(),
   excerpt: external_exports.string().default(""),
@@ -8122,13 +7891,13 @@ function sleepMs(ms) {
   Atomics.wait(sleepBuffer, 0, 0, ms);
 }
 function entryPath(root, kind, id) {
-  if (kind === "project") return import_node_path5.default.join(vaultDir(root), "project.md");
+  if (kind === "project") return import_node_path2.default.join(vaultDir(root), "project.md");
   if (!id || /[\\/]|\.\./.test(id)) throw new Error(`Invalid id: ${id}`);
-  return import_node_path5.default.join(vaultDir(root), DIRS[kind], `${id}.md`);
+  return import_node_path2.default.join(vaultDir(root), DIRS[kind], `${id}.md`);
 }
 function entryExists(root, kind, id) {
   try {
-    return import_node_fs5.default.existsSync(entryPath(root, kind, id));
+    return import_node_fs2.default.existsSync(entryPath(root, kind, id));
   } catch {
     return false;
   }
@@ -8136,17 +7905,17 @@ function entryExists(root, kind, id) {
 var TRANSIENT = /* @__PURE__ */ new Set(["EPERM", "EACCES", "EBUSY"]);
 var isTransient = (e) => TRANSIENT.has(e.code ?? "");
 function writeAtomic(file, text2) {
-  import_node_fs5.default.mkdirSync(import_node_path5.default.dirname(file), { recursive: true });
+  import_node_fs2.default.mkdirSync(import_node_path2.default.dirname(file), { recursive: true });
   const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
-  import_node_fs5.default.writeFileSync(tmp, text2, "utf8");
+  import_node_fs2.default.writeFileSync(tmp, text2, "utf8");
   for (let attempt = 0; ; attempt++) {
     try {
-      import_node_fs5.default.renameSync(tmp, file);
+      import_node_fs2.default.renameSync(tmp, file);
       return;
     } catch (e) {
       if (!isTransient(e) || attempt >= 50) {
         try {
-          import_node_fs5.default.unlinkSync(tmp);
+          import_node_fs2.default.unlinkSync(tmp);
         } catch {
         }
         throw e;
@@ -8158,7 +7927,7 @@ function writeAtomic(file, text2) {
 function readText(file) {
   for (let attempt = 0; ; attempt++) {
     try {
-      return import_node_fs5.default.readFileSync(file, "utf8");
+      return import_node_fs2.default.readFileSync(file, "utf8");
     } catch (e) {
       if (!isTransient(e) || attempt >= 10) throw e;
       sleepMs(20);
@@ -8173,7 +7942,7 @@ var lockTimeoutMs = 8e3;
 var errCode = (e) => e?.code;
 function readToken(file) {
   try {
-    return import_node_fs5.default.readFileSync(file, "utf8");
+    return import_node_fs2.default.readFileSync(file, "utf8");
   } catch {
     return null;
   }
@@ -8192,7 +7961,7 @@ function isDeadLock(lock, staleMs) {
   const pid = Number.parseInt(token, 10);
   if (Number.isInteger(pid) && pid > 0 && !pidAlive(pid)) return true;
   try {
-    return Date.now() - import_node_fs5.default.statSync(lock).mtimeMs > staleMs;
+    return Date.now() - import_node_fs2.default.statSync(lock).mtimeMs > staleMs;
   } catch {
     return false;
   }
@@ -8200,22 +7969,22 @@ function isDeadLock(lock, staleMs) {
 function removeDeadLock(lock, staleMs) {
   const guard = `${lock}.steal`;
   try {
-    import_node_fs5.default.writeFileSync(guard, String(process.pid), { flag: "wx" });
+    import_node_fs2.default.writeFileSync(guard, String(process.pid), { flag: "wx" });
   } catch {
     try {
       const pid = Number.parseInt(readToken(guard) ?? "", 10);
       const ownerGone = Number.isInteger(pid) && pid > 0 && !pidAlive(pid);
-      if (ownerGone || Date.now() - import_node_fs5.default.statSync(guard).mtimeMs > staleMs * 10) import_node_fs5.default.unlinkSync(guard);
+      if (ownerGone || Date.now() - import_node_fs2.default.statSync(guard).mtimeMs > staleMs * 10) import_node_fs2.default.unlinkSync(guard);
     } catch {
     }
     return;
   }
   try {
-    if (isDeadLock(lock, staleMs)) import_node_fs5.default.unlinkSync(lock);
+    if (isDeadLock(lock, staleMs)) import_node_fs2.default.unlinkSync(lock);
   } catch {
   } finally {
     try {
-      import_node_fs5.default.unlinkSync(guard);
+      import_node_fs2.default.unlinkSync(guard);
     } catch {
     }
   }
@@ -8225,7 +7994,7 @@ function refreshLocks() {
   const now = /* @__PURE__ */ new Date();
   for (const lock of held) {
     try {
-      import_node_fs5.default.utimesSync(lock, now, now);
+      import_node_fs2.default.utimesSync(lock, now, now);
     } catch {
     }
   }
@@ -8235,11 +8004,11 @@ function withLock(target, fn, opts = {}) {
   const timeoutMs = opts.timeoutMs ?? lockTimeoutMs;
   const lock = `${target}.lock`;
   const token = `${process.pid}:${(0, import_node_crypto3.randomBytes)(8).toString("hex")}`;
-  import_node_fs5.default.mkdirSync(import_node_path5.default.dirname(lock), { recursive: true });
+  import_node_fs2.default.mkdirSync(import_node_path2.default.dirname(lock), { recursive: true });
   let lastCode;
   const tryAcquire = () => {
     try {
-      import_node_fs5.default.writeFileSync(lock, token, { flag: "wx" });
+      import_node_fs2.default.writeFileSync(lock, token, { flag: "wx" });
       return true;
     } catch (e) {
       lastCode = errCode(e);
@@ -8266,7 +8035,7 @@ function withLock(target, fn, opts = {}) {
     held.delete(lock);
     if (readToken(lock) === token) {
       try {
-        import_node_fs5.default.unlinkSync(lock);
+        import_node_fs2.default.unlinkSync(lock);
       } catch {
       }
     }
@@ -8294,9 +8063,6 @@ function escapeSection(text2, names) {
     const m = HEADING.exec(line);
     return m && names.includes(m[1]) ? `#${line}` : line;
   }).join("\n").trim();
-}
-function renderEntry(kind, data, sections) {
-  return renderDoc(kind, SCHEMAS[kind].parse(data), sections);
 }
 var withoutUndefined = (data) => Object.fromEntries(Object.entries(data).filter(([, v]) => v !== void 0));
 function renderDoc(kind, data, sections) {
@@ -8360,9 +8126,9 @@ function writeEntry(root, kind, id, data, sections) {
 }
 function listIds(root, kind) {
   if (kind === "project") return ["project"];
-  const dir = import_node_path5.default.join(vaultDir(root), DIRS[kind]);
+  const dir = import_node_path2.default.join(vaultDir(root), DIRS[kind]);
   try {
-    return import_node_fs5.default.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isFile() && d.name.endsWith(".md")).map((d) => d.name.slice(0, -3)).sort();
+    return import_node_fs2.default.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isFile() && d.name.endsWith(".md")).map((d) => d.name.slice(0, -3)).sort();
   } catch {
     return [];
   }
@@ -8381,7 +8147,7 @@ function listGood(root, kind) {
   return listEntries(root, kind).filter((e) => !isBroken(e));
 }
 function createEntry(root, kind, base, data, sections) {
-  const dir = import_node_path5.default.join(vaultDir(root), DIRS[kind]);
+  const dir = import_node_path2.default.join(vaultDir(root), DIRS[kind]);
   return withLock(dir, () => {
     const id = uniqueId(dir, base);
     writeEntry(root, kind, id, data, sections);
@@ -8399,25 +8165,25 @@ function mutateEntry(root, kind, id, fn) {
 }
 
 // src/vault/registry.ts
-var import_node_fs6 = __toESM(require("node:fs"), 1);
-var import_node_os3 = __toESM(require("node:os"), 1);
-var import_node_path6 = __toESM(require("node:path"), 1);
+var import_node_fs3 = __toESM(require("node:fs"), 1);
+var import_node_os2 = __toESM(require("node:os"), 1);
+var import_node_path3 = __toESM(require("node:path"), 1);
 function binkgoHome() {
-  return process.env.BINKGO_HOME || import_node_path6.default.join(import_node_os3.default.homedir(), ".binkgo");
+  return process.env.BINKGO_HOME || import_node_path3.default.join(import_node_os2.default.homedir(), ".binkgo");
 }
 function registryFile() {
-  return import_node_path6.default.join(binkgoHome(), "registry.json");
+  return import_node_path3.default.join(binkgoHome(), "registry.json");
 }
 function wellFormed(raw) {
   if (typeof raw !== "object" || raw === null) return [];
   const item = raw;
   if (typeof item.path !== "string" || item.path.trim() === "") return [];
-  const name = typeof item.name === "string" && item.name !== "" ? item.name : import_node_path6.default.basename(item.path);
+  const name = typeof item.name === "string" && item.name !== "" ? item.name : import_node_path3.default.basename(item.path);
   return [{ path: item.path, name, lastSeen: typeof item.lastSeen === "string" ? item.lastSeen : "" }];
 }
 function readRegistry() {
   try {
-    const json = JSON.parse(import_node_fs6.default.readFileSync(registryFile(), "utf8"));
+    const json = JSON.parse(import_node_fs3.default.readFileSync(registryFile(), "utf8"));
     return Array.isArray(json.projects) ? json.projects.flatMap(wellFormed) : [];
   } catch {
     return [];
@@ -8425,7 +8191,7 @@ function readRegistry() {
 }
 function readRemoved() {
   try {
-    const json = JSON.parse(import_node_fs6.default.readFileSync(registryFile(), "utf8"));
+    const json = JSON.parse(import_node_fs3.default.readFileSync(registryFile(), "utf8"));
     return Array.isArray(json.removed) ? json.removed.filter((p) => typeof p === "string" && p !== "") : [];
   } catch {
     return [];
@@ -8444,24 +8210,14 @@ function registerProject(root, name, now, opts = {}) {
     return true;
   });
 }
-function unregisterProject(root) {
-  return withLock(registryFile(), () => {
-    const all = readRegistry();
-    const kept = all.filter((p) => !samePath(p.path, root));
-    if (kept.length === all.length) return false;
-    const removed = readRemoved().filter((p) => !samePath(p, root));
-    writeRegistry(kept, [...removed, canonicalPath(root)]);
-    return true;
-  });
-}
 
 // src/license/store.ts
-var licenseFile = () => import_node_path7.default.join(binkgoHome(), "license.json");
-var deviceFile = () => import_node_path7.default.join(binkgoHome(), "device.json");
-var clockFile = () => import_node_path7.default.join(binkgoHome(), "clock.json");
+var licenseFile = () => import_node_path4.default.join(binkgoHome(), "license.json");
+var deviceFile = () => import_node_path4.default.join(binkgoHome(), "device.json");
+var clockFile = () => import_node_path4.default.join(binkgoHome(), "clock.json");
 function readJson(file) {
   try {
-    const v = JSON.parse(import_node_fs7.default.readFileSync(file, "utf8"));
+    const v = JSON.parse(import_node_fs4.default.readFileSync(file, "utf8"));
     return typeof v === "object" && v !== null && !Array.isArray(v) ? v : null;
   } catch {
     return null;
@@ -8471,20 +8227,10 @@ function readLicenseToken() {
   const t = readJson(licenseFile())?.token;
   return typeof t === "string" && t !== "" ? t : null;
 }
-function saveLicenseToken(token) {
-  import_node_fs7.default.mkdirSync(binkgoHome(), { recursive: true });
-  writeAtomic(licenseFile(), JSON.stringify({ token }, null, 2) + "\n");
-}
-function clearLicense() {
-  try {
-    import_node_fs7.default.rmSync(licenseFile(), { force: true });
-  } catch {
-  }
-}
 function readDeviceFile(file) {
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const v = JSON.parse(import_node_fs7.default.readFileSync(file, "utf8"));
+      const v = JSON.parse(import_node_fs4.default.readFileSync(file, "utf8"));
       return typeof v === "object" && v !== null && !Array.isArray(v) ? v : "unreadable";
     } catch (e) {
       if (e.code === "ENOENT") return "missing";
@@ -8493,14 +8239,14 @@ function readDeviceFile(file) {
   return "unreadable";
 }
 function deviceInfo() {
-  const device_name = import_node_os4.default.hostname() || "This computer";
+  const device_name = import_node_os3.default.hostname() || "This computer";
   const file = readDeviceFile(deviceFile());
   if (file === "unreadable") return { device_id: (0, import_node_crypto4.createHash)("sha256").update(`unreadable:${device_name}`).digest("hex").slice(0, 32), device_name };
   const saved = file === "missing" ? void 0 : file.device_id;
   let id = typeof saved === "string" && saved !== "" ? saved : "";
   if (!id && file === "missing") {
     id = (0, import_node_crypto4.randomUUID)();
-    import_node_fs7.default.mkdirSync(binkgoHome(), { recursive: true });
+    import_node_fs4.default.mkdirSync(binkgoHome(), { recursive: true });
     writeAtomic(deviceFile(), JSON.stringify({ device_id: id }, null, 2) + "\n");
   }
   return { device_id: id || (0, import_node_crypto4.createHash)("sha256").update(`noid:${device_name}`).digest("hex").slice(0, 32), device_name };
@@ -8514,7 +8260,7 @@ function trustedNow(now) {
   const use = high !== null && t < high - CLOCK_SLACK_MS ? high : t;
   if (high === null || use > high + CLOCK_WRITE_EVERY_MS) {
     try {
-      import_node_fs7.default.mkdirSync(binkgoHome(), { recursive: true });
+      import_node_fs4.default.mkdirSync(binkgoHome(), { recursive: true });
       writeAtomic(clockFile(), JSON.stringify({ seen: use }) + "\n");
     } catch {
     }
@@ -8527,7 +8273,6 @@ function appMajorOf(appVersion) {
   const n = Number.parseInt(/^v?(\d+)/.exec(appVersion.trim())?.[1] ?? "", 10);
   return Number.isFinite(n) ? Math.max(1, n) : 1;
 }
-var isUsable = (s) => s.state === "trial" || s.state === "full";
 function licenseStatus(now, appVersion, opts = {}) {
   const appMajor = appMajorOf(appVersion);
   const token = opts.token === void 0 ? readLicenseToken() : opts.token;
@@ -8542,103 +8287,107 @@ function licenseStatus(now, appVersion, opts = {}) {
   return { ...base, state: msLeft > 0 ? "trial" : "trial_expired", msLeft, trialUntil: p.trial_until ?? void 0 };
 }
 
-// src/license/client.ts
-async function call(action, body, fetchImpl) {
-  const res = await fetchImpl(`${SUPABASE_URL}/functions/v1/device-auth`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${SUPABASE_ANON_KEY}`, apikey: SUPABASE_ANON_KEY },
-    body: JSON.stringify({ action, ...body })
-  });
-  const json = await res.json().catch(() => ({}));
-  return typeof json === "object" && json !== null ? json : {};
-}
-var realFetch = (url, init) => fetch(url, init);
-async function startSignin(opts = {}) {
-  const r = await call("start", { ...deviceInfo(), app_version: opts.appVersion ?? "" }, opts.fetch ?? realFetch);
-  if (typeof r.code !== "string" || typeof r.poll_token !== "string" || typeof r.verify_url !== "string") {
-    throw new Error("The sign-in service did not answer. Try again in a moment.");
+// package.json
+var package_default = {
+  name: "binkgo",
+  version: "1.0.12",
+  private: true,
+  type: "module",
+  engines: {
+    node: ">=20"
+  },
+  scripts: {
+    pretest: "node scripts/build.mjs --test-seam",
+    test: "vitest run",
+    typecheck: "tsc --noEmit && tsc --noEmit -p web",
+    build: "node scripts/build.mjs && vite build web",
+    dashboard: "node plugin/dist/dashboard.cjs",
+    "codex:install": "node scripts/codex-install.mjs",
+    "build:web": "vite build web",
+    "seed:demo": "node scripts/seed-demo.mjs",
+    overhead: "node scripts/overhead.mjs",
+    "bench:tokens": "node scripts/bench-tokens.mjs",
+    "desktop:install": "node scripts/desktop-install.mjs",
+    "build:desktop": "npm run build && npm run desktop:install",
+    "desktop:uninstall": "node scripts/desktop-install.mjs --uninstall"
+  },
+  dependencies: {
+    "@fontsource-variable/anuphan": "^5.3.0",
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "gray-matter": "^4.0.3",
+    zod: "^3.25.76"
+  },
+  devDependencies: {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@radix-ui/react-alert-dialog": "^1.1.23",
+    "@radix-ui/react-checkbox": "^1.3.11",
+    "@radix-ui/react-dialog": "^1.1.23",
+    "@radix-ui/react-dropdown-menu": "^2.1.24",
+    "@radix-ui/react-label": "^2.1.15",
+    "@radix-ui/react-popover": "^1.1.23",
+    "@radix-ui/react-scroll-area": "^1.2.18",
+    "@radix-ui/react-select": "^2.3.7",
+    "@radix-ui/react-separator": "^1.1.15",
+    "@radix-ui/react-slot": "^1.3.3",
+    "@radix-ui/react-tabs": "^1.1.21",
+    "@radix-ui/react-tooltip": "^1.2.16",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "class-variance-authority": "^0.7.1",
+    clsx: "^2.1.1",
+    cmdk: "^1.1.1",
+    dompurify: "^3.4.16",
+    esbuild: "^0.28.2",
+    jsdom: "^29.1.1",
+    "lucide-react": "^1.49.0",
+    marked: "^18.0.14",
+    react: "^19.3.0",
+    "react-day-picker": "^10.0.2",
+    "react-dom": "^19.3.0",
+    recharts: "^3.10.1",
+    sonner: "^2.0.8",
+    "tailwind-merge": "^3.7.0",
+    tailwindcss: "^4.3.3",
+    "tw-animate-css": "^1.4.0",
+    typescript: "^7.0.2",
+    vite: "^8.3.1",
+    vitest: "^4.1.11"
   }
-  return { code: r.code, poll_token: r.poll_token, verify_url: r.verify_url, interval: typeof r.interval === "number" ? r.interval : 5 };
-}
-async function pollSignin(pollToken, opts = {}) {
-  let r;
-  try {
-    r = await call("poll", { poll_token: pollToken }, opts.fetch ?? realFetch);
-  } catch {
-    return { status: "error" };
-  }
-  if (r.status === "approved") {
-    if (typeof r.license !== "string" || !verifyLicense(r.license, opts.publicKey)) return { status: "error" };
-    saveLicenseToken(r.license);
-    return { status: "approved" };
-  }
-  if (r.status === "denied") return { status: "denied", reason: typeof r.reason === "string" ? r.reason : "denied" };
-  if (r.status === "expired") return { status: "expired" };
-  return r.status === "pending" ? { status: "pending" } : { status: "error" };
-}
-async function refreshLicense(opts = {}) {
-  const token = readLicenseToken();
-  if (!token) return "none";
-  let r;
-  try {
-    r = await call("refresh", { license: token }, opts.fetch ?? realFetch);
-  } catch {
-    return "offline";
-  }
-  if (r.error === "revoked") {
-    clearLicense();
-    return "revoked";
-  }
-  if (typeof r.license === "string" && verifyLicense(r.license, opts.publicKey)) {
-    saveLicenseToken(r.license);
-    return "refreshed";
-  }
-  return "offline";
-}
+};
 
 // src/license/gate.ts
-var dashboardGateOffForTests = () => false;
-
-// src/vault/vault.ts
-var import_node_fs10 = __toESM(require("node:fs"), 1);
-var import_node_os5 = __toESM(require("node:os"), 1);
-var import_node_path10 = __toESM(require("node:path"), 1);
-
-// src/vault/refs.ts
-var ID = /^[a-z0-9][a-z0-9-]*$/;
-function parseRef(ref) {
-  const clean2 = ref.trim().replace(/\\/g, "/").replace(/^\.binkgo\//, "").replace(/\.md$/, "");
-  if (clean2 === "project") return { kind: "project", id: "project" };
-  const slash = clean2.indexOf("/");
-  const dir = slash === -1 ? null : clean2.slice(0, slash);
-  const id = slash === -1 ? clean2 : clean2.slice(slash + 1);
-  const kind = dir === null ? null : KINDS.find((k) => k !== "project" && DIRS[k] === dir) ?? null;
-  if (!ID.test(id) || dir !== null && kind === null) throw new Error(`Invalid ref: ${ref}`);
-  return { kind, id };
+var testSeamSignedIn = () => false;
+function gateState(o = {}) {
+  try {
+    return licenseStatus(o.now ?? /* @__PURE__ */ new Date(), package_default.version, { publicKey: o.publicKey, token: o.token }).state;
+  } catch {
+    return "none";
+  }
 }
-function idOfKind(ref, kind) {
-  const parsed = parseRef(ref);
-  if (parsed.kind !== null && parsed.kind !== kind) throw new Error(`Expected a ${kind} ref, got: ${ref}`);
-  return parsed.id;
+function isSignedIn(o = {}) {
+  return testSeamSignedIn() || gateState(o) !== "none";
 }
 
-// src/vault/work.ts
-var import_node_crypto6 = require("node:crypto");
-var import_node_fs9 = __toESM(require("node:fs"), 1);
-var import_node_path9 = __toESM(require("node:path"), 1);
+// src/mcp/signin.ts
+var NOT_SIGNED_IN = "Binkgo is not signed in, so project memory is off. Sign in once (free): call the sign_in tool, or run /binkgo login in Claude Code.";
 
 // src/vault/index.ts
 var import_node_crypto5 = require("node:crypto");
-var import_node_fs8 = __toESM(require("node:fs"), 1);
-var import_node_path8 = __toESM(require("node:path"), 1);
+var import_node_fs5 = __toESM(require("node:fs"), 1);
+var import_node_path5 = __toESM(require("node:path"), 1);
 var VERSION = 2;
 function cacheFile(root) {
   const key = (0, import_node_crypto5.createHash)("sha1").update(canonicalPath(root).toLowerCase()).digest("hex").slice(0, 16);
-  return import_node_path8.default.join(binkgoHome(), "cache", `tasks-${key}.json`);
+  return import_node_path5.default.join(binkgoHome(), "cache", `tasks-${key}.json`);
 }
 function load(root) {
   try {
-    const json = JSON.parse(import_node_fs8.default.readFileSync(cacheFile(root), "utf8"));
+    const json = JSON.parse(import_node_fs5.default.readFileSync(cacheFile(root), "utf8"));
     return json.v === VERSION && json.rows && typeof json.rows === "object" ? json.rows : {};
   } catch {
     return {};
@@ -8665,7 +8414,7 @@ function taskRows(root) {
   for (const id of listIds(root, "task")) {
     let st;
     try {
-      st = import_node_fs8.default.statSync(entryPath(root, "task", id));
+      st = import_node_fs5.default.statSync(entryPath(root, "task", id));
     } catch {
       continue;
     }
@@ -8686,6 +8435,36 @@ function taskRows(root) {
   return out;
 }
 
+// src/vault/map.ts
+var import_node_crypto7 = require("node:crypto");
+var import_node_fs6 = __toESM(require("node:fs"), 1);
+var import_node_path7 = __toESM(require("node:path"), 1);
+
+// src/vault/work.ts
+var import_node_crypto6 = require("node:crypto");
+var import_node_path6 = __toESM(require("node:path"), 1);
+
+// src/vault/refs.ts
+var ID = /^[a-z0-9][a-z0-9-]*$/;
+function refOf(kind, id) {
+  return kind === "project" ? "project" : `${DIRS[kind]}/${id}`;
+}
+function parseRef(ref) {
+  const clean = ref.trim().replace(/\\/g, "/").replace(/^\.binkgo\//, "").replace(/\.md$/, "");
+  if (clean === "project") return { kind: "project", id: "project" };
+  const slash = clean.indexOf("/");
+  const dir = slash === -1 ? null : clean.slice(0, slash);
+  const id = slash === -1 ? clean : clean.slice(slash + 1);
+  const kind = dir === null ? null : KINDS.find((k) => k !== "project" && DIRS[k] === dir) ?? null;
+  if (!ID.test(id) || dir !== null && kind === null) throw new Error(`Invalid ref: ${ref}`);
+  return { kind, id };
+}
+function idOfKind(ref, kind) {
+  const parsed = parseRef(ref);
+  if (parsed.kind !== null && parsed.kind !== kind) throw new Error(`Expected a ${kind} ref, got: ${ref}`);
+  return parsed.id;
+}
+
 // src/vault/work.ts
 var RuleError = class extends Error {
 };
@@ -8704,7 +8483,7 @@ function must(root, kind, id) {
   if (isBroken(e)) throw new Error(`Cannot read ${kind} ${id}: ${e.error}`);
   return e;
 }
-var tasksDir = (root) => import_node_path9.default.join(vaultDir(root), DIRS.task);
+var tasksDir = (root) => import_node_path6.default.join(vaultDir(root), DIRS.task);
 var CONTROL_SINGLE_LINE = /[\x00-\x1F\x7F]/;
 var CONTROL_MULTI_LINE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/;
 function noControl(what, value, multiline = false) {
@@ -8843,18 +8622,6 @@ function syncCompleted(d, was, at) {
     delete d.completed;
   }
 }
-function tasksMentioning(root, needle) {
-  const found = [];
-  let n = 0;
-  for (const id of listIds(root, "task")) {
-    if (++n % 25 === 0) refreshLocks();
-    const raw = readRaw(root, "task", id);
-    if (raw === null || !raw.includes(needle)) continue;
-    const e = readEntry(root, "task", id);
-    if (!isBroken(e)) found.push(e);
-  }
-  return found;
-}
 function topicId(title) {
   if (!/[^\x00-\x7f]/.test(title)) return slugify(title);
   const ascii = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/, "");
@@ -8896,7 +8663,7 @@ function upsertTopic(root, input, now = /* @__PURE__ */ new Date()) {
   noControl("The title", input.title);
   const id = idForTitle(root, "topic", input.title);
   const t = localIso(now);
-  const created = withLock(import_node_path9.default.join(vaultDir(root), DIRS.topic), () => {
+  const created = withLock(import_node_path6.default.join(vaultDir(root), DIRS.topic), () => {
     if (entryExists(root, "topic", id)) return false;
     const e = {
       kind: "topic",
@@ -8910,65 +8677,6 @@ function upsertTopic(root, input, now = /* @__PURE__ */ new Date()) {
   });
   if (created) return must(root, "topic", id);
   return mutateEntry(root, "topic", id, (e) => applyTopic(e, { ...input, title: void 0 }, t));
-}
-function updateTopic(root, id, patch, now = /* @__PURE__ */ new Date()) {
-  if (!ID2.test(id) || !entryExists(root, "topic", id)) throw new Error(`No topic with id ${id}`);
-  checkTopicFields(patch);
-  return mutateEntry(root, "topic", id, (e) => applyTopic(e, patch, localIso(now)));
-}
-var TOPIC_NOTE_KINDS = ["decision", "fix", "artifact"];
-function repoint(root, from, into, by, now) {
-  const t = localIso(now);
-  withLock(tasksDir(root), () => {
-    for (const task of tasksMentioning(root, from)) {
-      if (task.data.topic !== from) continue;
-      refreshLocks();
-      mutateEntry(root, "task", task.id, (e) => {
-        const before = snapshot(e.data);
-        e.data.topic = into;
-        recordHistory(e.data, before, by, t);
-        e.data.updated = t;
-      });
-    }
-  });
-  for (const kind of TOPIC_NOTE_KINDS) {
-    withLock(import_node_path9.default.join(vaultDir(root), DIRS[kind]), () => {
-      let n = 0;
-      for (const id of listIds(root, kind)) {
-        if (++n % 25 === 0) refreshLocks();
-        const raw = readRaw(root, kind, id);
-        if (raw === null || !raw.includes(from)) continue;
-        const e = readEntry(root, kind, id);
-        if (isBroken(e) || e.data.topic !== from) continue;
-        mutateEntry(root, kind, id, (m) => {
-          const d = m.data;
-          if (into === null) delete d.topic;
-          else d.topic = into;
-        });
-      }
-    });
-  }
-}
-function deleteTopic(root, id, by = "agent", now = /* @__PURE__ */ new Date()) {
-  if (!ID2.test(id)) throw new Error(`No topic with id ${id}`);
-  const file = entryPath(root, "topic", id);
-  withLock(import_node_path9.default.join(vaultDir(root), DIRS.topic), () => {
-    if (!import_node_fs9.default.existsSync(file)) throw new Error(`No topic with id ${id}`);
-    import_node_fs9.default.unlinkSync(file);
-  });
-  repoint(root, id, null, by, now);
-}
-function mergeTopic(root, fromId, intoId, by = "agent", now = /* @__PURE__ */ new Date()) {
-  for (const id of [fromId, intoId]) {
-    if (!ID2.test(id) || !entryExists(root, "topic", id)) throw new Error(`No topic with id ${id}`);
-  }
-  if (fromId === intoId) rule("A topic cannot be merged into itself");
-  repoint(root, fromId, intoId, by, now);
-  const file = entryPath(root, "topic", fromId);
-  withLock(import_node_path9.default.join(vaultDir(root), DIRS.topic), () => {
-    if (import_node_fs9.default.existsSync(file)) import_node_fs9.default.unlinkSync(file);
-  });
-  return must(root, "topic", intoId);
 }
 function resolveTopic(root, value, now) {
   const candidate = value.replace(/^topics\//, "");
@@ -9021,27 +8729,6 @@ function upsertMilestone(root, input, now = /* @__PURE__ */ new Date()) {
   const made = createEntry(root, "milestone", topicId(input.title), e.data, e.sections);
   return must(root, "milestone", made);
 }
-function deleteMilestone(root, ref, by = "agent", now = /* @__PURE__ */ new Date()) {
-  const id = refId("milestone", ref, "The milestone");
-  const file = entryPath(root, "milestone", id);
-  withLock(import_node_path9.default.join(vaultDir(root), DIRS.milestone), () => {
-    if (!import_node_fs9.default.existsSync(file)) throw new Error(`No milestone with id ${id}`);
-    import_node_fs9.default.unlinkSync(file);
-  });
-  withLock(tasksDir(root), () => {
-    for (const task of tasksMentioning(root, id)) {
-      if (effectiveMilestone(task.data) !== id) continue;
-      refreshLocks();
-      mutateEntry(root, "task", task.id, (e) => {
-        migrateSprint(e.data);
-        const before = snapshot(e.data);
-        if (e.data.milestone === id) delete e.data.milestone;
-        recordHistory(e.data, before, by, localIso(now));
-        e.data.updated = localIso(now);
-      });
-    }
-  });
-}
 function rankForMove(root, movedId, order) {
   const known = taskRows(root);
   const rows = order.map((id) => {
@@ -9073,10 +8760,6 @@ function rankForMove(root, movedId, order) {
     });
   });
   return (at + 1) * 1e3;
-}
-function topRank(root, status) {
-  const ranks = [...taskRows(root).values()].filter((t) => t.status === status).map((t) => t.rank).filter((r) => typeof r === "number");
-  return ranks.length ? Math.min(...ranks) - 1e3 : 0;
 }
 var FIELD_KEYS = ["priority", "due", "start", "estimate", "labels", "parent", "blocked_by", "milestone"];
 var fieldsOf = (input) => Object.fromEntries(FIELD_KEYS.filter((k) => input[k] !== void 0).map((k) => [k, input[k]]));
@@ -9165,105 +8848,548 @@ function upsertTask(root, given, now = /* @__PURE__ */ new Date()) {
   syncTopics(root, [data.topic], now, status === "done" ? [] : [data.topic]);
   return must(root, "task", id);
 }
-function deleteTask(root, ref, by = "agent", now = /* @__PURE__ */ new Date()) {
-  const id = idOfKind(ref, "task");
-  const file = entryPath(root, "task", id);
+
+// src/vault/map.ts
+var MAX_SUMMARY = 200;
+var MAX_DETAILS = 4e3;
+var MAX_PATH_LENGTH = 300;
+function normalizeMapPath(input) {
+  if (typeof input !== "string") throw new RuleError("A path is required");
+  noControl("The path", input);
+  let p = input.trim().replace(/\\/g, "/").replace(/^(\.\/)+/, "").replace(/\/+$/, "");
+  if (p === "" || p === ".") return ".";
+  if (p.length > MAX_PATH_LENGTH) throw new RuleError(`The path is longer than ${MAX_PATH_LENGTH} characters`);
+  if (/^([A-Za-z]:|\/)/.test(p)) throw new RuleError("Give the path relative to the project");
+  const parts = p.split("/").filter((s) => s !== "." && s !== "");
+  if (parts.includes("..")) throw new RuleError("The path must stay inside the project");
+  p = parts.join("/");
+  if (p === VAULT_DIRNAME || p.startsWith(`${VAULT_DIRNAME}/`)) throw new RuleError("The vault itself is not mapped");
+  return p;
+}
+function canonicalRel(root, rel) {
+  return rel === "." ? rel : toRelPath(root, rel) ?? rel;
+}
+var mapId = (rel) => `${slugify(rel)}-${(0, import_node_crypto7.createHash)("sha1").update(rel).digest("hex").slice(0, 6)}`;
+function stampOf(root, rel) {
+  const full = import_node_path7.default.join(canonicalPath(root), rel === "." ? "" : rel);
+  try {
+    const st = import_node_fs6.default.statSync(full);
+    if (!st.isDirectory()) return `f:${st.size}:${Math.floor(st.mtimeMs)}`;
+    let newest = 0;
+    const names = import_node_fs6.default.readdirSync(full).filter((n) => n !== VAULT_DIRNAME && n !== ".git" && n !== "node_modules");
+    for (const n of names) {
+      try {
+        newest = Math.max(newest, Math.floor(import_node_fs6.default.statSync(import_node_path7.default.join(full, n)).mtimeMs));
+      } catch {
+      }
+    }
+    return `d:${names.length}:${newest}`;
+  } catch {
+    return null;
+  }
+}
+function stateOf(root, rel, stamp) {
+  const now = stampOf(root, rel);
+  if (now === null) return "missing";
+  if (!stamp) return "unknown";
+  return now === stamp ? "fresh" : "changed";
+}
+function setMapNote(root, input, now = /* @__PURE__ */ new Date()) {
+  const rel = canonicalRel(root, normalizeMapPath(input.path));
+  const summary = (input.summary ?? "").trim();
+  const details = (input.details ?? "").trim();
+  if (summary.length < 1) throw new RuleError("A one-line summary is required");
+  if (Array.from(summary).length > MAX_SUMMARY) throw new RuleError(`The summary is longer than ${MAX_SUMMARY} characters`);
+  if (details.length > MAX_DETAILS) throw new RuleError(`The details are longer than ${MAX_DETAILS} characters`);
+  noControl("The summary", summary);
+  noControl("The details", details, true);
+  const id = mapId(rel);
   const t = localIso(now);
-  let topic;
-  withLock(tasksDir(root), () => {
-    withLock(file, () => {
-      if (!import_node_fs9.default.existsSync(file)) throw new Error(`No task with id ${id}`);
-      const gone = readEntry(root, "task", id);
-      topic = isBroken(gone) ? null : gone.data.topic;
-      import_node_fs9.default.unlinkSync(file);
-    });
-    const refs = [...taskRows(root)].filter(([, r]) => (r.blocked_by ?? []).includes(id) || r.parent === id).map(([k]) => k);
-    for (const otherId of refs) {
-      const other = readEntry(root, "task", otherId);
-      if (isBroken(other)) continue;
-      const waits = (other.data.blocked_by ?? []).includes(id);
-      if (!waits && other.data.parent !== id) continue;
-      refreshLocks();
-      mutateEntry(root, "task", other.id, (e) => {
-        const before = snapshot(e.data);
-        if (waits) {
-          const rest = (e.data.blocked_by ?? []).filter((b) => b !== id);
-          if (rest.length) e.data.blocked_by = rest;
-          else delete e.data.blocked_by;
-        }
-        if (e.data.parent === id) delete e.data.parent;
-        recordHistory(e.data, before, by, t);
-        e.data.updated = t;
+  const stamp = stampOf(root, rel) ?? "-";
+  const write = (e) => {
+    e.data.summary = summary;
+    e.data.stamp = stamp;
+    e.data.updated = t;
+    e.sections.Details = details;
+  };
+  if (entryExists(root, "map", id)) {
+    mutateEntry(root, "map", id, write);
+  } else {
+    createEntry(root, "map", id, { path: rel, summary, stamp, updated: t }, { Details: details });
+  }
+  return { id, path: rel, summary, details, state: "fresh", updated: t };
+}
+function listMapNotes(root, max = 500) {
+  return listGood(root, "map").slice(0, max).map((e) => ({
+    id: e.id,
+    path: e.data.path,
+    summary: e.data.summary,
+    details: e.sections.Details ?? "",
+    state: stateOf(root, e.data.path, e.data.stamp),
+    updated: e.data.updated
+  })).sort((a, b) => a.path.localeCompare(b.path));
+}
+function mapNotesFor(root, input) {
+  const rel = canonicalRel(root, normalizeMapPath(input));
+  const above = (n) => n === "." || rel.startsWith(`${n}/`);
+  const directlyBelow = (n) => {
+    const rest = rel === "." ? n : n.startsWith(`${rel}/`) ? n.slice(rel.length + 1) : "";
+    return rest !== "" && rest !== "." && !rest.includes("/");
+  };
+  return listMapNotes(root).filter((n) => n.path === rel || above(n.path) || directlyBelow(n.path));
+}
+var isStale = (n) => n.state === "changed" || n.state === "missing";
+
+// src/vault/sessions.ts
+var import_node_path8 = __toESM(require("node:path"), 1);
+function openSession(root, sessionId, meta, now = /* @__PURE__ */ new Date()) {
+  const dir = import_node_path8.default.join(vaultDir(root), DIRS.session);
+  return withLock(dir, () => {
+    const sid8 = sessionId.replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toLowerCase() || "session";
+    const suffix = new RegExp(`-${sid8}(-\\d+)?$`);
+    for (const candidate of listIds(root, "session").filter((n) => suffix.test(n))) {
+      const e = readEntry(root, "session", candidate);
+      if (!isBroken(e) && e.data.session_id === sessionId) return e.id;
+    }
+    const id = uniqueId(dir, `${dateStamp(now)}-${timeStamp(now)}-${sid8}`);
+    writeEntry(
+      root,
+      "session",
+      id,
+      {
+        session_id: sessionId,
+        started: localIso(now),
+        ended: null,
+        model: meta.model,
+        files_touched: [],
+        summary_written: false,
+        usage: emptyUsage()
+      },
+      { Summary: "", Done: "", Next: "" }
+    );
+    return id;
+  });
+}
+var FAILURE_LOOKBACK = 10;
+var recentIds = (root) => listIds(root, "session").reverse().slice(0, FAILURE_LOOKBACK);
+function openFailures(root, limit = 2) {
+  const out = [];
+  for (const id of recentIds(root)) {
+    if (out.length >= limit) break;
+    const raw = readRaw(root, "session", id);
+    if (raw === null || !raw.includes("fixed_at: null")) continue;
+    const e = readEntry(root, "session", id);
+    if (isBroken(e)) continue;
+    for (const f of [...e.data.failures ?? []].reverse()) if (f.fixed_at === null) out.push({ ...f, session: id });
+  }
+  return out.slice(0, limit);
+}
+var bullets = (items) => items.map((i) => `- ${i}`).join("\n");
+function writeSummary(root, entryId, input) {
+  mutateEntry(root, "session", entryId, (e) => {
+    e.sections.Summary = input.summary;
+    e.sections.Done = bullets(input.done);
+    e.sections.Next = bullets(input.next);
+    e.data.summary_written = true;
+    delete e.data.summary_auto;
+  });
+}
+
+// src/vault/brief.ts
+var newestFirst = (a, b) => a.id < b.id ? 1 : -1;
+var byCreated = (a, b) => Date.parse(b.data.created) - Date.parse(a.data.created) || newestFirst(a, b);
+var RECENT_WINDOW = 30;
+var SESSION_LOOKBACK = 50;
+function newestEntries(root, kind) {
+  const out = [];
+  for (const id of listIds(root, kind).reverse().slice(0, RECENT_WINDOW)) {
+    const e = readEntry(root, kind, id);
+    if (!isBroken(e)) out.push(e);
+  }
+  return out;
+}
+function lastSummarised(root) {
+  let best;
+  for (const id of listIds(root, "session").reverse().slice(0, SESSION_LOOKBACK)) {
+    if (best && id.slice(0, 15) !== best.id.slice(0, 15)) break;
+    const e = readEntry(root, "session", id);
+    if (isBroken(e) || !e.data.summary_written) continue;
+    if (!best || Date.parse(e.data.started) > Date.parse(best.data.started)) best = e;
+  }
+  return best;
+}
+var byUpdated = (a, b) => a.data.updated < b.data.updated ? 1 : a.data.updated > b.data.updated ? -1 : newestFirst(a, b);
+function scanTasks(root) {
+  const open = [];
+  const done = /* @__PURE__ */ new Set();
+  const known = /* @__PURE__ */ new Set();
+  const perMilestone = /* @__PURE__ */ new Map();
+  for (const [id, row] of taskRows(root)) {
+    known.add(id);
+    if (row.broken) continue;
+    const isDone = row.status === "done";
+    if (isDone) done.add(id);
+    else if (row.data) open.push({ kind: "task", id, data: row.data, sections: {} });
+    if (row.milestone) {
+      const counts = perMilestone.get(row.milestone) ?? { done: 0, total: 0 };
+      counts.total++;
+      if (isDone) counts.done++;
+      perMilestone.set(row.milestone, counts);
+    }
+  }
+  return { open, done, known, perMilestone };
+}
+var PRIORITY_ORDER = { urgent: 0, high: 1, medium: 2, low: 3 };
+function byPriorityThenRank(a, b) {
+  const p = (PRIORITY_ORDER[a.data.priority ?? ""] ?? 4) - (PRIORITY_ORDER[b.data.priority ?? ""] ?? 4);
+  if (p) return p;
+  const ra = a.data.rank;
+  const rb = b.data.rank;
+  if (ra !== void 0 && rb !== void 0 && ra !== rb) return ra - rb;
+  if (ra === void 0 !== (rb === void 0)) return ra === void 0 ? 1 : -1;
+  return byUpdated(a, b);
+}
+function activeMilestone(root, today) {
+  const over = (m) => m.data.end && m.data.end < today ? 1 : 0;
+  return listGood(root, "milestone").filter((m) => m.data.status === "active").sort((a, b) => over(a) - over(b) || (a.data.end ?? "9999").localeCompare(b.data.end ?? "9999") || (a.id < b.id ? -1 : 1))[0];
+}
+var cap = (s, n) => {
+  const one = s.replace(/\s+/g, " ").trim();
+  return one.length > n ? `${one.slice(0, n - 1)}\u2026` : one;
+};
+var BRIEF_LIMIT = 2500;
+var MARKER = "(more: search, read)";
+var FOOT = "More: search, read <id>, project_map.";
+var LAST_SUMMARY = 240;
+var LAST_NEXT = 140;
+var TITLE = 70;
+var FAILING = 2;
+var LIST = 3;
+var MAP_SHOWN = 8;
+var MAP_SCAN = 100;
+var SHOWN = [["doing", 4], ["blocked", 2], ["todo", 4]];
+function countActive(root, kind) {
+  let n = 0;
+  for (const id of listIds(root, kind)) {
+    const raw = readRaw(root, kind, id);
+    const end = raw === null ? -1 : raw.indexOf("\n---", 3);
+    if (raw !== null && /^status:\s*["']?active\b/m.test(end < 0 ? raw : raw.slice(0, end))) n++;
+  }
+  return n;
+}
+var some = (ids, shown = LIST) => ids.slice(0, shown).join(", ") + (ids.length > shown ? ` (+${ids.length - shown})` : "");
+function buildBrief(root, now = /* @__PURE__ */ new Date()) {
+  const project = readEntry(root, "project", "project");
+  if (isBroken(project)) {
+    return `Binkgo: .binkgo/project.md is unreadable (${cap(project.error, 120)}). Tell the user; do not guess the project state.`;
+  }
+  const head = [
+    `Binkgo: ${project.data.name}${project.data.status === "active" ? "" : ` [${project.data.status}]`}`,
+    `Goal: ${cap(project.data.goal, 140) || "(not set; project_update once the person states it)"}`,
+    `Focus: ${cap(project.data.focus, 140) || "(not set)"}`
+  ];
+  const units = [];
+  const last = lastSummarised(root);
+  if (last) {
+    const next = (last.sections.Next ?? "").split(/\r?\n/).map((l) => l.replace(/^- /, "").trim()).filter(Boolean).join("; ");
+    units.push(`Last session (${refOf("session", last.id)}): ${cap(last.sections.Summary ?? "", LAST_SUMMARY)}${next ? ` Next: ${cap(next, LAST_NEXT)}` : ""}`);
+  }
+  const failing = openFailures(root, FAILING).map((f) => `${cap(f.command, 50)} \u2014 ${cap(f.excerpt, 100)} (${refOf("session", f.session)})`);
+  if (failing.length) units.push(failing.length === 1 ? `Failing checks: ${failing[0]}` : ["Failing checks:", ...failing.map((l) => `- ${l}`)].join("\n"));
+  const { open: tasks, done: doneIds, known, perMilestone } = scanTasks(root);
+  const today = dateStamp(now);
+  const current = activeMilestone(root, today);
+  if (current) {
+    const counts = perMilestone.get(current.id) ?? { done: 0, total: 0 };
+    const ends = current.data.end ? `ends ${current.data.end}` : "no end date";
+    units.push(`Current milestone: ${current.id} \u2014 ${cap(current.data.title, 50)}, ${ends}, ${counts.done}/${counts.total} done`);
+  }
+  const soon = dateStamp(new Date(now.getTime() + 30 * 864e5));
+  const due = listGood(root, "milestone").filter((m) => m.data.status !== "done" && m.id !== current?.id && m.data.end && m.data.end >= today && m.data.end <= soon).sort((a, b) => a.data.end.localeCompare(b.data.end));
+  if (due.length) units.push(`Milestones due soon: ${due.slice(0, LIST).map((m) => `${m.id} (${m.data.end})`).join(", ")}${due.length > LIST ? ` (+${due.length - LIST})` : ""}`);
+  const late2 = listGood(root, "milestone").filter((m) => m.data.status !== "done" && m.data.end && m.data.end < today).sort((a, b) => a.data.end.localeCompare(b.data.end) || (a.id < b.id ? -1 : 1));
+  if (late2.length) units.push(`Milestones overdue: ${late2.slice(0, LIST).map((m) => `${m.id} (${m.data.end})`).join(", ")}${late2.length > LIST ? ` (+${late2.length - LIST})` : ""}`);
+  const overdue = tasks.filter((t) => t.data.due && t.data.due < today).sort((a, b) => a.data.due.localeCompare(b.data.due) || newestFirst(a, b));
+  if (overdue.length) units.push(`Overdue (${overdue.length}): ${some(overdue.map((t) => t.id))}`);
+  const unblocked = tasks.filter((t) => {
+    if (t.data.status === "doing") return false;
+    const waits = t.data.blocked_by ?? [];
+    return waits.length > 0 && waits.every((b) => doneIds.has(b) || !known.has(b));
+  });
+  if (unblocked.length) units.push(`Now unblocked: ${some(unblocked.map((t) => t.id))}`);
+  if (tasks.length) {
+    const lines = [`Open tasks (${tasks.length}):`];
+    for (const [status, max] of SHOWN) {
+      const group = tasks.filter((t) => t.data.status === status).sort(byPriorityThenRank);
+      for (const t of group.slice(0, max)) {
+        const meta = [t.data.priority, t.data.due ? `due ${t.data.due}` : null].filter(Boolean).join(", ");
+        lines.push(`- [${status}] ${t.id} \u2014 ${cap(t.data.title, TITLE)}${meta ? ` (${meta})` : ""}`);
+      }
+      if (group.length > max) lines.push(`- +${group.length - max} more ${status}`);
+    }
+    units.push(lines.join("\n"));
+  }
+  const notes = listMapNotes(root, MAP_SCAN);
+  if (notes.length === 0) {
+    units.push("Project map: none yet. Save notes (project_map set) for areas you explore.");
+  } else {
+    const stale = notes.filter(isStale).length;
+    units.push(`Project map: ${notes.length} notes (${stale} stale). A folder's note is shown when you explore it.`);
+    const depth = (p) => p === "." ? 0 : p.split("/").length;
+    const byDepth = [...notes].sort((a, b) => depth(a.path) - depth(b.path) || a.path.localeCompare(b.path));
+    const top = byDepth.filter((n) => depth(n.path) <= 1);
+    const shown = (top.length ? top : byDepth).slice(0, MAP_SHOWN);
+    units.push(shown.map((n) => `${n.path} \u2014 ${cap(n.summary, 70)}${n.state === "changed" || n.state === "missing" ? ` [${n.state}]` : ""}`).join("\n"));
+  }
+  const decisions = newestEntries(root, "decision").filter((d) => d.data.status === "active").sort(byCreated);
+  const fixes = newestEntries(root, "fix").sort(byCreated);
+  const decisionTotal = countActive(root, "decision");
+  const fixTotal = listIds(root, "fix").length;
+  if (decisions.length) units.push(`Decisions (${decisionTotal}): ${some(decisions.map((d) => d.id))}`);
+  if (fixes.length) units.push(`Fixes (${fixTotal}): ${some(fixes.map((f) => f.data.status === "active" ? f.id : `${f.id} [${f.data.status}]`))}`);
+  const build = (middle2, marker) => [...head, ...middle2, marker ? MARKER : FOOT].join("\n");
+  const middle = [];
+  for (const unit of units) {
+    if (build([...middle, unit], true).length > BRIEF_LIMIT) return build(middle, true);
+    middle.push(unit);
+  }
+  return build(middle, false);
+}
+
+// src/vault/search.ts
+var import_node_fs7 = __toESM(require("node:fs"), 1);
+var SEARCHABLE = ["fix", "decision", "task", "topic", "milestone", "map", "artifact", "session"];
+function titleOf(e) {
+  const data = e.data;
+  if (data.title) return data.title;
+  const note = e.data;
+  if (note.path) return note.summary ? `${note.path} \u2014 ${note.summary}` : note.path;
+  return (e.sections.Summary ?? "").split("\n")[0] || e.id;
+}
+function filesOf(e) {
+  const data = e.data;
+  return [...data.files ?? [], ...data.files_touched ?? [], ...data.path ? [data.path] : []];
+}
+var fold = (s) => s.normalize("NFKC").toLowerCase();
+function searchVault(root, q) {
+  const terms = fold(q.query ?? "").split(/\s+/).filter(Boolean);
+  const file = q.file ? (toRelPath(root, q.file) ?? q.file).toLowerCase() : null;
+  if (terms.length === 0 && !file) return [];
+  const kinds = file ? !q.type || q.type === "fix" ? ["fix"] : [] : SEARCHABLE.filter((k) => !q.type || k === q.type);
+  const scored = [];
+  for (const kind of kinds) {
+    for (const e of listGood(root, kind)) {
+      const files = filesOf(e).map((f) => f.toLowerCase());
+      if (file && !files.includes(file)) continue;
+      const title = fold(titleOf(e));
+      const labels = (e.data.labels ?? []).join(" ");
+      const goal = e.data.goal ?? "";
+      const accept = (e.data.acceptance ?? []).join("\n");
+      const body = fold(`${Object.values(e.sections).join("\n")}
+${files.join("\n")}
+${labels}
+${goal}
+${accept}`);
+      let score = terms.length === 0 ? 1 : 0;
+      for (const term of terms) {
+        if (title.includes(term)) score += 3;
+        if (body.includes(term)) score += 1;
+      }
+      if (score === 0) continue;
+      const status = e.data.status ?? null;
+      scored.push({
+        hit: { ref: refOf(kind, e.id), kind, status, line: titleOf(e).slice(0, 90) },
+        score,
+        id: e.id
       });
     }
-  });
-  syncTopics(root, [topic], now);
+  }
+  scored.sort((a, b) => b.score - a.score || (a.id < b.id ? 1 : -1));
+  return scored.slice(0, q.limit ?? 10).map((s) => s.hit);
 }
-function bulkUpdateTasks(root, ids, patch, by = "agent", now = /* @__PURE__ */ new Date()) {
-  const bare = ids.map((i) => idOfKind(i, "task"));
-  const touched = [];
-  const done = withLock(tasksDir(root), () => {
-    if (patch.status !== void 0 && !TASK_STATUSES.includes(patch.status)) rule(`Status must be ${TASK_STATUSES.join(", ")}`);
-    noControl("The topic", patch.topic);
-    const drop = new Set((patch.labelsRemove ?? []).map((l) => l.trim().toLowerCase()));
-    const plans = bare.map((id) => {
-      if (!entryExists(root, "task", id)) throw new Error(`No task with id ${id}`);
-      const e = readEntry(root, "task", id);
-      if (isBroken(e)) throw new RuleError(`Task ${id} cannot be read; fix it first`);
-      let labels;
-      if (patch.labelsAdd?.length || drop.size) {
-        labels = normalizeLabels([...(e.data.labels ?? []).filter((l) => !drop.has(l.toLowerCase())), ...patch.labelsAdd ?? []]);
-      }
-      const input = {
-        id,
-        status: patch.status,
-        priority: patch.priority,
-        milestone: patch.milestone,
-        due: patch.due,
-        labels,
-        by
-      };
-      return { input, patch: checkFields(root, id, fieldsOf(input)) };
-    });
-    const topicsBefore = new Set(listIds(root, "topic"));
-    const topic = patch.topic === null ? null : patch.topic ? resolveTopic(root, patch.topic, now) : void 0;
-    const staged = plans.map(({ input, patch: fields }) => {
-      const id = input.id;
-      const e = must(root, "task", id);
-      const was = { status: e.data.status, topic: e.data.topic ?? null };
-      changeTask(e, input, fields, topic, void 0, now);
-      if (was.status !== e.data.status || was.topic !== (e.data.topic ?? null)) touched.push(was.topic, e.data.topic);
-      return { entry: e, file: entryPath(root, "task", id), text: renderEntry("task", e.data, e.sections), original: readRaw(root, "task", id) };
-    });
-    const written = [];
+function readRef(root, ref) {
+  const { kind, id } = parseRef(ref);
+  const kinds = kind ? [kind] : KINDS.filter((k) => k !== "project");
+  for (const k of kinds) {
     try {
-      for (const s of staged) {
-        refreshLocks();
-        writeAtomic(s.file, s.text);
-        written.push(s);
-      }
-    } catch (err) {
-      for (const s of written.reverse()) {
-        try {
-          if (s.original !== null) writeAtomic(s.file, s.original);
-        } catch {
-        }
-      }
-      if (typeof topic === "string" && !topicsBefore.has(topic)) {
-        try {
-          import_node_fs9.default.unlinkSync(entryPath(root, "topic", topic));
-        } catch {
-        }
-      }
-      throw err;
+      return import_node_fs7.default.readFileSync(entryPath(root, k, id), "utf8");
+    } catch {
     }
-    return staged.map((s) => s.entry);
+  }
+  return null;
+}
+
+// src/transcript/usage.ts
+var import_node_fs8 = __toESM(require("node:fs"), 1);
+var HAS_TIMESTAMP = '"timestamp"';
+var topTime = (r) => {
+  if (typeof r.timestamp !== "string") return null;
+  const t = Date.parse(r.timestamp);
+  return Number.isFinite(t) ? t : null;
+};
+var BIG_RESULT_LINE = 2 * 1024;
+function transcriptStart(transcriptPath) {
+  let head;
+  let cut = false;
+  try {
+    const fd = import_node_fs8.default.openSync(transcriptPath, "r");
+    try {
+      const buf = Buffer.alloc(256 * 1024);
+      const got = import_node_fs8.default.readSync(fd, buf, 0, buf.length, 0);
+      cut = got === buf.length;
+      head = buf.toString("latin1", 0, got);
+    } finally {
+      import_node_fs8.default.closeSync(fd);
+    }
+  } catch {
+    return null;
+  }
+  const lines = head.split("\n");
+  if (cut) lines.pop();
+  for (const line of lines) {
+    if (!line.includes(HAS_TIMESTAMP)) continue;
+    try {
+      const rec = JSON.parse(line);
+      const t = rec && typeof rec === "object" ? topTime(rec) : null;
+      if (t !== null) return new Date(t);
+    } catch {
+    }
+  }
+  return null;
+}
+function sessionBegan(transcriptPath, now) {
+  const t = transcriptPath ? transcriptStart(transcriptPath) : null;
+  return t && t.getTime() <= now.getTime() ? t : now;
+}
+
+// src/vault/live.ts
+var import_node_fs9 = __toESM(require("node:fs"), 1);
+var import_node_path9 = __toESM(require("node:path"), 1);
+var CLAUDE_WORKING_MS = 10 * 60 * 1e3;
+var CODEX_WORKING_MS = 5 * 60 * 1e3;
+var CLAUDE_WAITING_MS = 30 * 60 * 1e3;
+var CLOSED_VISIBLE_MS = 60 * 60 * 1e3;
+var LIVE_MAX_AGE_MS = 24 * 60 * 60 * 1e3;
+function liveDir() {
+  return import_node_path9.default.join(binkgoHome(), "live");
+}
+function liveFile(sessionId) {
+  return import_node_path9.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
+}
+function isRecord(v) {
+  if (!v || typeof v !== "object") return false;
+  const r = v;
+  const task = r.task;
+  return (r.agent === "claude" || r.agent === "codex") && typeof r.session_id === "string" && typeof r.root === "string" && typeof r.at === "string" && (r.state === "working" || r.state === "waiting" || r.state === "closed") && (task === null || typeof task === "object" && typeof task.id === "string" && typeof task.title === "string") && (r.transcript_path === void 0 || typeof r.transcript_path === "string") && (r.pid === void 0 || typeof r.pid === "number");
+}
+function readFile(file) {
+  try {
+    const parsed = JSON.parse(import_node_fs9.default.readFileSync(file, "utf8"));
+    return isRecord(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+function updateLive(sessionId, init, fn, now) {
+  const file = liveFile(sessionId);
+  return withLock(file, () => {
+    const rec = readFile(file) ?? init();
+    fn(rec);
+    rec.at = now.toISOString();
+    writeAtomic(file, JSON.stringify(rec));
+    return rec;
   });
-  syncTopics(root, touched, now, done.filter((e) => e.data.status !== "done").map((e) => e.data.topic));
-  return done;
+}
+function allRecords() {
+  let names;
+  try {
+    names = import_node_fs9.default.readdirSync(liveDir()).filter((n) => n.endsWith(".json"));
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const name of names) {
+    const rec = readFile(import_node_path9.default.join(liveDir(), name));
+    if (rec) out.push(rec);
+  }
+  return out;
+}
+function setCurrentTask(root, agent, task, now) {
+  const rec = allRecords().filter((r) => r.agent === agent && r.state !== "closed" && samePath(r.root, root)).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+  if (!rec) return;
+  if (task.status === "doing") {
+    updateLive(rec.session_id, () => rec, (r) => {
+      r.task = { id: task.id, title: task.title };
+    }, now);
+  } else if (rec.task?.id === task.id) {
+    updateLive(rec.session_id, () => rec, (r) => {
+      r.task = null;
+    }, now);
+  }
+}
+
+// src/vault/state.ts
+var import_node_fs10 = __toESM(require("node:fs"), 1);
+var import_node_path10 = __toESM(require("node:path"), 1);
+function stateDir() {
+  return import_node_path10.default.join(binkgoHome(), "state");
+}
+function stateFile(sessionId) {
+  return import_node_path10.default.join(stateDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
+}
+function isState(v) {
+  if (!v || typeof v !== "object") return false;
+  const s = v;
+  return typeof s.session_id === "string" && typeof s.root === "string" && (s.entry_id === null || typeof s.entry_id === "string") && Array.isArray(s.warned_files) && s.warned_files.every((f) => typeof f === "string") && (s.map_shown === void 0 || Array.isArray(s.map_shown) && s.map_shown.every((f) => typeof f === "string")) && typeof s.dirty === "boolean" && typeof s.ended === "boolean" && (s.transcript_path === void 0 || typeof s.transcript_path === "string") && (s.notice_at === void 0 || typeof s.notice_at === "string") && (s.usage_at === void 0 || typeof s.usage_at === "string");
+}
+function readFile2(file) {
+  try {
+    const parsed = JSON.parse(import_node_fs10.default.readFileSync(file, "utf8"));
+    return isState(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+function mutateState(sessionId, init, fn) {
+  const file = stateFile(sessionId);
+  return withLock(file, () => {
+    const state = readFile2(file) ?? init();
+    fn(state);
+    writeAtomic(file, JSON.stringify(state, null, 2));
+    return state;
+  });
+}
+function allStates() {
+  let names;
+  try {
+    names = import_node_fs10.default.readdirSync(stateDir()).filter((n) => n.endsWith(".json"));
+  } catch {
+    return [];
+  }
+  const out = [];
+  for (const name of names) {
+    const file = import_node_path10.default.join(stateDir(), name);
+    const state = readFile2(file);
+    if (!state) continue;
+    try {
+      out.push({ state, mtime: import_node_fs10.default.statSync(file).mtimeMs });
+    } catch {
+    }
+  }
+  return out;
+}
+function findActiveState(root) {
+  const live = allStates().filter((x) => !x.state.ended && samePath(x.state.root, root)).sort((a, b) => b.mtime - a.mtime);
+  return live[0]?.state ?? null;
+}
+function findStateByEntry(root, entryId) {
+  return allStates().find((x) => x.state.entry_id === entryId && samePath(x.state.root, root))?.state ?? null;
 }
 
 // src/vault/vault.ts
+var import_node_fs11 = __toESM(require("node:fs"), 1);
+var import_node_os4 = __toESM(require("node:os"), 1);
+var import_node_path11 = __toESM(require("node:path"), 1);
 function must2(root, kind, id) {
   const e = readEntry(root, kind, id);
   if (isBroken(e)) throw new Error(`Cannot read ${kind} ${id}: ${e.error}`);
@@ -9271,16 +9397,16 @@ function must2(root, kind, id) {
 }
 function canHostVault(root) {
   const r = canonicalPath(root);
-  if (import_node_path10.default.dirname(r) === r) return false;
-  if (samePath(r, import_node_os5.default.homedir())) return false;
+  if (import_node_path11.default.dirname(r) === r) return false;
+  if (samePath(r, import_node_os4.default.homedir())) return false;
   return !samePath(vaultDir(r), binkgoHome());
 }
 function vaultExists(root) {
-  return import_node_fs10.default.existsSync(entryPath(root, "project", "project"));
+  return import_node_fs11.default.existsSync(entryPath(root, "project", "project"));
 }
 function writeGitignore(root) {
   try {
-    import_node_fs10.default.writeFileSync(import_node_path10.default.join(vaultDir(root), ".gitignore"), ["*.lock", "*.steal", "*.tmp", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
+    import_node_fs11.default.writeFileSync(import_node_path11.default.join(vaultDir(root), ".gitignore"), ["*.lock", "*.steal", "*.tmp", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
   } catch (e) {
     if (e.code !== "EEXIST") throw e;
   }
@@ -9290,7 +9416,7 @@ function initVault(root, input, now = /* @__PURE__ */ new Date(), opts = {}) {
   noControl("The goal", input.goal, true);
   if (!canHostVault(root)) throw new Error(`Binkgo cannot create a vault in ${root}`);
   for (const k of KINDS) {
-    if (k !== "project" && k !== "milestone" && k !== "map") import_node_fs10.default.mkdirSync(import_node_path10.default.join(vaultDir(root), DIRS[k]), { recursive: true });
+    if (k !== "project" && k !== "milestone" && k !== "map") import_node_fs11.default.mkdirSync(import_node_path11.default.join(vaultDir(root), DIRS[k]), { recursive: true });
   }
   if (!vaultExists(root)) {
     const t = localIso(now);
@@ -9323,1974 +9449,451 @@ function updateProject(root, patch, now = /* @__PURE__ */ new Date()) {
     e.data.updated = localIso(now);
   });
 }
+function requireExisting(root, kind, ref) {
+  const id = idOfKind(ref, kind);
+  if (!entryExists(root, kind, id)) throw new Error(`No ${kind} with id ${id}`);
+  must2(root, kind, id);
+  return id;
+}
+function logDecision(root, input, now = /* @__PURE__ */ new Date()) {
+  const old = input.supersedes ? requireExisting(root, "decision", input.supersedes) : null;
+  const id = createEntry(
+    root,
+    "decision",
+    `${dateStamp(now)}-${slugify(input.title)}`,
+    {
+      title: input.title,
+      status: "active",
+      supersedes: old,
+      topic: input.topic ? resolveTopic(root, input.topic, now) : null,
+      session: input.session ?? null,
+      created: localIso(now)
+    },
+    { Decision: input.decision, Why: input.why, Alternatives: input.alternatives ?? "" }
+  );
+  if (old) mutateEntry(root, "decision", old, (e) => {
+    e.data.status = "superseded";
+  });
+  return must2(root, "decision", id);
+}
+function logFix(root, input, now = /* @__PURE__ */ new Date()) {
+  if (input.supersedes && input.reverts) throw new Error("give either supersedes or reverts, not both");
+  const superseded = input.supersedes ? requireExisting(root, "fix", input.supersedes) : null;
+  const reverted = input.reverts ? requireExisting(root, "fix", input.reverts) : null;
+  const files = [...new Set(input.files.map((f) => toRelPath(root, f)).filter((f) => f !== null))];
+  const id = createEntry(
+    root,
+    "fix",
+    `${dateStamp(now)}-${slugify(input.title)}`,
+    {
+      title: input.title,
+      status: "active",
+      files,
+      verified: input.verified,
+      ...input.auto ? { auto: true } : {},
+      supersedes: superseded ?? reverted,
+      session: input.session ?? null,
+      created: localIso(now)
+    },
+    { Symptom: input.symptom, Cause: input.cause, Fix: input.fix }
+  );
+  if (superseded) mutateEntry(root, "fix", superseded, (e) => {
+    e.data.status = "superseded";
+  });
+  if (reverted) mutateEntry(root, "fix", reverted, (e) => {
+    e.data.status = "reverted";
+  });
+  return must2(root, "fix", id);
+}
 var MAX_COPY_BYTES = 20 * 1024 * 1024;
-
-// src/dashboard/data.ts
-var import_node_fs13 = __toESM(require("node:fs"), 1);
-var import_node_path13 = __toESM(require("node:path"), 1);
-var import_node_crypto8 = require("node:crypto");
-
-// src/vault/map.ts
-var import_node_fs11 = __toESM(require("node:fs"), 1);
-var import_node_path11 = __toESM(require("node:path"), 1);
-function stampOf(root, rel) {
-  const full = import_node_path11.default.join(canonicalPath(root), rel === "." ? "" : rel);
+function saveArtifact(root, input, now = /* @__PURE__ */ new Date()) {
+  const abs = import_node_path11.default.resolve(root, input.path);
+  let stat;
   try {
-    const st = import_node_fs11.default.statSync(full);
-    if (!st.isDirectory()) return `f:${st.size}:${Math.floor(st.mtimeMs)}`;
-    let newest = 0;
-    const names = import_node_fs11.default.readdirSync(full).filter((n) => n !== VAULT_DIRNAME && n !== ".git" && n !== "node_modules");
-    for (const n of names) {
-      try {
-        newest = Math.max(newest, Math.floor(import_node_fs11.default.statSync(import_node_path11.default.join(full, n)).mtimeMs));
-      } catch {
-      }
-    }
-    return `d:${names.length}:${newest}`;
+    stat = import_node_fs11.default.statSync(abs);
   } catch {
-    return null;
+    throw new Error(`File not found: ${input.path}`);
   }
-}
-function stateOf(root, rel, stamp) {
-  const now = stampOf(root, rel);
-  if (now === null) return "missing";
-  if (!stamp) return "unknown";
-  return now === stamp ? "fresh" : "changed";
-}
-function listMapNotes(root, max = 500) {
-  return listGood(root, "map").slice(0, max).map((e) => ({
-    id: e.id,
-    path: e.data.path,
-    summary: e.data.summary,
-    details: e.sections.Details ?? "",
-    state: stateOf(root, e.data.path, e.data.stamp),
-    updated: e.data.updated
-  })).sort((a, b) => a.path.localeCompare(b.path));
-}
-
-// src/dashboard/covers.ts
-var import_node_fs12 = __toESM(require("node:fs"), 1);
-var import_node_path12 = __toESM(require("node:path"), 1);
-var import_node_crypto7 = require("node:crypto");
-
-// src/dashboard/cover-types.ts
-var COVER_SOURCES = ["glasshouse", "birds", "upload", "none"];
-var MAX_COVER_BYTES = 4 * 1024 * 1024;
-
-// src/dashboard/covers.ts
-var CoverError = class extends Error {
-  constructor(status, message) {
-    super(message);
-    this.status = status;
-  }
-  status;
-};
-var revisionPattern = /^[a-f0-9]{64}$/;
-var position = (value) => typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 100;
-function directory(id) {
-  if (!/^[a-f0-9]{10}$/.test(id)) throw new CoverError(404, "Project not found.");
-  return import_node_path12.default.join(binkgoHome(), "appearance", id);
-}
-function readStored(id) {
-  const file = import_node_path12.default.join(directory(id), "cover.json");
-  try {
-    const cover = JSON.parse(import_node_fs12.default.readFileSync(file, "utf8"));
-    if (!COVER_SOURCES.includes(cover.source) || !position(cover.x) || !position(cover.y)) return;
-    if (cover.source === "upload" && (!revisionPattern.test(cover.revision ?? "") || !["image/jpeg", "image/png", "image/webp"].includes(cover.mime ?? ""))) return;
-    return cover;
-  } catch {
-    return;
-  }
-}
-function readCover(id) {
-  const cover = readStored(id);
-  return cover && { source: cover.source, x: cover.x, y: cover.y, ...cover.revision ? { revision: cover.revision } : {} };
-}
-function decodeImage(value) {
-  if (typeof value !== "string" || value.length > Math.ceil(MAX_COVER_BYTES / 3) * 4 + 64) throw new CoverError(413, "The image is too large. Choose a smaller image.");
-  const match = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/]+={0,2})$/.exec(value);
-  if (!match) throw new CoverError(400, "Choose a JPEG, PNG or WebP image.");
-  const bytes = Buffer.from(match[2], "base64");
-  if (bytes.length > MAX_COVER_BYTES) throw new CoverError(413, "The image is too large. Choose a smaller image.");
-  const mime = match[1];
-  const valid = mime === "image/png" ? bytes.subarray(0, 8).equals(Buffer.from("89504e470d0a1a0a", "hex")) : mime === "image/jpeg" ? bytes.subarray(0, 3).equals(Buffer.from("ffd8ff", "hex")) && bytes.subarray(-2).equals(Buffer.from("ffd9", "hex")) : bytes.toString("ascii", 0, 4) === "RIFF" && bytes.toString("ascii", 8, 12) === "WEBP";
-  if (!valid || bytes.length < 20 || bytes.toString("base64") !== match[2]) throw new CoverError(400, "This image could not be read. Choose another image.");
-  return { bytes, mime };
-}
-function saveCover(id, input) {
-  if (!COVER_SOURCES.includes(input.source) || !position(input.x) || !position(input.y)) throw new CoverError(400, "Choose a cover and a position between 0 and 100.");
-  if (Object.keys(input).some((key) => !["source", "x", "y", "image"].includes(key))) throw new CoverError(400, "Unknown cover setting.");
-  if (input.source !== "upload" && input.image !== void 0) throw new CoverError(400, "An image can only be saved as an uploaded cover.");
-  const image = input.image === void 0 ? void 0 : decodeImage(input.image);
-  const dir = directory(id);
-  const file = import_node_path12.default.join(dir, "cover.json");
-  return withLock(file, () => {
-    const previous = readStored(id);
-    const next = { source: input.source, x: input.x, y: input.y };
-    if (next.source === "upload") {
-      if (image) {
-        next.revision = (0, import_node_crypto7.createHash)("sha256").update(image.bytes).digest("hex");
-        next.mime = image.mime;
-        const imageFile = import_node_path12.default.join(dir, `${next.revision}.image`);
-        if (!import_node_fs12.default.existsSync(imageFile)) writeAtomic(imageFile, image.bytes);
-      } else {
-        if (previous?.source !== "upload" || !import_node_fs12.default.existsSync(import_node_path12.default.join(dir, `${previous.revision}.image`))) throw new CoverError(400, "Upload an image first.");
-        next.revision = previous.revision;
-        next.mime = previous.mime;
-      }
-    }
-    writeAtomic(file, JSON.stringify(next));
-    if (previous?.revision && previous.revision !== next.revision) {
-      try {
-        import_node_fs12.default.unlinkSync(import_node_path12.default.join(dir, `${previous.revision}.image`));
-      } catch {
-      }
-    }
-    return readCover(id);
-  });
-}
-function readCoverImage(id) {
-  const cover = readStored(id);
-  if (cover?.source !== "upload" || !cover.revision || !cover.mime) throw new CoverError(404, "Cover image not found.");
-  const file = import_node_path12.default.join(directory(id), `${cover.revision}.image`);
-  try {
-    if (import_node_fs12.default.statSync(file).size > MAX_COVER_BYTES) throw new Error("oversize");
-    return { bytes: import_node_fs12.default.readFileSync(file), mime: cover.mime, revision: cover.revision };
-  } catch {
-    throw new CoverError(404, "Cover image not found.");
-  }
-}
-
-// src/dashboard/data.ts
-function projectId(root) {
-  return (0, import_node_crypto8.createHash)("sha1").update(canonicalPath(root).toLowerCase()).digest("hex").slice(0, 10);
-}
-function resolveProject(id) {
-  return readRegistry().find((p) => projectId(p.path) === id)?.path ?? null;
-}
-var time = (s) => {
-  const t = s ? Date.parse(s) : NaN;
-  return Number.isNaN(t) ? 0 : t;
-};
-var newestFirst = (items, when) => [...items].sort((a, b) => time(when(b)) - time(when(a)) || (a.id < b.id ? 1 : a.id > b.id ? -1 : 0));
-function countTasks(list) {
-  const c = { total: list.length, todo: 0, doing: 0, blocked: 0, done: 0 };
-  for (const t of list) c[t.data.status]++;
-  return c;
-}
-function problemCount(root) {
-  return problems(root).length;
-}
-function bulletItems(text2) {
-  return text2.split(/\r?\n/).filter((l) => l.startsWith("- ")).map((l) => l.slice(2).trim()).filter(Boolean);
-}
-function firstNonEmptyLine(text2) {
-  const line = (text2 ?? "").split(/\r?\n/).map((l) => l.trim()).find((l) => l !== "") ?? "";
-  return line.replace(/^(?:#{1,6}|[-*+>])\s+/, "").trim();
-}
-function topicTitles(root) {
-  return new Map(listGood(root, "topic").map((t) => [t.id, t.data.title]));
-}
-function taskViews(root) {
-  const titles = topicTitles(root);
-  return listGood(root, "task").map((t) => ({
-    id: t.id,
-    title: t.data.title,
-    status: t.data.status,
-    topic: t.data.topic,
-    topicTitle: t.data.topic ? titles.get(t.data.topic) ?? null : null,
-    acceptance: t.data.acceptance,
-    notes: t.sections.Notes ?? "",
-    rank: t.data.rank ?? null,
-    created: t.data.created,
-    updated: t.data.updated,
-    priority: t.data.priority ?? null,
-    due: t.data.due ?? null,
-    start: t.data.start ?? null,
-    estimate: t.data.estimate ?? null,
-    labels: t.data.labels ?? [],
-    parent: t.data.parent ?? null,
-    blocked_by: t.data.blocked_by ?? [],
-    milestone: effectiveMilestone(t.data),
-    completed: t.data.completed ?? null,
-    session: t.data.session ?? null,
-    history: t.data.history ?? []
-  })).sort((a, b) => time(a.created) - time(b.created) || (a.id < b.id ? -1 : 1));
-}
-function listProjects() {
-  const cards = readRegistry().map((item) => {
-    const id = projectId(item.path);
-    const base = { id, path: item.path, cover: readCover(id) };
-    if (!import_node_fs13.default.existsSync(item.path) || !vaultExists(item.path)) {
-      return {
-        ...base,
-        name: item.name,
-        missing: true,
-        goal: "",
-        focus: "",
-        status: "",
-        tasks: { total: 0, todo: 0, doing: 0, blocked: 0, done: 0 },
-        lastActivity: null,
-        problems: 0
-      };
-    }
-    const project = readEntry(item.path, "project", "project");
-    const p = isBroken(project) ? null : project.data;
-    let last = p?.updated ?? null;
-    for (const s of listGood(item.path, "session")) {
-      for (const t of [s.data.started, s.data.ended]) if (t && time(t) > time(last)) last = t;
-    }
-    return {
-      ...base,
-      name: p?.name ?? item.name,
-      missing: false,
-      goal: p?.goal ?? "",
-      focus: p?.focus ?? "",
-      status: p?.status ?? "",
-      tasks: countTasks([...taskRows(item.path).values()].filter((r) => !r.broken).map((r) => ({ data: { status: r.status } }))),
-      lastActivity: last,
-      problems: problemCount(item.path)
-    };
-  });
-  const byActivity = (a, b) => time(b.lastActivity) - time(a.lastActivity);
-  return [...cards.filter((c) => !c.missing).sort(byActivity), ...cards.filter((c) => c.missing)];
-}
-function overview(root) {
-  const project = readEntry(root, "project", "project");
-  const p = isBroken(project) ? null : project;
-  const views = taskViews(root);
-  const topics = listGood(root, "topic");
-  const known = new Set(topics.map((t) => t.id));
-  const unassigned = views.filter((t) => !t.topic || !known.has(t.topic));
-  const lastSession = newestFirst(listGood(root, "session"), (s) => s.data.started).find(
-    (s) => s.data.summary_written || s.sections.Summary.trim() !== ""
+  if (!stat.isFile()) throw new Error(`Not a file: ${input.path}`);
+  const rel = toRelPath(root, abs);
+  if (!rel) throw new Error("path is outside the project (or inside .binkgo)");
+  if (input.copy && stat.size > MAX_COPY_BYTES) throw new Error("file too large to copy");
+  const taskRef = input.task ? idOfKind(input.task, "task") : null;
+  if (taskRef && !entryExists(root, "task", taskRef)) throw new Error(`No task with id ${taskRef}`);
+  const id = createEntry(
+    root,
+    "artifact",
+    `${dateStamp(now)}-${slugify(input.title)}`,
+    {
+      title: input.title,
+      kind: input.kind,
+      path: rel,
+      stored: false,
+      task: taskRef,
+      session: input.session ?? null,
+      created: localIso(now)
+    },
+    { Description: input.description ?? "" }
   );
-  const byUpdated = (a, b) => time(b.updated) - time(a.updated);
-  return {
-    project: {
-      name: p?.data.name ?? import_node_path13.default.basename(root),
-      goal: p?.data.goal ?? "",
-      focus: p?.data.focus ?? "",
-      status: p?.data.status ?? "",
-      overview: p?.sections.Overview ?? ""
-    },
-    tasks: countTasks(views.map((t) => ({ data: t }))),
-    topics: topics.map((t) => {
-      const mine = views.filter((v) => v.topic === t.id);
-      return {
-        id: t.id,
-        title: t.data.title,
-        goal: t.data.goal,
-        status: t.data.status,
-        total: mine.length,
-        done: mine.filter((v) => v.status === "done").length
-      };
-    }),
-    unassigned: { total: unassigned.length, done: unassigned.filter((v) => v.status === "done").length },
-    lastSession: lastSession ? {
-      id: lastSession.id,
-      started: lastSession.data.started,
-      summary: lastSession.sections.Summary,
-      done: bulletItems(lastSession.sections.Done),
-      next: bulletItems(lastSession.sections.Next)
-    } : null,
-    doing: views.filter((t) => t.status === "doing").sort(byUpdated),
-    blocked: views.filter((t) => t.status === "blocked").sort(byUpdated),
-    problems: problemCount(root),
-    map: listMapNotes(root).map((n) => ({ id: n.id, path: n.path, summary: n.summary, state: n.state, updated: n.updated }))
-  };
-}
-function timeline(root) {
-  const decisions = listGood(root, "decision");
-  const fixes = listGood(root, "fix");
-  const artifactEntries = listGood(root, "artifact");
-  const taskEntries = listGood(root, "task");
-  const refs = (list, sessionId, status) => newestFirst(list.filter((e) => e.data.session === sessionId), (e) => e.data.created).map((e) => ({ id: e.id, title: e.data.title, status: status(e) }));
-  return newestFirst(listGood(root, "session"), (s) => s.data.started).map((s) => {
-    const u = s.data.usage;
-    return {
-      id: s.id,
-      started: s.data.started,
-      ended: s.data.ended,
-      model: s.data.model,
-      summary: s.sections.Summary,
-      done: bulletItems(s.sections.Done),
-      next: bulletItems(s.sections.Next),
-      files: s.data.files_touched,
-      // total = every token the session itself consumed; subagent tokens are reported separately.
-      tokens: {
-        total: u.input + u.cache_read + u.cache_write + u.output,
-        output: u.output,
-        contextPeak: u.context_peak,
-        subagent: u.subagent_total
-      },
-      decisions: refs(decisions, s.id, (e) => e.data.status),
-      fixes: refs(fixes, s.id, (e) => e.data.status),
-      artifacts: refs(artifactEntries, s.id, () => null),
-      tasks: refs(taskEntries, s.id, (e) => e.data.status)
-    };
-  });
-}
-function tasks(root) {
-  const views = taskViews(root);
-  const topics = listGood(root, "topic");
-  const known = new Set(topics.map((t) => t.id));
-  const groups = topics.map((t) => ({
-    id: t.id,
-    title: t.data.title,
-    goal: t.data.goal,
-    notes: t.sections.Notes ?? "",
-    status: t.data.status,
-    start: t.data.start ?? null,
-    target: t.data.target ?? null,
-    color: t.data.color ?? null,
-    tasks: views.filter((v) => v.topic === t.id)
-  }));
-  const loose = views.filter((v) => !v.topic || !known.has(v.topic));
-  if (loose.length) groups.push({ id: null, title: "", goal: "", notes: "", status: "active", start: null, target: null, color: null, tasks: loose });
-  const milestones = listGood(root, "milestone").map((m) => {
-    const mine = views.filter((v) => v.milestone === m.id);
-    return {
-      id: m.id,
-      title: m.data.title,
-      goal: m.data.goal,
-      status: m.data.status,
-      start: m.data.start ?? null,
-      end: m.data.end ?? null,
-      notes: m.sections.Notes ?? "",
-      total: mine.length,
-      done: mine.filter((v) => v.status === "done").length
-    };
-  }).sort((a, b) => (a.end ?? "9999") < (b.end ?? "9999") ? -1 : (a.end ?? "9999") > (b.end ?? "9999") ? 1 : a.title < b.title ? -1 : 1);
-  return { topics: groups, milestones };
-}
-function supersededByMap(list) {
-  const m = /* @__PURE__ */ new Map();
-  for (const e of list) if (e.data.supersedes) m.set(e.data.supersedes, e.id);
-  return m;
-}
-function knowledge(root) {
-  const decisions = listGood(root, "decision");
-  const fixes = listGood(root, "fix");
-  const titles = topicTitles(root);
-  const dBy = supersededByMap(decisions);
-  const fBy = supersededByMap(fixes);
-  return {
-    decisions: newestFirst(decisions, (d) => d.data.created).map((d) => ({
-      id: d.id,
-      title: d.data.title,
-      status: d.data.status,
-      supersedes: d.data.supersedes,
-      supersededBy: dBy.get(d.id) ?? null,
-      topic: d.data.topic,
-      topicTitle: d.data.topic ? titles.get(d.data.topic) ?? null : null,
-      session: d.data.session ?? null,
-      created: d.data.created,
-      decision: d.sections.Decision,
-      why: d.sections.Why,
-      alternatives: d.sections.Alternatives
-    })),
-    fixes: newestFirst(fixes, (f) => f.data.created).map((f) => ({
-      id: f.id,
-      title: f.data.title,
-      status: f.data.status,
-      verified: f.data.verified,
-      files: f.data.files,
-      supersedes: f.data.supersedes,
-      supersededBy: fBy.get(f.id) ?? null,
-      session: f.data.session ?? null,
-      created: f.data.created,
-      symptom: f.sections.Symptom,
-      cause: f.sections.Cause,
-      fix: f.sections.Fix
-    }))
-  };
-}
-var MAX_PLAN_BYTES = 5 * 1024 * 1024;
-function checkboxes(file) {
-  let text2;
-  try {
-    if (import_node_fs13.default.statSync(file).size > MAX_PLAN_BYTES) return null;
-    text2 = import_node_fs13.default.readFileSync(file, "utf8");
-  } catch {
-    return null;
-  }
-  const marks = [...text2.matchAll(/^[ \t]*- \[([ xX])\]/gm)];
-  if (!marks.length) return null;
-  return { done: marks.filter((m) => m[1] !== " ").length, total: marks.length };
-}
-function superpowersDocs(root, kind, vaultPaths) {
-  const rel = `docs/superpowers/${kind}s`;
-  let names;
-  try {
-    names = import_node_fs13.default.readdirSync(import_node_path13.default.join(root, rel), { withFileTypes: true }).filter((d) => d.isFile() && d.name.toLowerCase().endsWith(".md")).map((d) => d.name);
-  } catch {
-    return [];
-  }
-  return names.sort().flatMap((name) => {
-    const relPath = `${rel}/${name}`;
-    if (vaultPaths.has(relPath.toLowerCase())) return [];
-    const file = import_node_path13.default.join(root, rel, name);
+  if (input.copy) {
+    const ext = import_node_path11.default.extname(abs);
+    const name = `${id}${/^\.[A-Za-z0-9]{1,10}$/.test(ext) ? ext : ""}`;
+    const dest = import_node_path11.default.join(vaultDir(root), "artifacts", "files", name);
     try {
-      const heading = /^# (.+?)\s*$/m.exec(import_node_fs13.default.readFileSync(file, "utf8"));
-      return [{
-        id: relPath,
-        title: heading?.[1] ?? name.replace(/\.md$/i, ""),
-        kind,
-        path: relPath,
-        exists: true,
-        stored: false,
-        created: localIso(import_node_fs13.default.statSync(file).mtime),
-        description: "",
-        task: null,
-        source: "superpowers",
-        checkboxes: kind === "plan" ? checkboxes(file) : null
-      }];
-    } catch {
-      return [];
-    }
-  });
-}
-function insideRoot(root, p) {
-  if (typeof p !== "string" || !p || p.includes("\0") || /^[\\/]{2}/.test(p)) return null;
-  let rel = p;
-  if (import_node_path13.default.isAbsolute(p) || /^[a-zA-Z]:/.test(p)) {
-    const lexical = [root, canonicalPath(root)].map((r) => import_node_path13.default.relative(r, import_node_path13.default.resolve(p))).find((r) => r !== "" && r !== ".." && !r.startsWith(".." + import_node_path13.default.sep) && !import_node_path13.default.isAbsolute(r));
-    if (!lexical) return null;
-    rel = lexical;
-  }
-  const abs = resolveInside(root, rel);
-  if (!abs) return null;
-  return { abs, rel: import_node_path13.default.relative(canonicalPath(root), abs).split(import_node_path13.default.sep).join("/") };
-}
-function artifacts(root) {
-  const taken = /* @__PURE__ */ new Set();
-  const vault = listGood(root, "artifact").map((a) => {
-    const inside = insideRoot(root, a.data.path);
-    if (inside) taken.add(inside.rel.toLowerCase());
-    const exists = inside !== null && import_node_fs13.default.existsSync(inside.abs);
-    return {
-      id: a.id,
-      title: a.data.title,
-      kind: a.data.kind,
-      path: inside ? inside.rel : a.data.path,
-      exists,
-      stored: a.data.stored,
-      created: a.data.created,
-      description: a.sections.Description,
-      task: a.data.task ?? null,
-      source: "vault",
-      checkboxes: inside && exists && a.data.kind === "plan" ? checkboxes(inside.abs) : null
-    };
-  });
-  const docs = [...superpowersDocs(root, "spec", taken), ...superpowersDocs(root, "plan", taken)];
-  return newestFirst([...vault, ...docs], (a) => a.created);
-}
-function usage(root) {
-  const sessions = newestFirst(listGood(root, "session"), (s) => s.data.started);
-  const byDay = /* @__PURE__ */ new Map();
-  for (const s of sessions) {
-    const date2 = s.data.started.slice(0, 10);
-    const d = byDay.get(date2) ?? { date: date2, input: 0, cache_read: 0, cache_write: 0, output: 0, subagent: 0 };
-    const u = s.data.usage;
-    d.input += u.input;
-    d.cache_read += u.cache_read;
-    d.cache_write += u.cache_write;
-    d.output += u.output;
-    d.subagent += u.subagent_total;
-    byDay.set(date2, d);
-  }
-  return {
-    sessions: sessions.map((s) => ({
-      id: s.id,
-      started: s.data.started,
-      ended: s.data.ended,
-      model: s.data.model,
-      summary: firstNonEmptyLine(s.sections.Summary),
-      fullSummary: s.sections.Summary.trim(),
-      usage: s.data.usage
-    })),
-    daily: [...byDay.values()].sort((a, b) => a.date < b.date ? -1 : 1)
-  };
-}
-function problems(root) {
-  const rows = taskRows(root);
-  return KINDS.flatMap(
-    (kind) => kind === "task" ? [...rows].flatMap(([id, r]) => r.broken ? [{ kind: "task", id, error: r.error ?? "unreadable" }] : []) : listEntries(root, kind).flatMap((e) => isBroken(e) ? [{ kind: e.kind, id: e.id, error: e.error }] : [])
-  );
-}
-
-// src/dashboard/launcher.ts
-var PRIORITY_ORDER = ["urgent", "high", "medium", "low"];
-function probeDashboard(port, timeoutMs = 1e3) {
-  return new Promise((resolve) => {
-    const req = import_node_http.default.get({ host: "127.0.0.1", port, path: "/api/setup", timeout: timeoutMs }, (res) => {
-      let body = "";
-      res.setEncoding("utf8");
-      res.on("data", (c) => {
-        if (body.length < 8192) body += c;
-      });
-      res.on("end", () => {
-        try {
-          const j = JSON.parse(body);
-          resolve(res.statusCode === 200 && "codexInstaller" in j && "pluginDirectory" in j);
-        } catch {
-          resolve(false);
-        }
-      });
-    });
-    req.on("timeout", () => req.destroy());
-    req.on("error", () => resolve(false));
-  });
-}
-async function waitForDashboard(port, totalMs = 5e3) {
-  const end = Date.now() + totalMs;
-  while (Date.now() < end) {
-    if (await probeDashboard(port, 500)) return true;
-    await new Promise((r) => setTimeout(r, 150));
-  }
-  return false;
-}
-function spawnDetachedServer(script, argv) {
-  const args = argv.filter((a) => a !== "--detach" && a !== "--open");
-  const child = (0, import_node_child_process3.spawn)(process.execPath, [script, ...args], { detached: true, stdio: "ignore", windowsHide: true });
-  child.on("error", () => {
-  });
-  child.unref();
-}
-var DAY_MS = 864e5;
-function licenceInfo(s) {
-  return {
-    state: s.state,
-    ...s.email ? { email: s.email } : {},
-    ...s.msLeft !== void 0 ? { daysLeft: Math.ceil(s.msLeft / DAY_MS) } : {}
-  };
-}
-function currentLicence(o) {
-  const status = licenseStatus(o.now ?? /* @__PURE__ */ new Date(), o.appVersion ?? package_default.version, { publicKey: o.publicKey });
-  const gate = o.gate ?? !dashboardGateOffForTests();
-  return { status, usable: !gate || isUsable(status) };
-}
-function licenceJson(o = {}) {
-  const { status, usable } = currentLicence(o);
-  return { ...licenceInfo(status), siteUrl: siteUrl(), usable };
-}
-async function signinStartJson(o = {}) {
-  const s = await startSignin({ fetch: o.fetch, appVersion: o.appVersion ?? package_default.version });
-  (o.openUrl ?? openBrowser)(s.verify_url);
-  return s;
-}
-var signinPollJson = (pollToken, o = {}) => pollSignin(pollToken, { fetch: o.fetch, publicKey: o.publicKey, appVersion: o.appVersion ?? package_default.version });
-var rankOf = (t) => {
-  const i = PRIORITY_ORDER.indexOf(t.priority ?? "");
-  return i === -1 ? PRIORITY_ORDER.length : i;
-};
-function briefJson(root, port = 4319, lic = {}) {
-  const { status, usable } = currentLicence(lic);
-  if (!usable) return { ok: false, reason: "licence", state: status.state, siteUrl: siteUrl() };
-  const dir = findProjectRoot(import_node_path14.default.resolve(root));
-  if (!vaultExists(dir)) return { ok: false, reason: "no-vault" };
-  const ov = overview(dir);
-  const t = tasks(dir);
-  const today = dateStamp(lic.now ?? /* @__PURE__ */ new Date());
-  const active = t.milestones.filter((m) => m.status === "active");
-  const notPast = (m) => m.end && m.end < today ? 1 : 0;
-  const milestone = [...active].sort((a, b) => notPast(a) - notPast(b) || (a.end ?? "9999").localeCompare(b.end ?? "9999") || (a.id < b.id ? -1 : 1))[0];
-  const todo = t.topics.flatMap((g) => g.tasks).filter((x) => x.status === "todo").sort((a, b) => rankOf(a) - rankOf(b) || (a.rank ?? Infinity) - (b.rank ?? Infinity)).slice(0, 8);
-  const k = knowledge(dir);
-  const recent = (list) => list.filter((x) => x.status === "active").slice(0, 5).map((x) => ({ id: x.id, title: x.title }));
-  return {
-    ok: true,
-    licence: licenceInfo(status),
-    siteUrl: siteUrl(),
-    name: ov.project.name,
-    goal: ov.project.goal,
-    focus: ov.project.focus,
-    milestone: milestone ? { title: milestone.title, ends: milestone.end, done: milestone.done, total: milestone.total } : null,
-    doing: ov.doing.slice(0, 8).map((x) => ({ id: x.id, title: x.title, priority: x.priority })),
-    todo: todo.map((x) => ({ id: x.id, title: x.title, priority: x.priority, due: x.due })),
-    recentFixes: recent(k.fixes),
-    recentDecisions: recent(k.decisions),
-    dashboardUrl: `http://127.0.0.1:${port}/#/p/${projectId(dir)}`
-  };
-}
-
-// src/dashboard/server.ts
-var import_node_crypto9 = require("node:crypto");
-var import_node_fs17 = __toESM(require("node:fs"), 1);
-var import_node_http2 = __toESM(require("node:http"), 1);
-var import_node_path17 = __toESM(require("node:path"), 1);
-
-// src/vault/live.ts
-var import_node_fs14 = __toESM(require("node:fs"), 1);
-var import_node_path15 = __toESM(require("node:path"), 1);
-var CLAUDE_WORKING_MS = 10 * 60 * 1e3;
-var CODEX_WORKING_MS = 5 * 60 * 1e3;
-var CLAUDE_WAITING_MS = 30 * 60 * 1e3;
-var CLOSED_VISIBLE_MS = 60 * 60 * 1e3;
-var LIVE_MAX_AGE_MS = 24 * 60 * 60 * 1e3;
-function liveDir() {
-  return import_node_path15.default.join(binkgoHome(), "live");
-}
-function isRecord(v) {
-  if (!v || typeof v !== "object") return false;
-  const r = v;
-  const task = r.task;
-  return (r.agent === "claude" || r.agent === "codex") && typeof r.session_id === "string" && typeof r.root === "string" && typeof r.at === "string" && (r.state === "working" || r.state === "waiting" || r.state === "closed") && (task === null || typeof task === "object" && typeof task.id === "string" && typeof task.title === "string") && (r.transcript_path === void 0 || typeof r.transcript_path === "string") && (r.pid === void 0 || typeof r.pid === "number");
-}
-function readFile(file) {
-  try {
-    const parsed = JSON.parse(import_node_fs14.default.readFileSync(file, "utf8"));
-    return isRecord(parsed) ? parsed : null;
-  } catch {
-    return null;
-  }
-}
-function allRecords() {
-  let names;
-  try {
-    names = import_node_fs14.default.readdirSync(liveDir()).filter((n) => n.endsWith(".json"));
-  } catch {
-    return [];
-  }
-  const out = [];
-  for (const name of names) {
-    const rec = readFile(import_node_path15.default.join(liveDir(), name));
-    if (rec) out.push(rec);
-  }
-  return out;
-}
-function deriveStatus(r, now, transcriptMtime, pidAlive3) {
-  if (r.state === "closed") return "closed";
-  const at = Date.parse(r.at);
-  const age = now.getTime() - at;
-  if (r.agent === "codex") {
-    if (pidAlive3 === false) return "closed";
-    return r.state === "working" && age <= CODEX_WORKING_MS ? "working" : "waiting";
-  }
-  const seen = Math.max(at, transcriptMtime ?? 0);
-  const quiet = now.getTime() - seen;
-  if (r.state === "working") return quiet <= CLAUDE_WORKING_MS ? "working" : "idle";
-  return quiet <= CLAUDE_WAITING_MS ? "waiting" : "idle";
-}
-function pidAlive2(pid) {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch (e) {
-    return e.code === "EPERM";
-  }
-}
-function liveStatuses(now) {
-  const out = [];
-  for (const record of allRecords()) {
-    let mtime;
-    if (record.agent === "claude" && record.transcript_path) {
-      try {
-        mtime = import_node_fs14.default.statSync(record.transcript_path).mtimeMs;
-      } catch {
-      }
-    }
-    const alive = record.agent === "codex" && record.pid !== void 0 ? pidAlive2(record.pid) : void 0;
-    const status = deriveStatus(record, now, mtime, alive);
-    if (status === "closed" && now.getTime() - Date.parse(record.at) > CLOSED_VISIBLE_MS) continue;
-    out.push({ record, status });
-  }
-  return out;
-}
-function pruneLive(now) {
-  let names;
-  try {
-    names = import_node_fs14.default.readdirSync(liveDir());
-  } catch {
-    return;
-  }
-  const cutoff = now.getTime() - LIVE_MAX_AGE_MS;
-  for (const name of names) {
-    const file = import_node_path15.default.join(liveDir(), name);
-    try {
-      if (import_node_fs14.default.statSync(file).mtimeMs < cutoff) import_node_fs14.default.rmSync(file, { force: true });
-    } catch {
-    }
-  }
-}
-
-// src/dashboard/actions.ts
-var import_node_fs15 = __toESM(require("node:fs"), 1);
-var import_node_path16 = __toESM(require("node:path"), 1);
-var ActionError = class extends Error {
-  constructor(status, message, extra = {}) {
-    super(message);
-    this.status = status;
-    this.extra = extra;
-  }
-  status;
-  extra;
-};
-var MARKERS = [".git", "CLAUDE.md", ".claude", "AGENTS.md", ".codex", "package.json"];
-var MAX_PATH = 4096;
-var MAX_NAME = 80;
-var MAX_GOAL = 500;
-function clean(input) {
-  const s = input.trim();
-  return s.length >= 2 && s.startsWith('"') && s.endsWith('"') ? s.slice(1, -1).trim() : s;
-}
-var chars2 = (s) => Array.from(s).length;
-var DRIVE_DEVICE = /^[\\/]{2}[?.][\\/][A-Za-z]:/;
-var TWO_SEPARATORS2 = /^[\\/]{2}/;
-var WINDOWS_DRIVE = /^([A-Za-z]:|[\\/]{2}[?.][\\/][A-Za-z]:)/;
-var isNetworkPath = (p) => TWO_SEPARATORS2.test(p) && !DRIVE_DEVICE.test(p);
-function vaultState(root) {
-  if (vaultExists(root)) {
-    try {
-      readProject(root);
-      return "ok";
-    } catch {
-      return "damaged";
-    }
-  }
-  try {
-    import_node_fs15.default.lstatSync(import_node_path16.default.join(root, VAULT_DIRNAME));
-    return "damaged";
-  } catch {
-    return "none";
-  }
-}
-function inspectFolder(input) {
-  const raw = clean(input);
-  const blank = {
-    path: raw,
-    exists: false,
-    isDirectory: false,
-    name: "",
-    hasVault: false,
-    markers: [],
-    canCreate: false,
-    reason: "missing"
-  };
-  if (isNetworkPath(raw)) return { ...blank, reason: "network-path" };
-  if (!raw || raw.length > MAX_PATH || raw.includes("\0") || !import_node_path16.default.isAbsolute(raw)) return blank;
-  if (process.platform === "win32" && !WINDOWS_DRIVE.test(raw)) return blank;
-  const root = canonicalPath(raw);
-  if (isNetworkPath(root)) return { ...blank, reason: "network-path" };
-  const name = import_node_path16.default.basename(root) || root;
-  let stat = null;
-  try {
-    stat = import_node_fs15.default.statSync(root);
-  } catch {
-  }
-  if (!stat) return { ...blank, path: root, name };
-  const done = (reason, extra = {}) => ({
-    path: root,
-    exists: true,
-    isDirectory: stat.isDirectory(),
-    name,
-    hasVault: false,
-    markers: [],
-    canCreate: reason === null,
-    reason,
-    ...extra
-  });
-  if (!stat.isDirectory()) return done("not-directory");
-  const markers = MARKERS.filter((m) => import_node_fs15.default.existsSync(import_node_path16.default.join(root, m)));
-  if (!canHostVault(root)) return done("home-or-root", { markers });
-  const insideVault = root.split(import_node_path16.default.sep).some((seg) => seg.toLowerCase() === VAULT_DIRNAME);
-  if (insideVault) return done("inside-vault", { markers });
-  const vault = vaultState(root);
-  if (vault === "damaged") return done("damaged-vault", { markers });
-  return done(null, { markers, hasVault: vault === "ok" });
-}
-function createProject(input) {
-  if (typeof input.path !== "string") throw new ActionError(400, "path is required", { reason: "missing" });
-  const folder = inspectFolder(input.path);
-  if (!folder.canCreate || folder.reason) {
-    throw new ActionError(400, `folder cannot be used (${folder.reason ?? "unknown"})`, { reason: folder.reason ?? "missing" });
-  }
-  const root = folder.path;
-  if (folder.hasVault) {
-    registerProject(root, readProject(root).data.name, /* @__PURE__ */ new Date());
-    return { id: projectId(root), created: false };
-  }
-  if (typeof input.name !== "string") throw new ActionError(400, "name is required", { reason: "name" });
-  if (input.goal !== void 0 && typeof input.goal !== "string") throw new ActionError(400, "goal must be text", { reason: "goal" });
-  const name = input.name.trim();
-  const goal = (input.goal ?? "").trim();
-  if (chars2(name) < 1) throw new ActionError(400, "name is required", { reason: "name" });
-  if (chars2(name) > MAX_NAME) throw new ActionError(400, `name is longer than ${MAX_NAME} characters`, { reason: "name-too-long" });
-  if (chars2(goal) > MAX_GOAL) throw new ActionError(400, `goal is longer than ${MAX_GOAL} characters`, { reason: "goal" });
-  initVault(root, { name, goal });
-  return { id: projectId(root), created: true };
-}
-
-// src/dashboard/license.ts
-function createLicenseApi(opts = {}) {
-  const gateOn = opts.gate ?? !dashboardGateOffForTests();
-  const version = opts.appVersion ?? package_default.version;
-  const open = opts.openUrl ?? openBrowser;
-  const net = { fetch: opts.fetch, publicKey: opts.publicKey, appVersion: version };
-  let pending = null;
-  const status = () => ({
-    ...licenseStatus((opts.now ?? (() => /* @__PURE__ */ new Date()))(), version, { publicKey: opts.publicKey }),
-    siteUrl: siteUrl(),
-    gate: gateOn
-  });
-  return {
-    status,
-    /** Why project data is refused, or null when it may be served. */
-    blocked: () => {
-      if (!gateOn) return null;
-      const s = licenseStatus((opts.now ?? (() => /* @__PURE__ */ new Date()))(), version, { publicKey: opts.publicKey });
-      return isUsable(s) ? null : s.state;
-    },
-    async signin() {
-      const s = await startSignin(net);
-      pending = { pollToken: s.poll_token, code: s.code, verifyUrl: s.verify_url };
-      open(s.verify_url);
-      return { code: s.code, verify_url: s.verify_url };
-    },
-    async poll() {
-      if (!pending) return { status: "idle" };
-      const r = await pollSignin(pending.pollToken, net);
-      if (r.status !== "pending" && r.status !== "error") pending = null;
-      return r;
-    },
-    async refresh() {
-      return refreshLicense(net);
-    },
-    signout() {
-      pending = null;
-      clearLicense();
-    }
-  };
-}
-
-// src/dashboard/writes.ts
-var import_node_fs16 = __toESM(require("node:fs"), 1);
-var ID3 = /^[a-z0-9][a-z0-9-]*$/;
-var MAX_TITLE = 200;
-var MAX_TOPIC = 200;
-var MAX_ACCEPTANCE_ITEM = 500;
-var MAX_ACCEPTANCE_ITEMS = 50;
-var MAX_NOTE = 4e3;
-var MAX_ORDER = 5e3;
-var MAX_LABEL = 40;
-var MAX_LABELS2 = 20;
-var MAX_BLOCKERS2 = 50;
-var MAX_BULK = 200;
-var MAX_NAME2 = 80;
-var MAX_GOAL2 = 500;
-var MAX_FOCUS = 500;
-var text = (what, min, max, trim, multiline = false) => external_exports.string({ invalid_type_error: `${what} must be text`, required_error: `${what} is required` }).transform((s) => trim ? s.trim() : s).pipe(
-  external_exports.string().min(min, min === 1 ? `${what} cannot be empty` : `${what} is too short`).max(max, `${what} is longer than ${max} characters`)
-).superRefine((v, ctx) => {
-  try {
-    noControl(what, v, multiline);
-  } catch (err) {
-    ctx.addIssue({ code: "custom", message: err.message });
-  }
-});
-var date = (what) => external_exports.string({ invalid_type_error: `${what} must be a date written YYYY-MM-DD` }).refine(isValidDate, `${what} must be a date written YYYY-MM-DD`);
-var idOf = (what) => external_exports.string({ invalid_type_error: `${what} must be an id` }).max(200, `${what} is not a valid id`).regex(ID3, `${what} is not a valid id`);
-var oneOf = (what, values) => external_exports.enum(values, { errorMap: () => ({ message: `${what} must be ${values.join(", ")}` }) });
-var taskFields = {
-  title: text("title", 1, MAX_TITLE, true),
-  status: oneOf("status", TASK_STATUSES),
-  acceptance: external_exports.array(text("each acceptance item", 1, MAX_ACCEPTANCE_ITEM, true), { invalid_type_error: "acceptance must be a list of text" }).max(MAX_ACCEPTANCE_ITEMS, `acceptance has more than ${MAX_ACCEPTANCE_ITEMS} items`),
-  note: text("note", 0, MAX_NOTE, false, true),
-  topic: text("topic", 1, MAX_TOPIC, true).nullable(),
-  priority: oneOf("priority", PRIORITIES).nullable(),
-  due: date("due").nullable(),
-  start: date("start").nullable(),
-  estimate: external_exports.number({ invalid_type_error: "estimate must be a number" }).finite("estimate must be a number").min(0, "estimate cannot be negative").nullable(),
-  labels: external_exports.array(text("each label", 1, MAX_LABEL, true), { invalid_type_error: "labels must be a list of text" }).max(MAX_LABELS2, `labels has more than ${MAX_LABELS2} entries`).nullable(),
-  parent: idOf("parent").nullable(),
-  blocked_by: external_exports.array(idOf("each blocked_by entry"), { invalid_type_error: "blocked_by must be a list of task ids" }).max(MAX_BLOCKERS2, `blocked_by has more than ${MAX_BLOCKERS2} entries`).nullable(),
-  milestone: idOf("milestone").nullable()
-};
-var createTaskSchema = external_exports.object({
-  title: taskFields.title,
-  topic: taskFields.topic.optional(),
-  status: taskFields.status.optional(),
-  acceptance: taskFields.acceptance.optional(),
-  note: taskFields.note.optional(),
-  priority: taskFields.priority.optional(),
-  due: taskFields.due.optional(),
-  start: taskFields.start.optional(),
-  estimate: taskFields.estimate.optional(),
-  labels: taskFields.labels.optional(),
-  parent: taskFields.parent.optional(),
-  blocked_by: taskFields.blocked_by.optional(),
-  milestone: taskFields.milestone.optional()
-}).strict("unknown field in the request");
-var orderField = external_exports.array(idOf("each order entry"), { invalid_type_error: "order must be a list of task ids" }).min(1, "order cannot be empty").max(MAX_ORDER, `order has more than ${MAX_ORDER} ids`).refine((ids) => new Set(ids).size === ids.length, "order lists a task twice");
-var updateTaskSchema = createTaskSchema.partial().extend({ order: orderField.optional() }).strict("unknown field in the request").refine((v) => Object.values(v).some((x) => x !== void 0), { message: "give at least one field to change" });
-var bulkSchema = external_exports.object({
-  ids: external_exports.array(idOf("each id"), { invalid_type_error: "ids must be a list of task ids" }).min(1, "ids cannot be empty").max(MAX_BULK, `ids has more than ${MAX_BULK} entries`).refine((ids) => new Set(ids).size === ids.length, "ids lists a task twice"),
-  patch: external_exports.object({
-    status: taskFields.status.optional(),
-    topic: taskFields.topic.optional(),
-    priority: taskFields.priority.optional(),
-    milestone: taskFields.milestone.optional(),
-    due: taskFields.due.optional(),
-    labelsAdd: external_exports.array(text("each label", 1, MAX_LABEL, true)).max(MAX_LABELS2, `labelsAdd has more than ${MAX_LABELS2} entries`).optional(),
-    labelsRemove: external_exports.array(text("each label", 1, MAX_LABEL, true)).max(MAX_LABELS2, `labelsRemove has more than ${MAX_LABELS2} entries`).optional()
-  }).strict("unknown field in the patch").refine((v) => Object.values(v).some((x) => x !== void 0), { message: "give at least one field to change" })
-}).strict("unknown field in the request");
-var color = external_exports.number({ invalid_type_error: "color must be a whole number from 0 to 7" }).int("color must be a whole number from 0 to 7").min(0, "color must be a whole number from 0 to 7").max(7, "color must be a whole number from 0 to 7");
-var createTopicSchema = external_exports.object({
-  title: text("title", 1, MAX_TITLE, true),
-  goal: text("goal", 0, MAX_GOAL2, true, true).optional(),
-  start: date("start").nullable().optional(),
-  target: date("target").nullable().optional(),
-  color: color.nullable().optional()
-}).strict("unknown field in the request");
-var updateTopicSchema = createTopicSchema.partial().extend({ status: oneOf("status", ["active", "done"]).optional() }).strict("unknown field in the request").refine((v) => Object.values(v).some((x) => x !== void 0), { message: "give at least one field to change" });
-var mergeTopicSchema = external_exports.object({ into: idOf("into") }).strict("unknown field in the request");
-var createMilestoneSchema = external_exports.object({
-  title: text("title", 1, MAX_TITLE, true),
-  goal: text("goal", 0, MAX_GOAL2, true, true).optional(),
-  start: date("start").nullable().optional(),
-  end: date("end").nullable().optional(),
-  status: oneOf("status", MILESTONE_STATUSES).optional()
-}).strict("unknown field in the request");
-var updateMilestoneSchema = createMilestoneSchema.partial().strict("unknown field in the request").refine((v) => Object.values(v).some((x) => x !== void 0), { message: "give at least one field to change" });
-var updateProjectSchema = external_exports.object({
-  name: text("name", 1, MAX_NAME2, true).optional(),
-  goal: text("goal", 0, MAX_GOAL2, true, true).optional(),
-  focus: text("focus", 0, MAX_FOCUS, true).optional(),
-  status: oneOf("status", ["active", "paused", "done"]).optional()
-}).strict("unknown field in the request").refine((v) => Object.values(v).some((x) => x !== void 0), { message: "give at least one field to change" });
-function firstProblem(error) {
-  const issue = error.issues[0];
-  if (issue.code === "unrecognized_keys") return `Unknown field: ${issue.keys.join(", ")}`;
-  const key = [...issue.path].reverse().find((p) => typeof p === "string");
-  const where = key && !issue.message.toLowerCase().startsWith(key.toLowerCase()) ? `${key}: ` : "";
-  const sentence = `${where}${issue.message}`;
-  return sentence.charAt(0).toUpperCase() + sentence.slice(1);
-}
-function parseBody(schema, body) {
-  const parsed = schema.safeParse(body);
-  if (!parsed.success) throw new ActionError(400, firstProblem(parsed.error));
-  return parsed.data;
-}
-function guarded(fn) {
-  try {
-    return fn();
-  } catch (err) {
-    if (err instanceof RuleError) throw new ActionError(400, err.message);
-    if (err instanceof Error && /^No (task|topic|milestone) with id/.test(err.message)) throw new ActionError(404, "Not found.");
-    throw err;
-  }
-}
-function usableVault(root) {
-  if (!import_node_fs16.default.existsSync(root) || !vaultExists(root)) throw new ActionError(409, "This project has no readable Binkgo vault.");
-  try {
-    readProject(root);
-  } catch {
-    throw new ActionError(409, "The project vault is damaged; fix it before changing it.");
-  }
-}
-function validId(id, label) {
-  if (!ID3.test(id) || id.length > 200) throw new ActionError(404, `${label} not found.`);
-}
-function existing(root, kind, id, label) {
-  if (!ID3.test(id) || id.length > 200 || !entryExists(root, kind, id)) throw new ActionError(404, `${label} not found.`);
-  return readEntry(root, kind, id);
-}
-function taskResponse(root, e) {
-  let topicTitle = null;
-  if (e.data.topic) {
-    const topic = readEntry(root, "topic", e.data.topic);
-    topicTitle = isBroken(topic) ? null : topic.data.title;
-  }
-  const d = e.data;
-  return {
-    id: e.id,
-    title: d.title,
-    status: d.status,
-    topic: d.topic,
-    topicTitle,
-    acceptance: d.acceptance,
-    notes: e.sections.Notes ?? "",
-    rank: d.rank ?? null,
-    priority: d.priority ?? null,
-    due: d.due ?? null,
-    start: d.start ?? null,
-    estimate: d.estimate ?? null,
-    labels: d.labels ?? [],
-    parent: d.parent ?? null,
-    blocked_by: d.blocked_by ?? [],
-    milestone: effectiveMilestone(d),
-    completed: d.completed ?? null,
-    history: d.history ?? [],
-    created: d.created,
-    updated: d.updated
-  };
-}
-function topicResponse(e) {
-  const d = e.data;
-  return {
-    id: e.id,
-    title: d.title,
-    goal: d.goal,
-    status: d.status,
-    start: d.start ?? null,
-    target: d.target ?? null,
-    color: d.color ?? null,
-    notes: e.sections.Notes ?? "",
-    created: d.created,
-    updated: d.updated
-  };
-}
-function milestoneResponse(e) {
-  const d = e.data;
-  return {
-    id: e.id,
-    title: d.title,
-    goal: d.goal,
-    status: d.status,
-    start: d.start ?? null,
-    end: d.end ?? null,
-    notes: e.sections.Notes ?? "",
-    created: d.created,
-    updated: d.updated
-  };
-}
-function projectUpdate(root, body) {
-  const input = parseBody(updateProjectSchema, body);
-  usableVault(root);
-  const p = guarded(() => updateProject(root, input));
-  return {
-    id: projectId(root),
-    name: p.data.name,
-    goal: p.data.goal,
-    focus: p.data.focus,
-    status: p.data.status,
-    overview: p.sections.Overview ?? "",
-    created: p.data.created,
-    updated: p.data.updated
-  };
-}
-function taskCreate(root, body) {
-  const input = parseBody(createTaskSchema, body);
-  usableVault(root);
-  const task = guarded(
-    () => upsertTask(root, { ...input, note: input.note || void 0, rank: topRank(root, input.status ?? "todo"), by: "person" })
-  );
-  return taskResponse(root, task);
-}
-function checkOrder(root, taskId, status, order) {
-  if (!order.includes(taskId)) throw new ActionError(400, "order must include the task being moved");
-  const column = new Map([...taskRows(root)].map(([id, r]) => [id, r.status]));
-  for (const id of order) {
-    if (id === taskId) continue;
-    const have = column.get(id);
-    if (have === void 0) throw new ActionError(400, `order names a task that does not exist: ${id}`);
-    if (have !== status) throw new ActionError(400, `order names a task that is not in the ${status} column: ${id}`);
-  }
-}
-function taskUpdate(root, taskId, body) {
-  validId(taskId, "Task");
-  const input = parseBody(updateTaskSchema, body);
-  usableVault(root);
-  const found = existing(root, "task", taskId, "Task");
-  if (isBroken(found)) throw new ActionError(409, "This task file cannot be read; fix it before changing it.");
-  if (input.order) checkOrder(root, taskId, input.status ?? found.data.status, input.order);
-  const task = guarded(() => upsertTask(root, { ...input, id: taskId, note: input.note || void 0, by: "person" }));
-  return taskResponse(root, task);
-}
-function taskDelete(root, taskId) {
-  usableVault(root);
-  existing(root, "task", taskId, "Task");
-  guarded(() => deleteTask(root, taskId, "person"));
-}
-function taskBulk(root, body) {
-  const input = parseBody(bulkSchema, body);
-  usableVault(root);
-  for (const id of input.ids) {
-    const found = existing(root, "task", id, "Task");
-    if (isBroken(found)) throw new ActionError(409, `The task file ${id} cannot be read; fix it before changing it.`);
-  }
-  const tasks2 = guarded(() => bulkUpdateTasks(root, input.ids, input.patch, "person"));
-  return tasks2.map((t) => taskResponse(root, t));
-}
-function topicCreate(root, body) {
-  const input = parseBody(createTopicSchema, body);
-  usableVault(root);
-  if (entryExists(root, "topic", idForTitle(root, "topic", input.title))) throw new ActionError(409, "A topic with this name already exists.");
-  return topicResponse(guarded(() => upsertTopic(root, input)));
-}
-function topicUpdate(root, id, body) {
-  validId(id, "Topic");
-  const input = parseBody(updateTopicSchema, body);
-  usableVault(root);
-  if (isBroken(existing(root, "topic", id, "Topic"))) throw new ActionError(409, "This topic file cannot be read; fix it before changing it.");
-  return topicResponse(guarded(() => updateTopic(root, id, input)));
-}
-function topicDelete(root, id) {
-  usableVault(root);
-  existing(root, "topic", id, "Topic");
-  guarded(() => deleteTopic(root, id, "person"));
-}
-function topicMerge(root, id, body) {
-  validId(id, "Topic");
-  const input = parseBody(mergeTopicSchema, body);
-  usableVault(root);
-  existing(root, "topic", id, "Topic");
-  if (input.into === id) throw new ActionError(400, "A topic cannot be merged into itself");
-  if (isBroken(existing(root, "topic", input.into, "Target topic"))) throw new ActionError(409, "The topic to merge into cannot be read; fix it first.");
-  return topicResponse(guarded(() => mergeTopic(root, id, input.into, "person")));
-}
-function milestoneCreate(root, body) {
-  const input = parseBody(createMilestoneSchema, body);
-  usableVault(root);
-  if (entryExists(root, "milestone", idForTitle(root, "milestone", input.title))) throw new ActionError(409, "A milestone with this name already exists.");
-  return milestoneResponse(guarded(() => upsertMilestone(root, input)));
-}
-function milestoneUpdate(root, id, body) {
-  validId(id, "Milestone");
-  const input = parseBody(updateMilestoneSchema, body);
-  usableVault(root);
-  if (isBroken(existing(root, "milestone", id, "Milestone"))) throw new ActionError(409, "This milestone file cannot be read; fix it before changing it.");
-  return milestoneResponse(guarded(() => upsertMilestone(root, { ...input, id })));
-}
-function milestoneDelete(root, id) {
-  usableVault(root);
-  existing(root, "milestone", id, "Milestone");
-  guarded(() => deleteMilestone(root, id, "person"));
-}
-
-// src/dashboard/picker.ts
-var import_node_child_process4 = require("node:child_process");
-var PickerUnavailable = class extends Error {
-  constructor() {
-    super("no folder picker on this platform");
-  }
-};
-var PICK_TIMEOUT_MS = 5 * 60 * 1e3;
-var WINDOWS_PICKER_TYPE = `
-using System;
-using System.Runtime.InteropServices;
-public static class BinkgoFolderPicker {
-  [ComImport, Guid("DC1C5A9C-E88A-4dde-A5A1-60F82A20AEF7")] private class FileOpenDialog {}
-  [ComImport, Guid("43826D1E-E718-42EE-BC55-A1E261C37BFE"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-  private interface IShellItem {
-    void BindToHandler(IntPtr pbc, ref Guid bhid, ref Guid riid, out IntPtr ppv);
-    void GetParent(out IShellItem ppsi);
-    void GetDisplayName(uint sigdnName, [MarshalAs(UnmanagedType.LPWStr)] out string ppszName);
-  }
-  [ComImport, Guid("42F85136-DB7E-439C-85F1-E4075D135FC8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-  private interface IFileDialog {
-    [PreserveSig] int Show(IntPtr parent);
-    void SetFileTypes(uint cFileTypes, IntPtr rgFilterSpec);
-    void SetFileTypeIndex(uint iFileType);
-    void GetFileTypeIndex(out uint piFileType);
-    void Advise(IntPtr pfde, out uint pdwCookie);
-    void Unadvise(uint dwCookie);
-    void SetOptions(uint fos);
-    void GetOptions(out uint pfos);
-    void SetDefaultFolder(IShellItem psi);
-    void SetFolder(IShellItem psi);
-    void GetFolder(out IShellItem ppsi);
-    void GetCurrentSelection(out IShellItem ppsi);
-    void SetFileName([MarshalAs(UnmanagedType.LPWStr)] string pszName);
-    void GetFileName([MarshalAs(UnmanagedType.LPWStr)] out string pszName);
-    void SetTitle([MarshalAs(UnmanagedType.LPWStr)] string pszTitle);
-    void SetOkButtonLabel([MarshalAs(UnmanagedType.LPWStr)] string pszText);
-    void SetFileNameLabel([MarshalAs(UnmanagedType.LPWStr)] string pszLabel);
-    void GetResult(out IShellItem ppsi);
-  }
-  [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
-  public static string Pick(string title, string button, IntPtr fallbackOwner) {
-    IFileDialog dialog = (IFileDialog)new FileOpenDialog();
-    uint options; dialog.GetOptions(out options);
-    dialog.SetOptions(options | 0x20u | 0x40u | 0x800u); // pick folders, file system only, path must exist
-    dialog.SetTitle(title);
-    dialog.SetOkButtonLabel(button);
-    IntPtr owner = GetForegroundWindow(); // the browser the person just clicked in: the window opens over it
-    if (owner == IntPtr.Zero) owner = fallbackOwner;
-    if (dialog.Show(owner) != 0) return null; // cancelled
-    IShellItem item; dialog.GetResult(out item);
-    string path; item.GetDisplayName(0x80058000u, out path); // file system path
-    return path;
-  }
-}`;
-var WINDOWS_SCRIPT = [
-  "Add-Type -AssemblyName System.Windows.Forms",
-  "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8",
-  // A topmost owner window keeps the dialog in front when no foreground window is found.
-  "$owner = New-Object System.Windows.Forms.Form",
-  "$owner.TopMost = $true",
-  "$title = 'Choose the project folder (the folder you open with Claude Code)'",
-  "$modern = $false",
-  "try {",
-  `  Add-Type -TypeDefinition @'${WINDOWS_PICKER_TYPE}
-'@`,
-  "  $chosen = [BinkgoFolderPicker]::Pick($title, 'Choose folder', $owner.Handle)",
-  "  $modern = $true",
-  "} catch { }",
-  "if ($modern) {",
-  "  if ($chosen) { [Console]::Out.Write($chosen) }",
-  "} else {",
-  // Machines where the modern window cannot be opened (locked-down PowerShell) still get the older folder box.
-  "  $dialog = New-Object System.Windows.Forms.FolderBrowserDialog",
-  "  $dialog.Description = $title",
-  "  $dialog.ShowNewFolderButton = $true",
-  "  if ($dialog.ShowDialog($owner) -eq [System.Windows.Forms.DialogResult]::OK) { [Console]::Out.Write($dialog.SelectedPath) }",
-  "}"
-].join("\n");
-var MAC_SCRIPT = 'POSIX path of (choose folder with prompt "Choose the project folder")';
-function pickerCommand(platform) {
-  if (platform === "win32") {
-    return {
-      file: "powershell.exe",
-      args: ["-NoProfile", "-NonInteractive", "-STA", "-EncodedCommand", Buffer.from(WINDOWS_SCRIPT, "utf16le").toString("base64")]
-    };
-  }
-  if (platform === "darwin") return { file: "osascript", args: ["-e", MAC_SCRIPT] };
-  return null;
-}
-var openPicker = null;
-function stopOsPicker() {
-  openPicker?.kill();
-  openPicker = null;
-}
-var osFolderPicker = () => {
-  const cmd = pickerCommand(process.platform);
-  if (!cmd) return Promise.reject(new PickerUnavailable());
-  return new Promise((resolve, reject) => {
-    const child = (0, import_node_child_process4.execFile)(
-      cmd.file,
-      cmd.args,
-      { encoding: "buffer", timeout: PICK_TIMEOUT_MS, windowsHide: false, maxBuffer: 1024 * 1024 },
-      (err, stdout) => {
-        if (openPicker === child) openPicker = null;
-        if (err) {
-          if (process.platform === "darwin" && err.code === 1) return resolve(null);
-          return reject(err);
-        }
-        const chosen = stdout.toString("utf8").replace(/^\uFEFF/, "").trim();
-        resolve(chosen || null);
-      }
-    );
-    openPicker = child;
-  });
-};
-
-// src/dashboard/server.ts
-var MAX_FILE = 5 * 1024 * 1024;
-var MAX_BODY = 16 * 1024;
-var MAX_TASK_BODY = 64 * 1024;
-var MAX_MOVE_BODY = 512 * 1024;
-var SEG = "([^/?#\\\\]+)";
-var projectPattern = (rest) => new RegExp(`^/api/projects/${SEG}${rest}$`);
-var work = (op, sub) => (m) => ({ kind: "work", op, id: m[1], ...sub ? { sub: m[2] } : {} });
-var POST_PATTERNS = [
-  [/^\/api\/folder\/inspect$/, () => ({ kind: "inspect" })],
-  [/^\/api\/folder\/pick$/, () => ({ kind: "pick" })],
-  [/^\/api\/projects$/, () => ({ kind: "create" })],
-  [/^\/api\/connect\/(claude|codex)$/, (m) => ({ kind: "connect", agent: m[1] })],
-  [/^\/api\/license\/(signin|refresh|signout)$/, (m) => ({ kind: "license", op: m[1] })],
-  [projectPattern("/remove"), (m) => ({ kind: "remove", id: m[1] })],
-  [projectPattern("/cover"), (m) => ({ kind: "cover", id: m[1] })],
-  [projectPattern(""), work("projectUpdate", false)],
-  [projectPattern("/tasks"), work("taskCreate", false)],
-  [projectPattern("/tasks/bulk"), work("taskBulk", false)],
-  // before /tasks/:taskId: a task cannot be named "bulk"
-  [projectPattern(`/tasks/${SEG}`), work("taskUpdate", true)],
-  [projectPattern(`/tasks/${SEG}/delete`), work("taskDelete", true)],
-  [projectPattern("/topics"), work("topicCreate", false)],
-  [projectPattern(`/topics/${SEG}`), work("topicUpdate", true)],
-  [projectPattern(`/topics/${SEG}/delete`), work("topicDelete", true)],
-  [projectPattern(`/topics/${SEG}/merge`), work("topicMerge", true)],
-  [projectPattern("/milestones"), work("milestoneCreate", false)],
-  [projectPattern(`/milestones/${SEG}`), work("milestoneUpdate", true)],
-  [projectPattern(`/milestones/${SEG}/delete`), work("milestoneDelete", true)]
-];
-var bodyLimit = (r) => r.kind === "cover" ? Math.ceil(MAX_COVER_BYTES / 3) * 4 + 1024 : r.kind !== "work" ? MAX_BODY : r.op === "taskUpdate" ? MAX_MOVE_BODY : r.op.startsWith("task") ? MAX_TASK_BODY : MAX_BODY;
-function matchPost(target) {
-  for (const [pattern, make] of POST_PATTERNS) {
-    const m = pattern.exec(target);
-    if (m) return make(m);
-  }
-  return null;
-}
-var LOOPBACK_HOSTS = /* @__PURE__ */ new Set(["127.0.0.1", "localhost", "::1"]);
-var LOOPBACK_ADDRESS = /^(::1|(::ffff:)?127\.\d+\.\d+\.\d+)$/;
-var KEY_COOKIE = "binkgo_key";
-var OWNER_ONLY = /* @__PURE__ */ new Set(["connect", "license", "pick", "create", "remove", "inspect"]);
-var GATED = /^\/api\/(projects|folder)(\/|$)/;
-var DEBOUNCE_MS = 300;
-var HEARTBEAT_MS = 25e3;
-var REGISTRY_POLL_MS = 1e4;
-var IGNORED_EVENT = /\.(lock|steal|tmp)$/;
-var VIEWS = {
-  overview,
-  timeline,
-  tasks,
-  knowledge,
-  artifacts,
-  usage,
-  problems
-};
-var FILE_TYPES = {
-  ".md": "text/plain; charset=utf-8",
-  ".txt": "text/plain; charset=utf-8",
-  ".svg": "text/plain; charset=utf-8",
-  ".html": "text/html; charset=utf-8",
-  ".htm": "text/html; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".gif": "image/gif",
-  ".webp": "image/webp"
-};
-var FILE_CSP = "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:; font-src data:";
-function pageCsp(filesBase) {
-  return `sandbox; default-src 'none'; style-src 'unsafe-inline' ${filesBase}; img-src ${filesBase} data:; font-src ${filesBase} data:; media-src ${filesBase}`;
-}
-var APP_HEADERS = {
-  "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
-  "X-Frame-Options": "DENY",
-  "Referrer-Policy": "no-referrer"
-};
-var STATIC_TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".mjs": "text/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".svg": "image/svg+xml",
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".gif": "image/gif",
-  ".webp": "image/webp",
-  ".ico": "image/x-icon",
-  ".woff": "font/woff",
-  ".woff2": "font/woff2",
-  ".map": "application/json"
-};
-var HttpError = class extends Error {
-  constructor(status, message, extra = {}) {
-    super(message);
-    this.status = status;
-    this.extra = extra;
-  }
-  status;
-  extra;
-};
-function sendJson(res, status, body) {
-  const text2 = JSON.stringify(body);
-  res.writeHead(status, {
-    "Content-Type": "application/json; charset=utf-8",
-    "Content-Length": Buffer.byteLength(text2),
-    "Cache-Control": "no-store",
-    "X-Content-Type-Options": "nosniff"
-  });
-  res.end(text2);
-}
-function decode(s) {
-  try {
-    const out = decodeURIComponent(s);
-    if (out.includes("\0")) throw new Error("nul");
-    return out;
-  } catch {
-    throw new HttpError(400, "bad request encoding");
-  }
-}
-function param(raw) {
-  const value = decode(raw);
-  if (value === "" || value === "." || value === ".." || /[\\/]/.test(value)) throw new HttpError(404, "not found");
-  return value;
-}
-function projectRoot(id) {
-  const root = resolveProject(id);
-  if (!root || !import_node_fs17.default.existsSync(root) || !vaultExists(root)) throw new HttpError(404, "project not found");
-  return root;
-}
-function readBody(req, res, limit) {
-  return new Promise((resolve, reject) => {
-    const tooBig = () => {
-      res.setHeader("Connection", "close");
-      reject(new HttpError(413, "request body too large"));
-    };
-    if (Number(req.headers["content-length"] ?? 0) > limit) return tooBig();
-    const chunks = [];
-    let size = 0;
-    req.on("data", (c) => {
-      size += c.length;
-      if (size > limit) {
-        chunks.length = 0;
-        req.removeAllListeners("data");
-        req.resume();
-        tooBig();
-        return;
-      }
-      chunks.push(c);
-    });
-    req.on("end", () => resolve(Buffer.concat(chunks)));
-    req.on("error", reject);
-  });
-}
-function parseObject(raw) {
-  let value;
-  try {
-    value = JSON.parse(raw.length === 0 ? "{}" : raw.toString("utf8"));
-  } catch {
-    throw new HttpError(400, "malformed JSON");
-  }
-  if (typeof value !== "object" || value === null || Array.isArray(value)) throw new HttpError(400, "expected a JSON object");
-  return value;
-}
-function sameToken(given, expected) {
-  const digest = (v) => (0, import_node_crypto9.createHash)("sha256").update(v).digest();
-  return (0, import_node_crypto9.timingSafeEqual)(digest(given), digest(expected));
-}
-function serveProjectFile(res, root, rel, csp = FILE_CSP) {
-  if (!rel) throw new HttpError(400, "path is required");
-  const target = resolveInside(root, rel);
-  if (!target) throw new HttpError(403, "outside the project");
-  const base = canonicalPath(root);
-  const hasGit = (p) => import_node_path17.default.relative(base, p).split(import_node_path17.default.sep).some((seg) => seg.toLowerCase() === ".git");
-  if (hasGit(import_node_path17.default.resolve(base, rel)) || hasGit(target)) throw new HttpError(403, "forbidden");
-  let st;
-  try {
-    st = import_node_fs17.default.statSync(target);
-  } catch {
-    throw new HttpError(404, "file not found");
-  }
-  if (!st.isFile()) throw new HttpError(404, "file not found");
-  if (st.size > MAX_FILE) throw new HttpError(413, "file too large");
-  const body = import_node_fs17.default.readFileSync(target);
-  res.writeHead(200, {
-    "Content-Type": FILE_TYPES[import_node_path17.default.extname(target).toLowerCase()] ?? "application/octet-stream",
-    "Content-Length": body.length,
-    "Content-Security-Policy": csp,
-    "X-Content-Type-Options": "nosniff",
-    "Cache-Control": "no-store"
-  });
-  res.end(body);
-}
-function webAppBuilt(webDir) {
-  try {
-    return import_node_fs17.default.statSync(import_node_path17.default.join(webDir, "index.html")).isFile();
-  } catch {
-    return false;
-  }
-}
-function staticTarget(webDir, pathname) {
-  const base = import_node_path17.default.resolve(webDir);
-  const target = import_node_path17.default.resolve(base, pathname.replace(/^[/\\]+/, ""));
-  const rel = import_node_path17.default.relative(base, target);
-  if (rel === "" || rel === ".." || rel.startsWith(".." + import_node_path17.default.sep) || import_node_path17.default.isAbsolute(rel)) return null;
-  return target;
-}
-function serveStatic(res, webDir, pathname) {
-  const pick2 = (candidate) => {
-    const full = staticTarget(webDir, candidate);
-    if (!full) return null;
-    try {
-      return import_node_fs17.default.statSync(full).isFile() ? full : null;
-    } catch {
-      return null;
-    }
-  };
-  const file = pick2(pathname) ?? pick2("index.html");
-  if (!file) throw new HttpError(404, "not found");
-  const body = import_node_fs17.default.readFileSync(file);
-  res.writeHead(200, {
-    "Content-Type": STATIC_TYPES[import_node_path17.default.extname(file).toLowerCase()] ?? "application/octet-stream",
-    "Content-Length": body.length,
-    "X-Content-Type-Options": "nosniff",
-    ...APP_HEADERS
-  });
-  res.end(body);
-}
-async function startDashboard(opts) {
-  const pickFolder = opts.pickFolder ?? osFolderPicker;
-  const lan = opts.host !== void 0 && !LOOPBACK_HOSTS.has(opts.host);
-  if (lan && !opts.accessKey) throw new Error("LAN mode needs an access key (--access-key)");
-  const licenseApi = createLicenseApi(opts.license);
-  const token = (0, import_node_crypto9.randomBytes)(32).toString("hex");
-  let picking = false;
-  const clients = /* @__PURE__ */ new Set();
-  const watchers = /* @__PURE__ */ new Map();
-  const timers = /* @__PURE__ */ new Map();
-  let allowedHosts = [];
-  let allowedOrigins = [];
-  let closing = false;
-  let knownIds = null;
-  const broadcast = (id) => {
-    for (const c of clients) c.write(`data: ${JSON.stringify({ project: id })}
-
-`);
-  };
-  const changed = (id) => {
-    if (closing || timers.has(id)) return;
-    timers.set(id, setTimeout(() => {
-      timers.delete(id);
-      if (!closing) broadcast(id);
-    }, DEBOUNCE_MS));
-  };
-  let liveTimer = null;
-  let liveWatcher = null;
-  const liveChanged = () => {
-    if (closing || liveTimer) return;
-    liveTimer = setTimeout(() => {
-      liveTimer = null;
-      if (!closing) for (const c of clients) c.write(`data: ${JSON.stringify({ live: true })}
-
-`);
-    }, DEBOUNCE_MS);
-  };
-  const watchLive = () => {
-    if (closing || liveWatcher) return;
-    try {
-      import_node_fs17.default.mkdirSync(liveDir(), { recursive: true });
-      const w = import_node_fs17.default.watch(liveDir(), (_event, name) => {
-        if (name && IGNORED_EVENT.test(name.toString())) return;
-        liveChanged();
-      });
-      w.on("error", () => {
-        w.close();
-        if (liveWatcher === w) liveWatcher = null;
-      });
-      liveWatcher = w;
-    } catch {
-    }
-  };
-  const syncWatchers = () => {
-    if (closing) return;
-    const wanted = /* @__PURE__ */ new Map();
-    const ids = /* @__PURE__ */ new Set();
-    for (const item of readRegistry()) {
-      try {
-        ids.add(projectId(item.path));
-        const dir = vaultDir(item.path);
-        if (import_node_fs17.default.existsSync(dir)) wanted.set(dir, projectId(item.path));
-      } catch {
-      }
-    }
-    if (knownIds) {
-      for (const id of /* @__PURE__ */ new Set([...ids, ...knownIds])) if (ids.has(id) !== knownIds.has(id)) changed(id);
-    }
-    knownIds = ids;
-    watchLive();
-    for (const [dir, w] of watchers) {
-      if (!wanted.has(dir)) {
-        w.close();
-        watchers.delete(dir);
-      }
-    }
-    for (const [dir, id] of wanted) {
-      if (watchers.has(dir)) continue;
-      try {
-        const w = import_node_fs17.default.watch(dir, { recursive: true }, (_event, name) => {
-          if (name && IGNORED_EVENT.test(name.toString())) return;
-          changed(id);
-        });
-        w.on("error", () => {
-          w.close();
-          if (watchers.get(dir) === w) watchers.delete(dir);
-        });
-        watchers.set(dir, w);
-      } catch {
-      }
-    }
-  };
-  const checkWrite = (req) => {
-    const type = (req.headers["content-type"] ?? "").split(";")[0].trim().toLowerCase();
-    if (type !== "application/json") throw new HttpError(403, "forbidden: content type");
-    const given = req.headers["x-binkgo-token"];
-    if (typeof given !== "string" || !sameToken(given, token)) throw new HttpError(403, "forbidden: token");
-    const origin = req.headers.origin;
-    if (origin !== void 0 && !(allowedOrigins.includes(origin) || lan && origin === `http://${req.headers.host}`)) {
-      throw new HttpError(403, "forbidden: origin");
-    }
-    const site = req.headers["sec-fetch-site"];
-    if (site !== void 0 && site !== "same-origin") throw new HttpError(403, "forbidden: fetch site");
-  };
-  const post = async (req, res, match) => {
-    checkWrite(req);
-    if (lan && OWNER_ONLY.has(match.kind) && !LOOPBACK_ADDRESS.test(req.socket.remoteAddress ?? "")) {
-      throw new HttpError(403, "forbidden: this computer only");
-    }
-    const body = parseObject(await readBody(req, res, bodyLimit(match)));
-    if (match.kind === "connect") {
-      const result = match.agent === "claude" ? connectClaude(opts.webDir, opts.runProgram) : connectCodex(opts.webDir, opts.runProgram);
-      return sendJson(res, 200, { ...result, status: connectStatus(opts.webDir, opts.runProgram) });
-    }
-    if (match.kind === "license") {
-      if (match.op === "signout") {
-        licenseApi.signout();
-        return sendJson(res, 200, licenseApi.status());
-      }
-      if (match.op === "refresh") return sendJson(res, 200, { result: await licenseApi.refresh(), license: licenseApi.status() });
-      try {
-        return sendJson(res, 200, await licenseApi.signin());
-      } catch (err) {
-        throw new HttpError(502, err instanceof Error ? err.message : "sign-in failed");
-      }
-    }
-    if (match.kind === "cover") {
-      const id = param(match.id);
-      projectRoot(id);
-      const cover = saveCover(id, body);
-      changed(id);
-      return sendJson(res, 200, { cover });
-    }
-    if (match.kind === "remove") {
-      const projectPath = resolveProject(param(match.id));
-      if (!projectPath) throw new HttpError(404, "project not found");
-      unregisterProject(projectPath);
-      syncWatchers();
-      return sendJson(res, 200, { id: projectId(projectPath) });
-    }
-    if (match.kind === "inspect") {
-      if (typeof body.path !== "string") throw new HttpError(400, "path is required");
-      return sendJson(res, 200, inspectFolder(body.path));
-    }
-    if (match.kind === "pick") {
-      if (picking) throw new HttpError(409, "a folder picker is already open");
-      picking = true;
-      let chosen;
-      try {
-        chosen = await pickFolder();
-      } catch (err) {
-        if (err instanceof PickerUnavailable) throw new HttpError(501, "no folder picker on this platform");
-        console.error("dashboard: the folder picker failed:", err instanceof Error ? err.stack ?? err.message : err);
-        throw new HttpError(500, "the folder picker failed");
-      } finally {
-        picking = false;
-      }
-      return sendJson(res, 200, { path: chosen });
-    }
-    if (match.kind === "work") {
-      const projectPath = resolveProject(param(match.id));
-      if (!projectPath) throw new HttpError(404, "project not found");
-      const sub = () => param(match.sub ?? "");
-      try {
-        switch (match.op) {
-          case "projectUpdate":
-            return sendJson(res, 200, { project: projectUpdate(projectPath, body) });
-          case "taskCreate":
-            return sendJson(res, 201, { task: taskCreate(projectPath, body) });
-          case "taskBulk":
-            return sendJson(res, 200, { tasks: taskBulk(projectPath, body) });
-          case "taskUpdate":
-            return sendJson(res, 200, { task: taskUpdate(projectPath, sub(), body) });
-          case "taskDelete":
-            taskDelete(projectPath, sub());
-            return sendJson(res, 200, { ok: true });
-          case "topicCreate":
-            return sendJson(res, 201, { topic: topicCreate(projectPath, body) });
-          case "topicUpdate":
-            return sendJson(res, 200, { topic: topicUpdate(projectPath, sub(), body) });
-          case "topicDelete":
-            topicDelete(projectPath, sub());
-            return sendJson(res, 200, { ok: true });
-          case "topicMerge":
-            return sendJson(res, 200, { topic: topicMerge(projectPath, sub(), body) });
-          case "milestoneCreate":
-            return sendJson(res, 201, { milestone: milestoneCreate(projectPath, body) });
-          case "milestoneUpdate":
-            return sendJson(res, 200, { milestone: milestoneUpdate(projectPath, sub(), body) });
-          case "milestoneDelete":
-            milestoneDelete(projectPath, sub());
-            return sendJson(res, 200, { ok: true });
-        }
-      } catch (err) {
-        if (err instanceof ActionError) throw new HttpError(err.status, err.message, err.extra);
-        throw err;
-      }
-    }
-    if (match.kind !== "create") throw new HttpError(404, "not found");
-    try {
-      const made = createProject({ path: body.path, name: body.name, goal: body.goal });
-      syncWatchers();
-      return sendJson(res, made.created ? 201 : 200, { id: made.id });
+      import_node_fs11.default.mkdirSync(import_node_path11.default.dirname(dest), { recursive: true });
+      import_node_fs11.default.copyFileSync(abs, dest);
     } catch (err) {
-      if (err instanceof ActionError) throw new HttpError(err.status, err.message, err.extra);
+      import_node_fs11.default.rmSync(entryPath(root, "artifact", id), { force: true });
+      import_node_fs11.default.rmSync(dest, { force: true });
       throw err;
     }
-  };
-  const keyAccepted = (req, res, target) => {
-    const key = opts.accessKey ?? "";
-    const cookie = new RegExp(`(?:^|;\\s*)${KEY_COOKIE}=([^;]*)`).exec(req.headers.cookie ?? "")?.[1];
-    if (cookie !== void 0 && sameToken(decodeURIComponent(cookie), key)) return true;
-    let url = null;
-    try {
-      url = new URL(target, "http://localhost");
-    } catch {
-    }
-    const given = url?.searchParams.get("key");
-    if (url && given != null && sameToken(given, key) && req.method === "GET") {
-      url.searchParams.delete("key");
-      res.writeHead(302, {
-        "Set-Cookie": `${KEY_COOKIE}=${encodeURIComponent(key)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000`,
-        Location: url.pathname + url.search,
-        "Cache-Control": "no-store"
-      });
-      res.end();
-      return false;
-    }
-    sendJson(res, 401, { error: "access key required" });
-    return false;
-  };
-  const route = (req, res) => {
-    if (!lan && !allowedHosts.includes(req.headers.host ?? "")) throw new HttpError(403, "forbidden host");
-    const target = req.url ?? "";
-    if (lan && !LOOPBACK_ADDRESS.test(req.socket.remoteAddress ?? "") && !keyAccepted(req, res, target)) return;
-    if (GATED.test(target.split("?")[0])) {
-      const reason = licenseApi.blocked();
-      if (reason) {
-        res.setHeader("Connection", "close");
-        throw new HttpError(402, "licence required", { reason });
-      }
-    }
-    const writable = matchPost(target);
-    if (req.method === "POST" && writable) return post(req, res, writable);
-    if (req.method !== "GET") {
-      res.setHeader("Allow", writable ? "GET, POST" : "GET");
-      throw new HttpError(405, "method not allowed");
-    }
-    if (!/^\/(?!\/)/.test(target)) throw new HttpError(400, "bad request target");
-    let url;
-    try {
-      url = new URL(target, "http://localhost");
-    } catch {
-      throw new HttpError(400, "bad request target");
-    }
-    const pathname = url.pathname;
-    if (pathname === "/api/session") {
-      const site = req.headers["sec-fetch-site"];
-      if (site !== void 0 && site !== "same-origin" && site !== "none") throw new HttpError(403, "forbidden");
-      return sendJson(res, 200, { token });
-    }
-    if (pathname === "/api/events") {
-      res.writeHead(200, { "Content-Type": "text/event-stream", "Cache-Control": "no-store", Connection: "keep-alive" });
-      res.write(": connected\n\n");
-      clients.add(res);
-      const beat = setInterval(() => res.write(": ping\n\n"), HEARTBEAT_MS);
-      beat.unref();
-      res.on("close", () => {
-        clearInterval(beat);
-        clients.delete(res);
-      });
-      return;
-    }
-    if (pathname === "/api/live") {
-      const now = /* @__PURE__ */ new Date();
-      try {
-        pruneLive(now);
-      } catch {
-      }
-      return sendJson(res, 200, liveStatuses(now).map(({ record, status }) => ({
-        agent: record.agent,
-        projectId: projectId(record.root),
-        status,
-        task: record.task,
-        since: record.at
-      })));
-    }
-    if (pathname === "/api/connect") return sendJson(res, 200, connectStatus(opts.webDir, opts.runProgram));
-    if (pathname === "/api/license") return sendJson(res, 200, licenseApi.status());
-    if (pathname === "/api/license/signin/poll") {
-      return licenseApi.poll().then((r) => sendJson(res, 200, { ...r, license: licenseApi.status() }));
-    }
-    if (pathname === "/api/setup") return sendJson(res, 200, setupInfo(opts.webDir));
-    if (pathname === "/api/projects") return sendJson(res, 200, listProjects());
-    const coverImage = /^\/api\/projects\/([^/]+)\/cover\/image$/.exec(pathname);
-    if (coverImage) {
-      const id = param(coverImage[1]);
-      projectRoot(id);
-      const image = readCoverImage(id);
-      res.writeHead(200, {
-        "Content-Type": image.mime,
-        "Content-Length": image.bytes.length,
-        "X-Content-Type-Options": "nosniff",
-        "Content-Security-Policy": "default-src 'none'; sandbox",
-        "Cache-Control": "private, no-cache",
-        ETag: `"${image.revision}"`
-      });
-      return void res.end(image.bytes);
-    }
-    const page = /^\/api\/projects\/([^/]+)\/files\/(.+)$/.exec(pathname);
-    if (page) {
-      const pageId = decode(page[1]);
-      const root = projectRoot(pageId);
-      const filesBase = `http://${req.headers.host}/api/projects/${encodeURIComponent(pageId)}/files/`;
-      return serveProjectFile(res, root, decode(page[2]), pageCsp(filesBase));
-    }
-    const m = /^\/api\/projects\/([^/]+)\/([^/]+)$/.exec(pathname);
-    if (m) {
-      const id = decode(m[1]);
-      const view = decode(m[2]);
-      if (view === "file") return serveProjectFile(res, projectRoot(id), url.searchParams.get("path"));
-      const fn = Object.hasOwn(VIEWS, view) ? VIEWS[view] : void 0;
-      if (!fn) throw new HttpError(404, "unknown view");
-      return sendJson(res, 200, fn(projectRoot(id)));
-    }
-    if (pathname.startsWith("/api/")) throw new HttpError(404, "not found");
-    serveStatic(res, opts.webDir, decode(pathname));
-  };
-  const fail = (req, res, err) => {
-    const known = err instanceof HttpError || err instanceof CoverError || err instanceof LockTimeout;
-    if (!known) console.error(`dashboard: ${req.method} ${(req.url ?? "").split("?")[0]} failed:`, err instanceof Error ? err.stack ?? err.message : err);
-    if (res.headersSent) {
-      res.end();
-      return;
-    }
-    if (err instanceof HttpError) return sendJson(res, err.status, { error: err.message, ...err.extra });
-    if (err instanceof CoverError) return sendJson(res, err.status, { error: err.message });
-    if (err instanceof LockTimeout) return sendJson(res, 503, { error: LOCK_BUSY });
-    sendJson(res, 500, { error: "internal error" });
-  };
-  const server = import_node_http2.default.createServer((req, res) => {
-    try {
-      const done = route(req, res);
-      if (done) done.catch((err) => fail(req, res, err));
-    } catch (err) {
-      fail(req, res, err);
-    }
-  });
-  await new Promise((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(opts.port ?? 0, opts.host ?? "127.0.0.1", () => {
-      server.off("error", reject);
-      resolve();
+    mutateEntry(root, "artifact", id, (e) => {
+      e.data.path = `.binkgo/artifacts/files/${name}`;
+      e.data.stored = true;
     });
-  });
-  const { port, address } = server.address();
-  allowedHosts = [`127.0.0.1:${port}`, `localhost:${port}`];
-  allowedOrigins = allowedHosts.map((h) => `http://${h}`);
-  syncWatchers();
-  const poll = setInterval(syncWatchers, opts.registryPollMs ?? REGISTRY_POLL_MS);
-  poll.unref();
-  let closed = null;
-  const close = () => {
-    closed ??= new Promise((resolve) => {
-      closing = true;
-      stopOsPicker();
-      clearInterval(poll);
-      for (const t of timers.values()) clearTimeout(t);
-      timers.clear();
-      for (const w of watchers.values()) w.close();
-      watchers.clear();
-      if (liveTimer) clearTimeout(liveTimer);
-      liveWatcher?.close();
-      liveWatcher = null;
-      for (const c of clients) c.end();
-      clients.clear();
-      server.close(() => resolve());
-      server.closeAllConnections();
-    });
-    return closed;
-  };
-  return { port, address, close };
+  }
+  return must2(root, "artifact", id);
 }
 
-// src/dashboard/main.ts
-function parsePort(argv) {
-  const i = argv.indexOf("--port");
-  if (i === -1) return 4319;
-  const n = Number(argv[i + 1]);
-  if (!Number.isInteger(n) || n < 0 || n > 65535) {
-    console.error(`Invalid --port value: ${argv[i + 1] ?? "(missing)"}`);
-    process.exit(1);
-  }
-  return n;
-}
-function parsePortOrDefault(argv) {
-  const n = Number(parseFlag(argv, "--port"));
-  return Number.isInteger(n) && n > 0 && n <= 65535 ? n : 4319;
-}
-function parseFlag(argv, name) {
-  const i = argv.indexOf(name);
-  return i === -1 ? void 0 : argv[i + 1];
-}
-async function main() {
-  const argv = process.argv.slice(2);
-  const ac = argv.indexOf("--auto-connect");
-  if (ac !== -1) {
-    const done = autoConnect(import_node_path18.default.join(__dirname, "web"), argv[ac + 1] ?? "", argv[ac + 2] ?? "", void 0, (l) => console.error(l));
-    if (done.length) console.log(`Connected: ${done.join(", ")}`);
-    process.exit(0);
-  }
-  const bj = argv.indexOf("--brief-json");
-  if (bj !== -1) {
-    console.log(JSON.stringify(briefJson(argv[bj + 1] ?? process.cwd(), parsePortOrDefault(argv))));
-    process.exit(0);
-  }
-  const printJson = async (make) => {
-    try {
-      console.log(JSON.stringify(await make()));
-      process.exit(0);
-    } catch (err) {
-      console.log(JSON.stringify({ error: err.message }));
-      process.exit(1);
+// src/mcp/tools.ts
+var SEARCH_KINDS = KINDS.filter((k) => k !== "project");
+var date = () => external_exports.string().nullable().optional().describe("YYYY-MM-DD or null");
+var session = () => external_exports.string().optional().describe("Session ref (default: current)");
+var TOOL_DEFS = {
+  sign_in: {
+    description: "Sign in to Binkgo (free). Call once for a code, again after approving it.",
+    shape: {}
+  },
+  project_init: {
+    description: "Create .binkgo/ for this project (safe to repeat).",
+    shape: { name: external_exports.string().min(1), goal: external_exports.string().default("") }
+  },
+  project_brief: {
+    description: "Project status. Already in the session brief; call only if none was shown.",
+    shape: {}
+  },
+  project_update: {
+    description: "Update project fields, or create/update a topic or milestone.",
+    shape: {
+      name: external_exports.string().min(1).optional(),
+      goal: external_exports.string().optional(),
+      focus: external_exports.string().optional(),
+      status: external_exports.enum(["active", "paused", "done"]).optional(),
+      topic: external_exports.object({
+        title: external_exports.string().min(1),
+        goal: external_exports.string().optional(),
+        status: external_exports.enum(["active", "done"]).optional(),
+        start: date(),
+        target: date()
+      }).optional(),
+      milestone: external_exports.object({
+        title: external_exports.string().min(1),
+        goal: external_exports.string().optional(),
+        start: date(),
+        end: date(),
+        status: external_exports.enum(MILESTONE_STATUSES).optional()
+      }).optional()
     }
-  };
-  if (argv.includes("--licence-json")) await printJson(() => licenceJson());
-  if (argv.includes("--signin-start")) await printJson(() => signinStartJson());
-  const sp = argv.indexOf("--signin-poll");
-  if (sp !== -1) await printJson(() => signinPollJson(argv[sp + 1] ?? ""));
-  const port = parsePort(argv);
-  const webDir = import_node_path18.default.join(__dirname, "web");
-  if (!webAppBuilt(webDir)) {
-    console.error("web app not built: run npm run build");
-    process.exit(1);
-  }
-  const host = parseFlag(argv, "--host");
-  const accessKey = parseFlag(argv, "--access-key") ?? process.env.BINKGO_ACCESS_KEY;
-  if (argv.includes("--host") && !host) {
-    console.error("Invalid --host value: (missing)");
-    process.exit(1);
-  }
-  const open = argv.includes("--open");
-  const alreadyRunning = () => {
-    const url2 = `http://127.0.0.1:${port}/`;
-    console.log(`Binkgo dashboard: ${url2} (already running)`);
-    if (open) openBrowser(url2);
-    process.exit(0);
-  };
-  if (argv.includes("--detach") && port !== 0) {
-    if (await probeDashboard(port)) alreadyRunning();
-    spawnDetachedServer(process.argv[1] ?? __filename, argv);
-    if (!await waitForDashboard(port)) {
-      console.error(`The dashboard did not start on port ${port}. Try --port <n>.`);
-      process.exit(1);
+  },
+  task_upsert: {
+    description: "Create (title) or update (id) a task. null clears a field.",
+    shape: {
+      id: external_exports.string().optional(),
+      title: external_exports.string().optional(),
+      status: external_exports.enum(TASK_STATUSES).optional(),
+      topic: external_exports.string().nullable().optional().describe("Title or ref; created if new"),
+      acceptance: external_exports.array(external_exports.string()).optional(),
+      note: external_exports.string().optional(),
+      priority: external_exports.enum(PRIORITIES).nullable().optional(),
+      due: date(),
+      start: date(),
+      estimate: external_exports.number().min(0).nullable().optional(),
+      labels: external_exports.array(external_exports.string()).nullable().optional(),
+      parent: external_exports.string().nullable().optional().describe("Task ref (one level)"),
+      blocked_by: external_exports.array(external_exports.string()).nullable().optional().describe("Task refs"),
+      milestone: external_exports.string().nullable().optional(),
+      session: session()
     }
-    const url2 = `http://127.0.0.1:${port}/`;
-    console.log(`Binkgo dashboard: ${url2}`);
-    if (open) openBrowser(url2);
-    process.exit(0);
+  },
+  log_decision: {
+    description: "Record a decision and why. supersedes: the ref it replaces.",
+    shape: {
+      title: external_exports.string().min(1),
+      decision: external_exports.string().min(1),
+      why: external_exports.string().min(1),
+      alternatives: external_exports.string().optional(),
+      topic: external_exports.string().optional(),
+      supersedes: external_exports.string().optional(),
+      session: session()
+    }
+  },
+  log_fix: {
+    description: "Record a checked bug fix (or pass it in session_summary fixes[]). supersedes/reverts: earlier fix ref.",
+    shape: {
+      title: external_exports.string().min(1),
+      symptom: external_exports.string().min(1),
+      cause: external_exports.string().min(1),
+      fix: external_exports.string().min(1),
+      files: external_exports.array(external_exports.string()),
+      verified: external_exports.boolean(),
+      supersedes: external_exports.string().optional(),
+      reverts: external_exports.string().optional(),
+      session: session()
+    }
+  },
+  save_artifact: {
+    description: "Register a deliverable file so people can find it. copy: store a snapshot in .binkgo/.",
+    shape: {
+      title: external_exports.string().min(1),
+      kind: external_exports.enum(ARTIFACT_KINDS),
+      path: external_exports.string().min(1),
+      copy: external_exports.boolean().optional(),
+      description: external_exports.string().optional(),
+      task: external_exports.string().optional(),
+      session: session()
+    }
+  },
+  session_summary: {
+    description: "Session summary (done, next) plus unlogged fixes, decisions, task moves. Only if asked, or without hooks (Codex); Claude Code saves your final reply.",
+    shape: {
+      summary: external_exports.string().min(1),
+      done: external_exports.array(external_exports.string()),
+      next: external_exports.array(external_exports.string()),
+      session: session(),
+      fixes: external_exports.array(external_exports.object({ title: external_exports.string(), symptom: external_exports.string(), cause: external_exports.string(), fix: external_exports.string(), files: external_exports.array(external_exports.string()), verified: external_exports.boolean() })).optional(),
+      decisions: external_exports.array(external_exports.object({ title: external_exports.string(), decision: external_exports.string(), why: external_exports.string() })).optional(),
+      tasks: external_exports.array(external_exports.object({ id: external_exports.string(), status: external_exports.enum(TASK_STATUSES), note: external_exports.string().optional() })).optional()
+    }
+  },
+  search: {
+    description: "Find fixes, decisions, tasks and more by text or file. Returns refs, one line each.",
+    shape: {
+      query: external_exports.string().optional(),
+      type: external_exports.enum(SEARCH_KINDS).optional(),
+      file: external_exports.string().optional().describe("Fixes touching this file"),
+      limit: external_exports.number().int().min(1).max(50).optional()
+    }
+  },
+  project_map: {
+    description: "Notes about what is where in this project. No args: the index; path: notes for it; set: save one (summary, details).",
+    shape: {
+      path: external_exports.string().optional().describe("File or folder, relative to the project"),
+      set: external_exports.object({ path: external_exports.string().min(1), summary: external_exports.string().min(1).describe("One line"), details: external_exports.string().optional().describe("Entry points, how it connects, how to run or test, gotchas") }).optional()
+    }
+  },
+  read: {
+    description: "Full text of a vault entry by ref.",
+    shape: { ref: external_exports.string().min(1) }
   }
-  let server;
+};
+var mark = (n) => n.state === "changed" || n.state === "missing" ? ` [${n.state}]` : "";
+var NO_VAULT = "No vault: call project_init (name, goal).";
+function sessionFor(root, given, now) {
+  if (given) {
+    const id = idOfKind(given, "session");
+    if (!entryExists(root, "session", id)) throw new Error(`No session with id ${id}`);
+    return id;
+  }
+  const state = findActiveState(root);
+  if (!state) return null;
+  if (state.entry_id) return state.entry_id;
+  const entry2 = openSession(root, state.session_id, { model: null }, sessionBegan(state.transcript_path, now));
+  mutateState(state.session_id, () => state, (s) => {
+    s.entry_id = entry2;
+  });
+  return entry2;
+}
+function errorText(e) {
+  return e instanceof LockTimeout ? LOCK_BUSY : e instanceof Error ? e.message : String(e);
+}
+function callTool(root, name, rawArgs, now = /* @__PURE__ */ new Date()) {
+  const def = TOOL_DEFS[name];
+  if (!def) throw new Error(`Unknown tool: ${name}`);
+  if (name === "sign_in") throw new Error("sign_in is answered by the server, not by callTool");
+  const a = external_exports.object(def.shape).parse(rawArgs ?? {});
+  if (name === "project_init") {
+    const p = initVault(root, { name: a.name, goal: a.goal }, now);
+    return `Vault ready: ${p.data.name}.`;
+  }
+  if (!vaultExists(root)) return NO_VAULT;
+  switch (name) {
+    case "project_brief":
+      return buildBrief(root, now);
+    case "project_update": {
+      const out = [];
+      if (a.name !== void 0 || a.goal !== void 0 || a.focus !== void 0 || a.status !== void 0) {
+        updateProject(root, { name: a.name, goal: a.goal, focus: a.focus, status: a.status }, now);
+        out.push("Project updated.");
+      }
+      if (a.topic) out.push(`Saved ${refOf("topic", upsertTopic(root, a.topic, now).id)}.`);
+      if (a.milestone) out.push(`Saved ${refOf("milestone", upsertMilestone(root, a.milestone, now).id)}.`);
+      return out.join(" ") || "Nothing to update.";
+    }
+    case "task_upsert": {
+      const t = upsertTask(
+        root,
+        {
+          id: a.id,
+          title: a.title,
+          status: a.status,
+          topic: a.topic,
+          acceptance: a.acceptance,
+          note: a.note,
+          priority: a.priority,
+          due: a.due,
+          start: a.start,
+          estimate: a.estimate,
+          labels: a.labels,
+          parent: a.parent,
+          blocked_by: a.blocked_by,
+          milestone: a.milestone,
+          by: "agent",
+          session: a.id ? void 0 : sessionFor(root, a.session, now)
+        },
+        now
+      );
+      if (a.status !== void 0) {
+        try {
+          setCurrentTask(root, process.env.BINKGO_CLIENT === "codex" ? "codex" : "claude", { id: t.id, title: t.data.title, status: t.data.status }, now);
+        } catch {
+        }
+      }
+      return `Saved ${refOf("task", t.id)} [${t.data.status}]`;
+    }
+    case "log_decision": {
+      const d = logDecision(
+        root,
+        {
+          title: a.title,
+          decision: a.decision,
+          why: a.why,
+          alternatives: a.alternatives,
+          topic: a.topic,
+          supersedes: a.supersedes,
+          session: sessionFor(root, a.session, now)
+        },
+        now
+      );
+      return `Saved ${refOf("decision", d.id)}.`;
+    }
+    case "log_fix": {
+      const f = logFix(
+        root,
+        {
+          title: a.title,
+          symptom: a.symptom,
+          cause: a.cause,
+          fix: a.fix,
+          files: a.files,
+          verified: a.verified,
+          supersedes: a.supersedes,
+          reverts: a.reverts,
+          session: sessionFor(root, a.session, now)
+        },
+        now
+      );
+      return `Saved ${refOf("fix", f.id)}.`;
+    }
+    case "save_artifact": {
+      const art = saveArtifact(
+        root,
+        {
+          title: a.title,
+          kind: a.kind,
+          path: a.path,
+          copy: a.copy,
+          description: a.description,
+          task: a.task,
+          session: sessionFor(root, a.session, now)
+        },
+        now
+      );
+      return `Saved ${refOf("artifact", art.id)}.`;
+    }
+    case "session_summary": {
+      const entry2 = sessionFor(root, a.session, now);
+      if (!entry2) throw new Error("No active Binkgo session found for this project.");
+      writeSummary(root, entry2, { summary: a.summary, done: a.done, next: a.next });
+      const saved = [refOf("session", entry2)];
+      for (const f of a.fixes ?? []) saved.push(refOf("fix", logFix(root, { ...f, session: entry2 }, now).id));
+      for (const d of a.decisions ?? []) saved.push(refOf("decision", logDecision(root, { ...d, session: entry2 }, now).id));
+      for (const t of a.tasks ?? []) {
+        const row = upsertTask(root, { id: t.id, status: t.status, note: t.note, by: "agent" }, now);
+        saved.push(`${refOf("task", row.id)} [${row.data.status}]`);
+      }
+      const state = findStateByEntry(root, entry2);
+      if (state) {
+        mutateState(state.session_id, () => state, (s) => {
+          s.dirty = false;
+          s.actions = [];
+        });
+      }
+      return `Saved ${saved.join(", ")}.`;
+    }
+    case "search": {
+      const hits = searchVault(root, { query: a.query, type: a.type, file: a.file, limit: a.limit });
+      if (hits.length === 0) return "No matches.";
+      return hits.map((h) => `${h.ref}${h.status ? ` [${h.status}]` : ""} \u2014 ${h.line}`).join("\n");
+    }
+    case "project_map": {
+      if (a.set) return `Saved ${refOf("map", setMapNote(root, a.set, now).id)}.`;
+      if (a.path) {
+        const notes = mapNotesFor(root, a.path);
+        if (!notes.length) return `No notes for ${a.path}.`;
+        return notes.map((n) => `${n.path}${mark(n)}: ${n.summary}${n.details ? `
+${n.details}` : ""}`).join("\n\n");
+      }
+      const all = listMapNotes(root);
+      if (!all.length) return "No map yet. Save notes with set.";
+      const lines = all.slice(0, 60).map((n) => `${n.path} \u2014 ${n.summary}${mark(n)}`);
+      return [...lines, ...all.length > 60 ? [`+${all.length - 60} more (give a path)`] : []].join("\n");
+    }
+    case "read":
+      return readRef(root, a.ref) ?? `Nothing found for ${a.ref}.`;
+    default:
+      throw new Error(`Unknown tool: ${name}`);
+  }
+}
+
+// src/cli/run.ts
+var CLI_TOOLS = Object.keys(TOOL_DEFS).filter((n) => n !== "sign_in");
+function fieldsOf2(name) {
+  return Object.entries(TOOL_DEFS[name].shape).map(([k, v]) => `${k}${v.isOptional() ? "" : "*"}`).join(", ") || "(no arguments)";
+}
+var usage = () => `Usage: node cli.cjs <tool> '<json args>'
+${CLI_TOOLS.map((n) => `${n}: ${fieldsOf2(n)}`).join("\n")}`;
+function runCli(argv, cwd, env = process.env, now = /* @__PURE__ */ new Date()) {
+  const [name, rawJson] = argv;
+  if (!name || name === "help" || name === "--help") return { code: name ? 0 : 1, text: usage() };
+  if (!CLI_TOOLS.includes(name)) return { code: 1, text: `Unknown tool: ${name}
+${usage()}` };
+  if (!isSignedIn({ now })) return { code: 1, text: NOT_SIGNED_IN };
+  let args = {};
   try {
-    server = await startDashboard({ port, webDir, host, accessKey });
-  } catch (err) {
-    if (err.code === "EADDRINUSE") {
-      if (await probeDashboard(port)) alreadyRunning();
-      console.error(`Port ${port} is already in use. Is the dashboard already running? Try --port <n>.`);
-    } else {
-      console.error(`Could not start the dashboard: ${err.message}`);
-    }
-    process.exit(1);
+    const text2 = rawJson === "-" ? import_node_fs12.default.readFileSync(0, "utf8") : rawJson;
+    if (text2 && text2.trim()) args = JSON.parse(text2);
+  } catch {
+    return { code: 1, text: `The arguments are not valid JSON (wrap them in single quotes, or pass - and write them to stdin).
+${name}: ${fieldsOf2(name)}` };
   }
-  const url = `http://127.0.0.1:${server.port}/`;
-  console.log(`Binkgo dashboard: ${url}`);
-  if (host) console.log(`LAN mode on ${host}: other computers open http://<this computer>:${server.port}/?key=<access key> once.`);
-  if (open) openBrowser(url);
-  const stop = () => {
-    void server.close().then(() => process.exit(0));
-  };
-  process.on("SIGINT", stop);
-  process.on("SIGTERM", stop);
+  try {
+    const root = findProjectRoot(env.BINKGO_ROOT || cwd);
+    return { code: 0, text: callTool(root, name, args, now) };
+  } catch (e) {
+    if (e instanceof ZodError) {
+      const issues = e.issues.map((i) => `${i.path.join(".") || "args"}: ${i.message}`).join("; ");
+      return { code: 1, text: `Bad arguments for ${name}: ${issues}
+${name}: ${fieldsOf2(name)}` };
+    }
+    return { code: 1, text: `Error: ${errorText(e)}` };
+  }
 }
-void main();
+
+// src/cli/main.ts
+var { code, text } = runCli(process.argv.slice(2), process.cwd());
+process.stdout.write(`${text}
+`);
+process.exitCode = code;
 /*! Bundled license information:
 
 is-extendable/index.js:

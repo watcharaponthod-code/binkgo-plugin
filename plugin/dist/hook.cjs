@@ -3417,7 +3417,7 @@ var require_parse = __commonJS({
 var require_gray_matter = __commonJS({
   "node_modules/gray-matter/index.js"(exports2, module2) {
     "use strict";
-    var fs13 = require("fs");
+    var fs14 = require("fs");
     var sections = require_section_matter();
     var defaults = require_defaults();
     var stringify = require_stringify();
@@ -3501,7 +3501,7 @@ var require_gray_matter = __commonJS({
       return stringify(file, data, options2);
     };
     matter2.read = function(filepath, options2) {
-      const str2 = fs13.readFileSync(filepath, "utf8");
+      const str2 = fs14.readFileSync(filepath, "utf8");
       const file = matter2(str2, options2);
       file.path = filepath;
       return file;
@@ -3532,14 +3532,16 @@ var require_gray_matter = __commonJS({
 // src/vault/io.ts
 var import_node_fs2 = __toESM(require("node:fs"), 1);
 var import_node_path2 = __toESM(require("node:path"), 1);
-var import_node_crypto = require("node:crypto");
+var import_node_crypto2 = require("node:crypto");
 var import_gray_matter = __toESM(require_gray_matter(), 1);
 
 // src/vault/paths.ts
 var import_node_fs = __toESM(require("node:fs"), 1);
 var import_node_os = __toESM(require("node:os"), 1);
 var import_node_path = __toESM(require("node:path"), 1);
+var import_node_crypto = require("node:crypto");
 var VAULT_DIRNAME = ".binkgo";
+var RESERVED = /^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/;
 function canonicalPath(p) {
   const full = import_node_path.default.resolve(p);
   const tail = [];
@@ -3581,6 +3583,11 @@ function toRelPath(root, file) {
   const posix = rel.split(import_node_path.default.sep).join("/");
   if (posix === VAULT_DIRNAME || posix.startsWith(VAULT_DIRNAME + "/")) return null;
   return posix;
+}
+function slugify(title) {
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/, "");
+  if (!slug) return (0, import_node_crypto.createHash)("sha1").update(title).digest("hex").slice(0, 6);
+  return RESERVED.test(slug) ? `${slug}-x` : slug;
 }
 function uniqueId(dir, base) {
   let id = base;
@@ -4067,8 +4074,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path14, errorMaps, issueData } = params;
-  const fullPath = [...path14, ...issueData.path || []];
+  const { data, path: path15, errorMaps, issueData } = params;
+  const fullPath = [...path15, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -4184,11 +4191,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path14, key) {
+  constructor(parent, value, path15, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path14;
+    this._path = path15;
     this._key = key;
   }
   get path() {
@@ -7637,6 +7644,11 @@ function localIso(d) {
   const sign = off >= 0 ? "+" : "-";
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}${sign}${pad(Math.floor(Math.abs(off) / 60))}:${pad(Math.abs(off) % 60)}`;
 }
+function isValidDate(s) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const d = /* @__PURE__ */ new Date(`${s}T00:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+}
 function dateStamp(d) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
@@ -7775,6 +7787,8 @@ var SCHEMAS = {
     model: optStr,
     files_touched: lax(external_exports.array(external_exports.string()).default([])),
     summary_written: external_exports.boolean().default(false),
+    /** The summary was written by the Stop hook from the final reply, not by the model. */
+    summary_auto: external_exports.boolean().optional(),
     usage: usageSchema.default({}),
     failures: lax(external_exports.array(failureSchema).optional())
   }),
@@ -7791,6 +7805,8 @@ var SCHEMAS = {
     status: external_exports.enum(["active", "reverted", "superseded"]).default("active"),
     files: lax(external_exports.array(external_exports.string()).default([])),
     verified: external_exports.boolean().default(false),
+    /** Recorded by a hook when a failing check passed again after edits; the cause is a guess, so it never blocks an edit. */
+    auto: external_exports.boolean().optional(),
     supersedes: optStr,
     session: optStr,
     created: iso
@@ -7944,7 +7960,7 @@ function withLock(target, fn, opts = {}) {
   const staleMs = opts.staleMs ?? lockStaleMs;
   const timeoutMs = opts.timeoutMs ?? lockTimeoutMs;
   const lock = `${target}.lock`;
-  const token = `${process.pid}:${(0, import_node_crypto.randomBytes)(8).toString("hex")}`;
+  const token = `${process.pid}:${(0, import_node_crypto2.randomBytes)(8).toString("hex")}`;
   import_node_fs2.default.mkdirSync(import_node_path2.default.dirname(lock), { recursive: true });
   let lastCode;
   const tryAcquire = () => {
@@ -8087,6 +8103,14 @@ function listEntries(root, kind) {
 function listGood(root, kind) {
   return listEntries(root, kind).filter((e) => !isBroken(e));
 }
+function createEntry(root, kind, base, data, sections) {
+  const dir = import_node_path2.default.join(vaultDir(root), DIRS[kind]);
+  return withLock(dir, () => {
+    const id = uniqueId(dir, base);
+    writeEntry(root, kind, id, data, sections);
+    return id;
+  });
+}
 function mutateEntry(root, kind, id, fn) {
   return withLock(entryPath(root, kind, id), () => {
     const e = readEntry(root, kind, id);
@@ -8098,8 +8122,8 @@ function mutateEntry(root, kind, id, fn) {
 }
 
 // src/hooks/run.ts
-var import_node_fs12 = __toESM(require("node:fs"), 1);
-var import_node_path13 = __toESM(require("node:path"), 1);
+var import_node_fs13 = __toESM(require("node:fs"), 1);
+var import_node_path14 = __toESM(require("node:path"), 1);
 
 // src/license/key.ts
 var LICENSE_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
@@ -8108,7 +8132,7 @@ MCowBQYDK2VwAyEA0UXJpq5QTNgNaPMB3ZhdyRQo6C7vz36zgXHoqt4oBF0=
 `;
 
 // src/license/verify.ts
-var import_node_crypto2 = require("node:crypto");
+var import_node_crypto3 = require("node:crypto");
 function isPayload(x) {
   if (typeof x !== "object" || x === null) return false;
   const p = x;
@@ -8119,8 +8143,8 @@ function verifyLicense(token, publicKeyPem = LICENSE_PUBLIC_KEY) {
     if (typeof token !== "string") return null;
     const parts = token.split(".");
     if (parts.length !== 2 || !parts[0] || !parts[1]) return null;
-    const key = typeof publicKeyPem === "string" ? (0, import_node_crypto2.createPublicKey)(publicKeyPem) : publicKeyPem;
-    if (!(0, import_node_crypto2.verify)(null, Buffer.from(parts[0]), key, Buffer.from(parts[1], "base64url"))) return null;
+    const key = typeof publicKeyPem === "string" ? (0, import_node_crypto3.createPublicKey)(publicKeyPem) : publicKeyPem;
+    if (!(0, import_node_crypto3.verify)(null, Buffer.from(parts[0]), key, Buffer.from(parts[1], "base64url"))) return null;
     const payload = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
     return isPayload(payload) ? payload : null;
   } catch {
@@ -8129,7 +8153,7 @@ function verifyLicense(token, publicKeyPem = LICENSE_PUBLIC_KEY) {
 }
 
 // src/license/store.ts
-var import_node_crypto3 = require("node:crypto");
+var import_node_crypto4 = require("node:crypto");
 var import_node_fs4 = __toESM(require("node:fs"), 1);
 var import_node_os3 = __toESM(require("node:os"), 1);
 var import_node_path4 = __toESM(require("node:path"), 1);
@@ -8211,15 +8235,15 @@ function readDeviceFile(file) {
 function deviceInfo() {
   const device_name = import_node_os3.default.hostname() || "This computer";
   const file = readDeviceFile(deviceFile());
-  if (file === "unreadable") return { device_id: (0, import_node_crypto3.createHash)("sha256").update(`unreadable:${device_name}`).digest("hex").slice(0, 32), device_name };
+  if (file === "unreadable") return { device_id: (0, import_node_crypto4.createHash)("sha256").update(`unreadable:${device_name}`).digest("hex").slice(0, 32), device_name };
   const saved = file === "missing" ? void 0 : file.device_id;
   let id = typeof saved === "string" && saved !== "" ? saved : "";
   if (!id && file === "missing") {
-    id = (0, import_node_crypto3.randomUUID)();
+    id = (0, import_node_crypto4.randomUUID)();
     import_node_fs4.default.mkdirSync(binkgoHome(), { recursive: true });
     writeAtomic(deviceFile(), JSON.stringify({ device_id: id }, null, 2) + "\n");
   }
-  return { device_id: id || (0, import_node_crypto3.createHash)("sha256").update(`noid:${device_name}`).digest("hex").slice(0, 32), device_name };
+  return { device_id: id || (0, import_node_crypto4.createHash)("sha256").update(`noid:${device_name}`).digest("hex").slice(0, 32), device_name };
 }
 var CLOCK_SLACK_MS = 60 * 60 * 1e3;
 var CLOCK_WRITE_EVERY_MS = 60 * 1e3;
@@ -8260,7 +8284,7 @@ function licenseStatus(now, appVersion, opts = {}) {
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.11",
+  version: "1.0.12",
   private: true,
   type: "module",
   engines: {
@@ -8344,9 +8368,9 @@ function isSignedIn(o = {}) {
 }
 
 // src/hooks/handlers.ts
-var import_node_fs11 = __toESM(require("node:fs"), 1);
+var import_node_fs12 = __toESM(require("node:fs"), 1);
 var import_node_os5 = __toESM(require("node:os"), 1);
-var import_node_path12 = __toESM(require("node:path"), 1);
+var import_node_path13 = __toESM(require("node:path"), 1);
 
 // src/transcript/usage.ts
 var import_node_fs5 = __toESM(require("node:fs"), 1);
@@ -8508,12 +8532,12 @@ function resultChars(content) {
   if (!Array.isArray(content)) return 0;
   return content.reduce((n, b) => n + (typeof b?.text === "string" ? b.text.length : 0), 0);
 }
-var tokensOf = (chars) => Math.round(chars / 4);
+var tokensOf = (chars2) => Math.round(chars2 / 4);
 function computeActivity(records, skip) {
   const zero = () => ({ calls: 0, resultTokens: 0 });
   const out = { exploring: zero(), editing: zero(), binkgo: zero(), other: zero(), binkgoInjectedTokens: 0 };
   const names = /* @__PURE__ */ new Map();
-  const chars = { exploring: 0, editing: 0, binkgo: 0, other: 0, injected: 0 };
+  const chars2 = { exploring: 0, editing: 0, binkgo: 0, other: 0, injected: 0 };
   let seen = false;
   records.forEach((r, i) => {
     if (i < skip || r.isSidechain) return;
@@ -8529,26 +8553,26 @@ function computeActivity(records, skip) {
     } else if (r.type === "user" && Array.isArray(blocks)) {
       for (const b of blocks) {
         if (b?.type !== "tool_result") continue;
-        chars[groupOf(names.get(b.tool_use_id) ?? "")] += resultChars(b.content);
+        chars2[groupOf(names.get(b.tool_use_id) ?? "")] += resultChars(b.content);
       }
     } else if (r.type === "attachment" && r.attachment) {
       const a = r.attachment;
       if (a.type === "hook_additional_context") {
         const text = Array.isArray(a.content) ? a.content.filter((c) => typeof c === "string").join("\n") : "";
         if (/^\s*#?\s*Binkgo/.test(text)) {
-          chars.injected += text.length;
+          chars2.injected += text.length;
           seen = true;
         }
       } else if (a.type === "hook_blocking_error") {
         const text = a.blockingError?.blockingError;
         if (typeof text === "string" && text.includes("Binkgo")) {
-          chars.injected += text.length;
+          chars2.injected += text.length;
           seen = true;
         }
       } else if (a.type === "mcp_instructions_delta" && Array.isArray(a.addedNames) && Array.isArray(a.addedBlocks)) {
         a.addedNames.forEach((n, k) => {
           if (typeof n === "string" && /binkgo/i.test(n) && typeof a.addedBlocks[k] === "string") {
-            chars.injected += a.addedBlocks[k].length;
+            chars2.injected += a.addedBlocks[k].length;
             seen = true;
           }
         });
@@ -8556,8 +8580,8 @@ function computeActivity(records, skip) {
     }
   });
   if (!seen) return null;
-  for (const g of ["exploring", "editing", "binkgo", "other"]) out[g].resultTokens = tokensOf(chars[g]);
-  out.binkgoInjectedTokens = tokensOf(chars.injected);
+  for (const g of ["exploring", "editing", "binkgo", "other"]) out[g].resultTokens = tokensOf(chars2[g]);
+  out.binkgoInjectedTokens = tokensOf(chars2.injected);
   return out;
 }
 function computeUsage(transcriptPath) {
@@ -8634,12 +8658,12 @@ function computeUsage(transcriptPath) {
 }
 
 // src/vault/index.ts
-var import_node_crypto4 = require("node:crypto");
+var import_node_crypto5 = require("node:crypto");
 var import_node_fs6 = __toESM(require("node:fs"), 1);
 var import_node_path6 = __toESM(require("node:path"), 1);
 var VERSION = 2;
 function cacheFile(root) {
-  const key = (0, import_node_crypto4.createHash)("sha1").update(canonicalPath(root).toLowerCase()).digest("hex").slice(0, 16);
+  const key = (0, import_node_crypto5.createHash)("sha1").update(canonicalPath(root).toLowerCase()).digest("hex").slice(0, 16);
   return import_node_path6.default.join(binkgoHome(), "cache", `tasks-${key}.json`);
 }
 function load(root) {
@@ -8694,11 +8718,31 @@ function taskRows(root) {
 
 // src/vault/map.ts
 var import_node_fs7 = __toESM(require("node:fs"), 1);
+var import_node_path8 = __toESM(require("node:path"), 1);
+
+// src/vault/work.ts
+var import_node_crypto6 = require("node:crypto");
 var import_node_path7 = __toESM(require("node:path"), 1);
 
 // src/vault/refs.ts
+var ID = /^[a-z0-9][a-z0-9-]*$/;
 function refOf(kind, id) {
   return kind === "project" ? "project" : `${DIRS[kind]}/${id}`;
+}
+function parseRef(ref) {
+  const clean = ref.trim().replace(/\\/g, "/").replace(/^\.binkgo\//, "").replace(/\.md$/, "");
+  if (clean === "project") return { kind: "project", id: "project" };
+  const slash = clean.indexOf("/");
+  const dir = slash === -1 ? null : clean.slice(0, slash);
+  const id = slash === -1 ? clean : clean.slice(slash + 1);
+  const kind = dir === null ? null : KINDS.find((k) => k !== "project" && DIRS[k] === dir) ?? null;
+  if (!ID.test(id) || dir !== null && kind === null) throw new Error(`Invalid ref: ${ref}`);
+  return { kind, id };
+}
+function idOfKind(ref, kind) {
+  const parsed = parseRef(ref);
+  if (parsed.kind !== null && parsed.kind !== kind) throw new Error(`Expected a ${kind} ref, got: ${ref}`);
+  return parsed.id;
 }
 
 // src/vault/work.ts
@@ -8707,15 +8751,87 @@ var RuleError = class extends Error {
 var rule = (message) => {
   throw new RuleError(message);
 };
+var ID2 = /^[a-z0-9][a-z0-9-]*$/;
+var chars = (s) => Array.from(s).length;
+function must(root, kind, id) {
+  const e = readEntry(root, kind, id);
+  if (isBroken(e)) throw new Error(`Cannot read ${kind} ${id}: ${e.error}`);
+  return e;
+}
 var CONTROL_SINGLE_LINE = /[\x00-\x1F\x7F]/;
 var CONTROL_MULTI_LINE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/;
 function noControl(what, value, multiline = false) {
   if (typeof value === "string" && (multiline ? CONTROL_MULTI_LINE : CONTROL_SINGLE_LINE).test(value)) rule(`${what} contains control characters`);
 }
+function checkDate(name, value) {
+  if (typeof value !== "string" || !isValidDate(value)) rule(`${name} must be a date written YYYY-MM-DD`);
+  return value;
+}
+function topicId(title) {
+  if (!/[^\x00-\x7f]/.test(title)) return slugify(title);
+  const ascii = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40).replace(/-+$/, "");
+  const hash = (0, import_node_crypto6.createHash)("sha1").update(title.trim()).digest("hex").slice(0, 6);
+  return ascii ? `${ascii}-${hash}` : hash;
+}
+function idForTitle(root, kind, title) {
+  const id = topicId(title);
+  if (entryExists(root, kind, id)) return id;
+  const wanted = title.trim().normalize("NFC");
+  return listGood(root, kind).find((e) => e.data.title.trim().normalize("NFC") === wanted)?.id ?? id;
+}
+function checkTopicFields(f) {
+  if (typeof f.start === "string") checkDate("Start date", f.start);
+  if (typeof f.target === "string") checkDate("Target date", f.target);
+  if (typeof f.color === "number" && (!Number.isInteger(f.color) || f.color < 0 || f.color > 7)) rule("Colour must be a whole number from 0 to 7");
+}
+function applyTopic(e, f, t) {
+  const d = e.data;
+  if (f.title !== void 0) {
+    noControl("The title", f.title);
+    if (chars(f.title.trim()) < 1) rule("A topic needs a title");
+    e.data.title = f.title.trim();
+  }
+  noControl("The goal", f.goal, true);
+  if (f.goal !== void 0) e.data.goal = f.goal;
+  if (f.status !== void 0) e.data.status = f.status;
+  for (const key of ["start", "target", "color"]) {
+    const v = f[key];
+    if (v === void 0) continue;
+    if (v === null) delete d[key];
+    else d[key] = v;
+  }
+  if (e.data.start && e.data.target && e.data.start > e.data.target) rule("The target date is before the start date");
+  e.data.updated = t;
+}
+function upsertTopic(root, input, now = /* @__PURE__ */ new Date()) {
+  checkTopicFields(input);
+  noControl("The title", input.title);
+  const id = idForTitle(root, "topic", input.title);
+  const t = localIso(now);
+  const created = withLock(import_node_path7.default.join(vaultDir(root), DIRS.topic), () => {
+    if (entryExists(root, "topic", id)) return false;
+    const e = {
+      kind: "topic",
+      id,
+      sections: { Notes: "" },
+      data: { title: input.title, goal: "", status: "active", created: t, updated: t }
+    };
+    applyTopic(e, { ...input, title: void 0 }, t);
+    writeEntry(root, "topic", id, e.data, e.sections);
+    return true;
+  });
+  if (created) return must(root, "topic", id);
+  return mutateEntry(root, "topic", id, (e) => applyTopic(e, { ...input, title: void 0 }, t));
+}
+function resolveTopic(root, value, now) {
+  const candidate = value.replace(/^topics\//, "");
+  if (ID2.test(candidate) && entryExists(root, "topic", candidate)) return candidate;
+  return upsertTopic(root, { title: value }, now).id;
+}
 
 // src/vault/map.ts
 function stampOf(root, rel) {
-  const full = import_node_path7.default.join(canonicalPath(root), rel === "." ? "" : rel);
+  const full = import_node_path8.default.join(canonicalPath(root), rel === "." ? "" : rel);
   try {
     const st = import_node_fs7.default.statSync(full);
     if (!st.isDirectory()) return `f:${st.size}:${Math.floor(st.mtimeMs)}`;
@@ -8723,7 +8839,7 @@ function stampOf(root, rel) {
     const names = import_node_fs7.default.readdirSync(full).filter((n) => n !== VAULT_DIRNAME && n !== ".git" && n !== "node_modules");
     for (const n of names) {
       try {
-        newest = Math.max(newest, Math.floor(import_node_fs7.default.statSync(import_node_path7.default.join(full, n)).mtimeMs));
+        newest = Math.max(newest, Math.floor(import_node_fs7.default.statSync(import_node_path8.default.join(full, n)).mtimeMs));
       } catch {
       }
     }
@@ -8751,9 +8867,9 @@ function listMapNotes(root, max = 500) {
 var isStale = (n) => n.state === "changed" || n.state === "missing";
 
 // src/vault/sessions.ts
-var import_node_path8 = __toESM(require("node:path"), 1);
+var import_node_path9 = __toESM(require("node:path"), 1);
 function openSession(root, sessionId, meta, now = /* @__PURE__ */ new Date()) {
-  const dir = import_node_path8.default.join(vaultDir(root), DIRS.session);
+  const dir = import_node_path9.default.join(vaultDir(root), DIRS.session);
   return withLock(dir, () => {
     const sid8 = sessionId.replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toLowerCase() || "session";
     const suffix = new RegExp(`-${sid8}(-\\d+)?$`);
@@ -8818,14 +8934,26 @@ function openFailures(root, limit = 2) {
   }
   return out.slice(0, limit);
 }
-function writeAutoSummary(root, entryId, file) {
+var DONE_FILES = 8;
+function writeAutoHandoff(root, entryId, h) {
+  let written = false;
   mutateEntry(root, "session", entryId, (e) => {
-    if (e.data.summary_written) return;
-    e.sections.Summary = `Small edit to ${file} (recorded automatically).`;
-    e.sections.Done = `- Edited ${file}`;
-    e.sections.Next = "";
+    if (e.data.summary_written && !e.data.summary_auto) return;
+    const files = e.data.files_touched;
+    const edited = [...files.slice(0, DONE_FILES).map((f) => `- Edited ${f}`), ...files.length > DONE_FILES ? [`- \u2026 and ${files.length - DONE_FILES} more files`] : []];
+    const shell = (e.sections.Done ?? "").split(/\r?\n/).filter((l) => l.trim() && !/^- (Edited |… and )/.test(l));
+    for (const a of h.actions) if (!shell.includes(`- ${a}`)) shell.push(`- ${a}`);
+    if (!(h.short && e.sections.Summary) && h.summary) e.sections.Summary = h.summary;
+    if (!e.sections.Summary) e.sections.Summary = files.length ? `Edited ${files.slice(0, 3).join(", ")}.` : "Changes made in the shell.";
+    e.sections.Done = [...edited, ...shell.slice(-DONE_FILES)].join("\n");
+    if (h.next) e.sections.Next = bullets(h.next);
+    e.data.summary_written = true;
+    e.data.summary_auto = true;
+    written = true;
   });
+  return written;
 }
+var bullets = (items) => items.map((i) => `- ${i}`).join("\n");
 function updateSessionUsage(root, entryId, usage, model) {
   mutateEntry(root, "session", entryId, (e) => {
     e.data.usage = usage;
@@ -8948,7 +9076,7 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
   }
   const head = [
     `Binkgo: ${project.data.name}${project.data.status === "active" ? "" : ` [${project.data.status}]`}`,
-    `Goal: ${cap(project.data.goal, 140) || "(not set; call project_update)"}`,
+    `Goal: ${cap(project.data.goal, 140) || "(not set; project_update once the person states it)"}`,
     `Focus: ${cap(project.data.focus, 140) || "(not set)"}`
   ];
   const units = [];
@@ -8997,7 +9125,7 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
     units.push("Project map: none yet. Save notes (project_map set) for areas you explore.");
   } else {
     const stale = notes.filter(isStale).length;
-    units.push(`Project map: ${notes.length} notes (${stale} stale). Before Glob/Grep, read the map entry for that folder (project_map path).`);
+    units.push(`Project map: ${notes.length} notes (${stale} stale). A folder's note is shown when you explore it.`);
     const depth = (p) => p === "." ? 0 : p.split("/").length;
     const byDepth = [...notes].sort((a, b) => depth(a.path) - depth(b.path) || a.path.localeCompare(b.path));
     const top = byDepth.filter((n) => depth(n.path) <= 1);
@@ -9069,19 +9197,12 @@ function responseText(r) {
 // src/hooks/messages.ts
 var denyNote = (rel, fixLines) => `Binkgo: ${rel} has earlier fixes:
 ${fixLines.join("\n")}
-Read them (read tool), then retry the edit; it will be allowed.`;
-var advisoryNote = (rel, fixLines) => `Binkgo: ${rel} has earlier fixes; read them before changing it again:
+Consider them, then retry the edit; it will be allowed.`;
+var advisoryNote = (rel, fixLines) => `Binkgo: ${rel} has earlier fixes; consider them before changing it again:
 ${fixLines.join("\n")}`;
-var MAP_ASK_READS = 5;
-var stopRequest = (sessionRef, s = {}, doing = [], failing = []) => {
-  const areas = Object.entries(s.unmapped ?? {}).filter(([, n]) => n >= MAP_ASK_READS).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([p]) => p);
-  return [
-    `Binkgo: call session_summary (session "${sessionRef}") with summary, done, next, and unlogged fixes[], decisions[]; then finish.`,
-    ...s.actions?.length ? ["Shell changes this session:", ...s.actions.map((a) => `- ${a}`)] : [],
-    ...failing.map((c) => `Still failing: ${c}`),
-    ...doing.length ? ["In progress (tasks[] status done/blocked if that changed):", ...doing.map((t) => `- ${t}`)] : [],
-    ...areas.length ? [`project_map set: a note for ${areas.join(", ")} (read often, none yet).`] : []
-  ].join("\n");
+var cliFooter = (hookFile) => {
+  const cli = hookFile.replace(/\\/g, "/").replace(/[^/]*$/, "cli.cjs");
+  return `Binkgo CLI, only if needed, with other tool calls: node "${cli}" log_fix|log_decision|task_upsert|project_map|search|read '<json>'. Your final reply is the handoff: say what changed, end "Next: \u2026"; a line "Decision: <what> \u2014 <why>" is logged.`;
 };
 var mapNote = (lines, details) => `Binkgo map (read before exploring further):
 ${lines.join("\n")}${details ? `
@@ -9091,19 +9212,115 @@ var ADOPT_COMMITS = 20;
 var signInNote = "Binkgo: sign in to turn on project memory (free). Run /binkgo login, or ask the agent to call sign_in.";
 var signInNotice = "\u{1F33F} Binkgo \xB7 not signed in, so project memory is off. Sign in once (free): run /binkgo login, or ask the AI to sign in to Binkgo.";
 
-// src/vault/live.ts
+// src/hooks/handoff.ts
 var import_node_fs8 = __toESM(require("node:fs"), 1);
-var import_node_path9 = __toESM(require("node:path"), 1);
+var SUMMARY_CAP = 600;
+var SHORT_REPLY = 40;
+var NEXT_BULLETS = 3;
+var TAIL_BYTES = 256 * 1024;
+function plainText(text) {
+  return text.replace(/^\s*```.*$/gm, " ").replace(/^\s{0,3}#{1,6}\s+/gm, "").replace(/(\*\*|__)(.+?)\1/g, "$2").replace(/\s+/g, " ").trim();
+}
+function capWords(text, max) {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max - 1);
+  const at = cut.lastIndexOf(" ");
+  return `${(at > max / 2 ? cut.slice(0, at) : cut).replace(/[\s,;:.-]+$/, "")}\u2026`;
+}
+var NEXT_LINE = /^\s*(?:[-*•]\s*)?(?:\*\*|__)?(?:next(?:\s+steps?)?|ต่อไป|ขั้นต่อไป)(?=[\s:：*_]|$)(?:\*\*|__)?\s*[:：]?\s*(?:\*\*|__)?\s*(.*)$/i;
+var BULLET = /^\s*(?:[-*•]|\d+[.)])\s+(.*)$/;
+function parseReply(reply) {
+  const lines = reply.split(/\r?\n/);
+  const at = lines.findIndex((l) => NEXT_LINE.test(l));
+  let next = null;
+  let body = lines;
+  if (at !== -1) {
+    const items = [];
+    const head = NEXT_LINE.exec(lines[at])[1].replace(/(\*\*|__)/g, "").trim();
+    if (head) items.push(head);
+    let end = at + 1;
+    for (let i = at + 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+      const b = BULLET.exec(lines[i]);
+      if (!b) break;
+      if (items.length < NEXT_BULLETS + (head ? 1 : 0)) items.push(plainText(b[1]));
+      end = i + 1;
+    }
+    next = items.map((i) => capWords(i, 200)).filter(Boolean);
+    if (next.length === 0) next = null;
+    body = [...lines.slice(0, at), ...lines.slice(end)];
+  }
+  const whole = plainText(reply);
+  const text = plainText(body.join("\n"));
+  return { summary: capWords(text || whole, SUMMARY_CAP), short: whole.length < SHORT_REPLY, next };
+}
+var DECISION_LINE = /^\s*(?:[-*•]\s*)?(?:\*\*|__)?(?:decision|ตัดสินใจ)(?:\*\*|__)?\s*[:：]\s*(?:\*\*|__)?\s*(.+)$/i;
+var WHY_SEP = /\s+[—–-]\s+|\s*[:：]\s+|\s+because\s+|\s*เพราะ\s*/i;
+var MAX_DECISIONS = 3;
+function parseDecisions(reply) {
+  const out = [];
+  for (const line of reply.split(/\r?\n/)) {
+    const m = DECISION_LINE.exec(line);
+    if (!m) continue;
+    const rest = plainText(m[1]);
+    const sep = WHY_SEP.exec(rest);
+    if (!sep) continue;
+    const what = rest.slice(0, sep.index).trim();
+    const why = rest.slice(sep.index + sep[0].length).trim();
+    if (!what || !why) continue;
+    out.push({ title: capWords(what, 80), decision: capWords(what, 300), why: capWords(why, 300) });
+    if (out.length === MAX_DECISIONS) break;
+  }
+  return out;
+}
+function lastReplyFromTranscript(file) {
+  if (!file) return null;
+  let fd;
+  try {
+    fd = import_node_fs8.default.openSync(file, "r");
+    const size = import_node_fs8.default.fstatSync(fd).size;
+    const start = Math.max(0, size - TAIL_BYTES);
+    const buf = Buffer.alloc(size - start);
+    import_node_fs8.default.readSync(fd, buf, 0, buf.length, start);
+    const lines = buf.toString("utf8").split("\n");
+    if (start > 0) lines.shift();
+    for (let i = lines.length - 1; i >= 0; i--) {
+      if (!lines[i].includes('"assistant"')) continue;
+      let rec;
+      try {
+        rec = JSON.parse(lines[i]);
+      } catch {
+        continue;
+      }
+      if (rec.type !== "assistant" || rec.isSidechain === true) continue;
+      const c = rec.message?.content;
+      const text = typeof c === "string" ? c : Array.isArray(c) ? c.map((b) => b && b.type === "text" && typeof b.text === "string" ? b.text : "").join("\n") : "";
+      if (text.trim()) return text.trim();
+    }
+    return null;
+  } catch {
+    return null;
+  } finally {
+    if (fd !== void 0) try {
+      import_node_fs8.default.closeSync(fd);
+    } catch {
+    }
+  }
+}
+
+// src/vault/live.ts
+var import_node_fs9 = __toESM(require("node:fs"), 1);
+var import_node_path10 = __toESM(require("node:path"), 1);
 var CLAUDE_WORKING_MS = 10 * 60 * 1e3;
 var CODEX_WORKING_MS = 5 * 60 * 1e3;
 var CLAUDE_WAITING_MS = 30 * 60 * 1e3;
 var CLOSED_VISIBLE_MS = 60 * 60 * 1e3;
 var LIVE_MAX_AGE_MS = 24 * 60 * 60 * 1e3;
 function liveDir() {
-  return import_node_path9.default.join(binkgoHome(), "live");
+  return import_node_path10.default.join(binkgoHome(), "live");
 }
 function liveFile(sessionId) {
-  return import_node_path9.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
+  return import_node_path10.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
 }
 function isRecord(v) {
   if (!v || typeof v !== "object") return false;
@@ -9113,7 +9330,7 @@ function isRecord(v) {
 }
 function readFile(file) {
   try {
-    const parsed = JSON.parse(import_node_fs8.default.readFileSync(file, "utf8"));
+    const parsed = JSON.parse(import_node_fs9.default.readFileSync(file, "utf8"));
     return isRecord(parsed) ? parsed : null;
   } catch {
     return null;
@@ -9143,22 +9360,22 @@ function markClaude(input, state, now) {
 }
 
 // src/vault/state.ts
-var import_node_fs9 = __toESM(require("node:fs"), 1);
-var import_node_path10 = __toESM(require("node:path"), 1);
+var import_node_fs10 = __toESM(require("node:fs"), 1);
+var import_node_path11 = __toESM(require("node:path"), 1);
 function stateDir() {
-  return import_node_path10.default.join(binkgoHome(), "state");
+  return import_node_path11.default.join(binkgoHome(), "state");
 }
 function stateFile(sessionId) {
-  return import_node_path10.default.join(stateDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
+  return import_node_path11.default.join(stateDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
 }
 function isState(v) {
   if (!v || typeof v !== "object") return false;
   const s = v;
-  return typeof s.session_id === "string" && typeof s.root === "string" && (s.entry_id === null || typeof s.entry_id === "string") && Array.isArray(s.warned_files) && s.warned_files.every((f) => typeof f === "string") && (s.map_shown === void 0 || Array.isArray(s.map_shown) && s.map_shown.every((f) => typeof f === "string")) && typeof s.dirty === "boolean" && typeof s.reminded === "boolean" && typeof s.ended === "boolean" && (s.transcript_path === void 0 || typeof s.transcript_path === "string") && (s.summary_at === void 0 || typeof s.summary_at === "string") && (s.usage_at === void 0 || typeof s.usage_at === "string");
+  return typeof s.session_id === "string" && typeof s.root === "string" && (s.entry_id === null || typeof s.entry_id === "string") && Array.isArray(s.warned_files) && s.warned_files.every((f) => typeof f === "string") && (s.map_shown === void 0 || Array.isArray(s.map_shown) && s.map_shown.every((f) => typeof f === "string")) && typeof s.dirty === "boolean" && typeof s.ended === "boolean" && (s.transcript_path === void 0 || typeof s.transcript_path === "string") && (s.notice_at === void 0 || typeof s.notice_at === "string") && (s.usage_at === void 0 || typeof s.usage_at === "string");
 }
 function readFile2(file) {
   try {
-    const parsed = JSON.parse(import_node_fs9.default.readFileSync(file, "utf8"));
+    const parsed = JSON.parse(import_node_fs10.default.readFileSync(file, "utf8"));
     return isState(parsed) ? parsed : null;
   } catch {
     return null;
@@ -9183,13 +9400,13 @@ function pruneStates(now, maxAgeDays = 30) {
   const leftoverCutoff = now.getTime() - LEFTOVER_MAX_AGE_MS;
   let names;
   try {
-    names = import_node_fs9.default.readdirSync(stateDir());
+    names = import_node_fs10.default.readdirSync(stateDir());
   } catch {
     return;
   }
   const mtimeOf = (file) => {
     try {
-      const st = import_node_fs9.default.statSync(file);
+      const st = import_node_fs10.default.statSync(file);
       return st.isFile() ? st.mtimeMs : null;
     } catch {
       return null;
@@ -9198,7 +9415,7 @@ function pruneStates(now, maxAgeDays = 30) {
   let handled = 0;
   for (const name of names) {
     if (handled >= PRUNE_MAX_FILES) break;
-    const file = import_node_path10.default.join(stateDir(), name);
+    const file = import_node_path11.default.join(stateDir(), name);
     try {
       if (name.endsWith(".json")) {
         const m = mtimeOf(file);
@@ -9206,11 +9423,11 @@ function pruneStates(now, maxAgeDays = 30) {
         handled++;
         withLock(file, () => {
           const again = mtimeOf(file);
-          if (again !== null && again < cutoff) import_node_fs9.default.rmSync(file, { force: true });
+          if (again !== null && again < cutoff) import_node_fs10.default.rmSync(file, { force: true });
         }, { timeoutMs: 200 });
       } else if (/\.(tmp|lock|steal)$/.test(name)) {
         const m = mtimeOf(file);
-        if (m !== null && m < leftoverCutoff) import_node_fs9.default.rmSync(file, { force: true });
+        if (m !== null && m < leftoverCutoff) import_node_fs10.default.rmSync(file, { force: true });
       }
     } catch {
     }
@@ -9218,26 +9435,26 @@ function pruneStates(now, maxAgeDays = 30) {
 }
 
 // src/vault/vault.ts
-var import_node_fs10 = __toESM(require("node:fs"), 1);
+var import_node_fs11 = __toESM(require("node:fs"), 1);
 var import_node_os4 = __toESM(require("node:os"), 1);
-var import_node_path11 = __toESM(require("node:path"), 1);
-function must(root, kind, id) {
+var import_node_path12 = __toESM(require("node:path"), 1);
+function must2(root, kind, id) {
   const e = readEntry(root, kind, id);
   if (isBroken(e)) throw new Error(`Cannot read ${kind} ${id}: ${e.error}`);
   return e;
 }
 function canHostVault(root) {
   const r = canonicalPath(root);
-  if (import_node_path11.default.dirname(r) === r) return false;
+  if (import_node_path12.default.dirname(r) === r) return false;
   if (samePath(r, import_node_os4.default.homedir())) return false;
   return !samePath(vaultDir(r), binkgoHome());
 }
 function vaultExists(root) {
-  return import_node_fs10.default.existsSync(entryPath(root, "project", "project"));
+  return import_node_fs11.default.existsSync(entryPath(root, "project", "project"));
 }
 function writeGitignore(root) {
   try {
-    import_node_fs10.default.writeFileSync(import_node_path11.default.join(vaultDir(root), ".gitignore"), ["*.lock", "*.steal", "*.tmp", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
+    import_node_fs11.default.writeFileSync(import_node_path12.default.join(vaultDir(root), ".gitignore"), ["*.lock", "*.steal", "*.tmp", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
   } catch (e) {
     if (e.code !== "EEXIST") throw e;
   }
@@ -9247,7 +9464,7 @@ function initVault(root, input, now = /* @__PURE__ */ new Date(), opts = {}) {
   noControl("The goal", input.goal, true);
   if (!canHostVault(root)) throw new Error(`Binkgo cannot create a vault in ${root}`);
   for (const k of KINDS) {
-    if (k !== "project" && k !== "milestone" && k !== "map") import_node_fs10.default.mkdirSync(import_node_path11.default.join(vaultDir(root), DIRS[k]), { recursive: true });
+    if (k !== "project" && k !== "milestone" && k !== "map") import_node_fs11.default.mkdirSync(import_node_path12.default.join(vaultDir(root), DIRS[k]), { recursive: true });
   }
   if (!vaultExists(root)) {
     const t = localIso(now);
@@ -9266,7 +9483,7 @@ function initVault(root, input, now = /* @__PURE__ */ new Date(), opts = {}) {
   return project;
 }
 function readProject(root) {
-  return must(root, "project", "project");
+  return must2(root, "project", "project");
 }
 function updateProject(root, patch, now = /* @__PURE__ */ new Date()) {
   noControl("The name", patch.name);
@@ -9280,6 +9497,62 @@ function updateProject(root, patch, now = /* @__PURE__ */ new Date()) {
     e.data.updated = localIso(now);
   });
 }
+function requireExisting(root, kind, ref) {
+  const id = idOfKind(ref, kind);
+  if (!entryExists(root, kind, id)) throw new Error(`No ${kind} with id ${id}`);
+  must2(root, kind, id);
+  return id;
+}
+function logDecision(root, input, now = /* @__PURE__ */ new Date()) {
+  const old = input.supersedes ? requireExisting(root, "decision", input.supersedes) : null;
+  const id = createEntry(
+    root,
+    "decision",
+    `${dateStamp(now)}-${slugify(input.title)}`,
+    {
+      title: input.title,
+      status: "active",
+      supersedes: old,
+      topic: input.topic ? resolveTopic(root, input.topic, now) : null,
+      session: input.session ?? null,
+      created: localIso(now)
+    },
+    { Decision: input.decision, Why: input.why, Alternatives: input.alternatives ?? "" }
+  );
+  if (old) mutateEntry(root, "decision", old, (e) => {
+    e.data.status = "superseded";
+  });
+  return must2(root, "decision", id);
+}
+function logFix(root, input, now = /* @__PURE__ */ new Date()) {
+  if (input.supersedes && input.reverts) throw new Error("give either supersedes or reverts, not both");
+  const superseded = input.supersedes ? requireExisting(root, "fix", input.supersedes) : null;
+  const reverted = input.reverts ? requireExisting(root, "fix", input.reverts) : null;
+  const files = [...new Set(input.files.map((f) => toRelPath(root, f)).filter((f) => f !== null))];
+  const id = createEntry(
+    root,
+    "fix",
+    `${dateStamp(now)}-${slugify(input.title)}`,
+    {
+      title: input.title,
+      status: "active",
+      files,
+      verified: input.verified,
+      ...input.auto ? { auto: true } : {},
+      supersedes: superseded ?? reverted,
+      session: input.session ?? null,
+      created: localIso(now)
+    },
+    { Symptom: input.symptom, Cause: input.cause, Fix: input.fix }
+  );
+  if (superseded) mutateEntry(root, "fix", superseded, (e) => {
+    e.data.status = "superseded";
+  });
+  if (reverted) mutateEntry(root, "fix", reverted, (e) => {
+    e.data.status = "reverted";
+  });
+  return must2(root, "fix", id);
+}
 var MAX_COPY_BYTES = 20 * 1024 * 1024;
 
 // src/hooks/handlers.ts
@@ -9291,7 +9564,6 @@ function fresh(input) {
     entry_id: null,
     warned_files: [],
     dirty: false,
-    reminded: false,
     ended: false
   };
 }
@@ -9302,7 +9574,7 @@ function stateFor(input) {
 function editedFile(input, root) {
   const raw = input.tool_input?.file_path ?? input.tool_input?.notebook_path;
   if (typeof raw !== "string" || !raw) return null;
-  return toRelPath(root, import_node_path12.default.resolve(input.cwd || root, raw));
+  return toRelPath(root, import_node_path13.default.resolve(input.cwd || root, raw));
 }
 function additionalContext(event, text) {
   return { hookSpecificOutput: { hookEventName: event, additionalContext: text } };
@@ -9342,9 +9614,9 @@ var MANIFESTS = /* @__PURE__ */ new Set([
   "deno.json"
 ]);
 function isProject(root) {
-  if (import_node_fs11.default.existsSync(import_node_path12.default.join(root, ".git"))) return true;
+  if (import_node_fs12.default.existsSync(import_node_path13.default.join(root, ".git"))) return true;
   try {
-    return import_node_fs11.default.readdirSync(root).some((n) => MANIFESTS.has(n) || /\.(sln|csproj)$/i.test(n));
+    return import_node_fs12.default.readdirSync(root).some((n) => MANIFESTS.has(n) || /\.(sln|csproj)$/i.test(n));
   } catch {
     return false;
   }
@@ -9352,7 +9624,7 @@ function isProject(root) {
 function autoCreate(root, now) {
   if (vaultExists(root) || !canHostVault(root) || isScratchFolder(root) || !isProject(root)) return null;
   try {
-    const name = import_node_path12.default.basename(root);
+    const name = import_node_path13.default.basename(root);
     initVault(root, { name }, now, { auto: true });
     return createdNote(name, commitCount(root));
   } catch {
@@ -9366,6 +9638,8 @@ function markLive(input, state, now) {
   } catch {
   }
 }
+var footer = () => import_node_path13.default.basename(__filename) === "hook.cjs" ? `
+${cliFooter(__filename)}` : "";
 function sessionStart(input, now = /* @__PURE__ */ new Date()) {
   const root = findProjectRoot(input.cwd);
   let entry2 = null;
@@ -9387,7 +9661,7 @@ function sessionStart(input, now = /* @__PURE__ */ new Date()) {
   let out;
   if (entry2) {
     const brief = buildBrief(root, now);
-    let name = import_node_path12.default.basename(root);
+    let name = import_node_path13.default.basename(root);
     try {
       name = readProject(root).data.name;
       registerProject(root, name, now, { auto: true });
@@ -9397,7 +9671,7 @@ function sessionStart(input, now = /* @__PURE__ */ new Date()) {
 
 ` : ""}${brief}
 
-Binkgo session: ${refOf("session", entry2)}`);
+Binkgo session: ${refOf("session", entry2)}${footer()}`);
     out.systemMessage = notice(`${name}: project memory loaded. The AI does the work; you review and steer it.`);
   } else {
     out = { systemMessage: notice("no project folder here, so memory is off. Start Claude Code inside a project folder, or ask the AI to run project_init.") };
@@ -9424,17 +9698,20 @@ function preEdit(input, _now = /* @__PURE__ */ new Date()) {
   mutateState(input.session_id, () => fresh(input), (s) => {
     if (!s.warned_files.includes(rel)) s.warned_files.push(rel);
   });
+  const text = (v) => capWords((v ?? "").replace(/\s+/g, " ").trim(), 160);
   const lines = fixes.map(
-    (f) => `- ${refOf("fix", f.id)} [${f.data.status}, ${f.data.verified ? "verified" : "unverified"}] ${f.data.title.slice(0, 80)}`
+    (f) => `- ${refOf("fix", f.id)} [${f.data.status}, ${f.data.verified ? "verified" : "unverified"}${f.data.auto ? ", auto" : ""}] ${f.data.title.slice(0, 80)}
+  Symptom: ${text(f.sections.Symptom)}
+  Fix: ${text(f.sections.Fix)}`
   );
-  if (all.some((f) => f.data.status === "active")) {
+  if (all.some((f) => f.data.status === "active" && !f.data.auto)) {
     return {
       hookSpecificOutput: {
         hookEventName: "PreToolUse",
         permissionDecision: "deny",
         permissionDecisionReason: denyNote(rel, lines)
       },
-      systemMessage: notice(`${rel} has an active recorded fix; the AI must read it before editing.`)
+      systemMessage: notice(`${rel} has an active recorded fix; the AI was shown it before editing.`)
     };
   }
   return {
@@ -9452,14 +9729,14 @@ var MAP_DETAILS = 600;
 function exploreTarget(input, root) {
   const ti = input.tool_input ?? {};
   const base = typeof ti.file_path === "string" && ti.file_path ? ti.file_path : typeof ti.path === "string" && ti.path ? ti.path : "";
-  let full = base ? import_node_path12.default.resolve(input.cwd || root, base) : input.cwd || root;
+  let full = base ? import_node_path13.default.resolve(input.cwd || root, base) : input.cwd || root;
   if (typeof ti.pattern === "string" && !base) {
     const b = patternBase(ti.pattern.split(String.fromCharCode(92)).join("/"));
-    if (b && !import_node_path12.default.isAbsolute(b)) full = import_node_path12.default.resolve(input.cwd || root, b);
+    if (b && !import_node_path13.default.isAbsolute(b)) full = import_node_path13.default.resolve(input.cwd || root, b);
   }
   const rel = toRelPath(root, full);
   if (rel !== null) return rel;
-  return import_node_path12.default.relative(canonicalPath(root), canonicalPath(full)) === "" ? "." : null;
+  return import_node_path13.default.relative(canonicalPath(root), canonicalPath(full)) === "" ? "." : null;
 }
 function preExplore(input, _now = /* @__PURE__ */ new Date()) {
   const read = readState(input.session_id);
@@ -9467,9 +9744,7 @@ function preExplore(input, _now = /* @__PURE__ */ new Date()) {
   const dir = vaultDir(root);
   const rel = exploreTarget(input, root);
   if (rel === null || !vaultExists(root)) return void 0;
-  const hasMap = import_node_fs11.default.existsSync(import_node_path12.default.join(dir, "map"));
-  countUnmapped(input, rel, hasMap ? listMapNotes(root) : []);
-  if (!hasMap) return void 0;
+  if (!import_node_fs12.default.existsSync(import_node_path13.default.join(dir, "map"))) return void 0;
   const shown = new Set(read?.map_shown ?? []);
   const above = (n) => n === "." || rel.startsWith(`${n}/`);
   const below = (n) => {
@@ -9489,20 +9764,7 @@ function preExplore(input, _now = /* @__PURE__ */ new Date()) {
 }
 function isScratchFolder(root) {
   const home = import_node_os5.default.homedir();
-  return [import_node_path12.default.join(home, "Desktop"), import_node_path12.default.join(home, "Downloads"), import_node_path12.default.join(home, "Documents"), import_node_os5.default.tmpdir()].some((p) => samePath(root, p));
-}
-function areaOf(rel) {
-  const parts = rel.split("/");
-  if (rel === "." || parts[0].startsWith(".") || parts[0] === "node_modules") return null;
-  const dirs = import_node_path12.default.extname(rel) ? parts.slice(0, -1) : parts;
-  return dirs.length ? dirs.slice(0, 2).join("/") : null;
-}
-function countUnmapped(input, rel, notes) {
-  const area = areaOf(rel);
-  if (!area || notes.some((n) => n.path === area || area.startsWith(`${n.path}/`) || n.path.startsWith(`${area}/`))) return;
-  mutateState(input.session_id, () => fresh(input), (s) => {
-    s.unmapped = { ...s.unmapped ?? {}, [area]: (s.unmapped?.[area] ?? 0) + 1 };
-  });
+  return [import_node_path13.default.join(home, "Desktop"), import_node_path13.default.join(home, "Downloads"), import_node_path13.default.join(home, "Documents"), import_node_os5.default.tmpdir()].some((p) => samePath(root, p));
 }
 var CHANGING = /\b(git\b[^|;&\n]*?\s(commit|merge|rebase|revert|cherry-pick|push|reset)|kubectl\b[^|;&\n]*?\s(apply|patch|create|delete|scale|rollout|set|edit|replace|label|annotate)|helm\s+(install|upgrade|uninstall)|docker\s+(build|push)|sed\s+-i|npm\s+(install|publish)|pip\s+install|terraform\s+apply|vercel|wrangler\s+deploy|kaggle\s+(kernels\s+push|datasets\s+(create|version)))\b/;
 var ACTIONS = 8;
@@ -9515,7 +9777,7 @@ var CHECK_NAME = /(?:^|[:_.-])(?:test|tests|spec|e2e|build|lint|check|typecheck|
 var PM_COMMANDS = /* @__PURE__ */ new Set(["install", "i", "ci", "add", "remove", "rm", "uninstall", "update", "up", "publish", "start", "exec", "init", "create", "view", "info", "outdated", "audit", "link", "pack", "dlx", "x"]);
 function packageScripts(cwd) {
   try {
-    const pkg = JSON.parse(import_node_fs11.default.readFileSync(import_node_path12.default.join(cwd, "package.json"), "utf8"));
+    const pkg = JSON.parse(import_node_fs12.default.readFileSync(import_node_path13.default.join(cwd, "package.json"), "utf8"));
     return pkg.scripts && typeof pkg.scripts === "object" ? pkg.scripts : {};
   } catch {
     return {};
@@ -9559,7 +9821,34 @@ function checkPassed(input, cmd, now) {
   const output = responseText(r);
   if (showsFailure(output)) return noteFailure(input, cmd, output, now);
   const root = readState(input.session_id)?.root ?? findProjectRoot(input.cwd);
-  if (vaultExists(root)) clearFailures(root, normCommand(cmd), now);
+  if (!vaultExists(root)) return;
+  const command = normCommand(cmd);
+  try {
+    recordAutoFix(input, root, command, now);
+  } catch {
+  }
+  clearFailures(root, command, now);
+}
+function recordAutoFix(input, root, command, now) {
+  const state = readState(input.session_id);
+  if (!state?.entry_id || !entryExists(root, "session", state.entry_id)) return;
+  const entry2 = readEntry(root, "session", state.entry_id);
+  if (isBroken(entry2)) return;
+  const failure = (entry2.data.failures ?? []).find((x) => x.command === command && x.fixed_at === null);
+  if (!failure) return;
+  const since = Date.parse(failure.at);
+  const files = [...new Set((state.edit_log ?? []).filter((e) => Date.parse(e.at) >= since).map((e) => e.file))].slice(0, 8);
+  if (files.length === 0) return;
+  logFix(root, {
+    title: capWords(`${command} passes again${failure.excerpt ? `: ${failure.excerpt}` : ""}`, 80),
+    symptom: failure.excerpt || `${command} failed`,
+    cause: "Recorded automatically; see the session handoff.",
+    fix: `Edited ${files.join(", ")} until \`${command}\` passed.`,
+    files,
+    verified: true,
+    auto: true,
+    session: state.entry_id
+  }, now);
 }
 function postShell(input, now = /* @__PURE__ */ new Date()) {
   const cmd = input.tool_input?.command;
@@ -9575,6 +9864,7 @@ function postShell(input, now = /* @__PURE__ */ new Date()) {
   });
   return void 0;
 }
+var EDIT_LOG = 60;
 function postEdit(input, now = /* @__PURE__ */ new Date()) {
   const state = stateFor(input);
   const root = state.root;
@@ -9582,15 +9872,14 @@ function postEdit(input, now = /* @__PURE__ */ new Date()) {
   if (!rel) return void 0;
   if (!vaultExists(root)) {
     if (!canHostVault(root) || isScratchFolder(root)) return void 0;
-    initVault(root, { name: import_node_path12.default.basename(root) }, now, { auto: true });
+    initVault(root, { name: import_node_path13.default.basename(root) }, now, { auto: true });
   }
   const entry2 = state.entry_id && entryExists(root, "session", state.entry_id) ? state.entry_id : openSession(root, input.session_id, { model: null }, sessionBegan(input.transcript_path ?? state.transcript_path, now));
   touchFile(root, entry2, rel);
   mutateState(input.session_id, () => fresh(input), (s) => {
     s.entry_id = entry2;
     s.dirty = true;
-    s.edits = (s.edits ?? 0) + 1;
-    if (!(s.edited_files ?? []).includes(rel)) s.edited_files = [...s.edited_files ?? [], rel];
+    s.edit_log = [...s.edit_log ?? [], { file: rel, at: now.toISOString() }].slice(-EDIT_LOG);
   });
   return void 0;
 }
@@ -9601,32 +9890,27 @@ function withEntry(input, state, now) {
     s.entry_id = entry2;
   });
 }
-var SUMMARY_QUIET_MS = 10 * 60 * 1e3;
 var USAGE_EVERY_MS = 2 * 60 * 1e3;
-function unlogged(root, s) {
-  const notes = s.unmapped && Object.keys(s.unmapped).length ? listMapNotes(root) : [];
-  const unmapped = Object.fromEntries(Object.entries(s.unmapped ?? {}).filter(([a]) => !notes.some((n) => n.path === a || a.startsWith(`${n.path}/`))));
-  return { actions: s.actions, unmapped };
-}
-var DOING_SHOWN = 4;
-function inProgress(root) {
-  try {
-    return [...taskRows(root)].filter(([, r]) => r.status === "doing").slice(0, DOING_SHOWN).map(([id, r]) => `${id} \u2014 ${String(r.data?.title ?? "").slice(0, 60)}`);
-  } catch {
-    return [];
-  }
-}
-function ownFailures(root, entryId) {
+var NOTICE_EVERY_MS = 10 * 60 * 1e3;
+function hasOwnFailure(root, entryId) {
   try {
     const e = readEntry(root, "session", entryId);
-    return isBroken(e) ? [] : (e.data.failures ?? []).filter((f) => f.fixed_at === null).slice(-2).reverse().map((f) => f.command);
+    return !isBroken(e) && (e.data.failures ?? []).some((f) => f.fixed_at === null);
   } catch {
-    return [];
+    return false;
   }
+}
+function logReplyDecisions(input, state, reply, now) {
+  const fresh2 = parseDecisions(reply).filter((d) => !(state.decisions_seen ?? []).includes(d.title.toLowerCase()));
+  if (fresh2.length === 0) return;
+  for (const d of fresh2) logDecision(state.root, { ...d, session: state.entry_id }, now);
+  mutateState(input.session_id, () => state, (s) => {
+    s.decisions_seen = [.../* @__PURE__ */ new Set([...s.decisions_seen ?? [], ...fresh2.map((d) => d.title.toLowerCase())])];
+  });
 }
 function stop(input, now = /* @__PURE__ */ new Date()) {
   const out = stopCheck(input, now);
-  markLive(input, out ? "working" : "waiting", now);
+  markLive(input, "waiting", now);
   return out;
 }
 function stopCheck(input, now) {
@@ -9641,31 +9925,33 @@ function stopCheck(input, now) {
       s.usage_at = now.toISOString();
     });
   }
-  const failing = ownFailures(state.root, state.entry_id);
-  let block = false;
-  let auto = null;
-  mutateState(input.session_id, () => state, (s) => {
-    const recent = s.summary_at !== void 0 && now.getTime() - Date.parse(s.summary_at) < SUMMARY_QUIET_MS;
-    if (!s.dirty || s.reminded || input.stop_hook_active || recent) return;
-    if ((s.edited_files?.length ?? 0) >= 2 || (s.edits ?? 0) >= 3 || (s.actions?.length ?? 0) > 0 || failing.length > 0) {
-      s.reminded = true;
-      block = true;
-    } else if (s.edited_files?.length === 1 && s.auto_summary !== s.edited_files[0]) {
-      auto = s.auto_summary = s.edited_files[0];
-    }
-  });
-  if (auto) {
+  if (typeof input.last_assistant_message === "string") {
     try {
-      writeAutoSummary(state.root, state.entry_id, auto);
+      logReplyDecisions(input, state, input.last_assistant_message, now);
     } catch {
     }
   }
-  if (!block) return void 0;
-  return {
-    decision: "block",
-    reason: stopRequest(refOf("session", state.entry_id), unlogged(state.root, readState(input.session_id) ?? state), inProgress(state.root), failing),
-    systemMessage: notice("asked the AI to record this session (summary, fixes, decisions, task status).")
-  };
+  const failing = hasOwnFailure(state.root, state.entry_id);
+  let actions = null;
+  mutateState(input.session_id, () => state, (s) => {
+    if (!s.dirty && !s.actions?.length && !failing) return;
+    actions = s.actions ?? [];
+    s.dirty = false;
+    s.actions = [];
+  });
+  if (!actions) return void 0;
+  try {
+    const reply = typeof input.last_assistant_message === "string" && input.last_assistant_message.trim() ? input.last_assistant_message : lastReplyFromTranscript(input.transcript_path ?? state.transcript_path) ?? "";
+    if (!writeAutoHandoff(state.root, state.entry_id, { ...parseReply(reply), actions })) return void 0;
+  } catch {
+    return void 0;
+  }
+  const last = readState(input.session_id)?.notice_at;
+  if (last !== void 0 && now.getTime() - Date.parse(last) < NOTICE_EVERY_MS) return void 0;
+  mutateState(input.session_id, () => state, (s) => {
+    s.notice_at = now.toISOString();
+  });
+  return { systemMessage: notice("session saved.") };
 }
 function sessionEnd(input, now = /* @__PURE__ */ new Date()) {
   markLive(input, "closed", now);
@@ -9708,10 +9994,10 @@ function describeError(e) {
 }
 function logError(name, sessionId, e) {
   try {
-    const dir = import_node_path13.default.join(binkgoHome(), "logs");
-    import_node_fs12.default.mkdirSync(dir, { recursive: true });
-    import_node_fs12.default.appendFileSync(
-      import_node_path13.default.join(dir, "hooks.log"),
+    const dir = import_node_path14.default.join(binkgoHome(), "logs");
+    import_node_fs13.default.mkdirSync(dir, { recursive: true });
+    import_node_fs13.default.appendFileSync(
+      import_node_path14.default.join(dir, "hooks.log"),
       `${(/* @__PURE__ */ new Date()).toISOString()} ${name} ${sessionId || "-"}: ${describeError(e)}
 `
     );

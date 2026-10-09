@@ -24996,16 +24996,16 @@ function uniqueId(dir, base) {
 
 // src/mcp/instructions.ts
 var INSTRUCTIONS = [
-  "Binkgo: project memory in .binkgo/ (never edit it by hand; no secrets in it).",
-  "- Before exploring an area: project_map. Before fixing a bug: search the symptom and file, read earlier fixes.",
-  "- After a checked fix: log_fix. After a real choice: log_decision. Task planned, started, blocked or done: task_upsert.",
-  "- A deliverable file: save_artifact. Before ending a turn that changed files: session_summary."
+  "Binkgo: project memory in .binkgo/ (never edit by hand; no secrets). The brief is the status: skip project_brief and bare project_map.",
+  "- Never spend a round on Binkgo alone: call it with other tools.",
+  "- Checked bug fix: log_fix with your last edit. Brief lists fixes: search symptom/file with first reads.",
+  '- Claude Code saves your final reply as the handoff: end a turn that changed things with what changed and "Next: \u2026"; no session_summary.'
 ].join("\n");
 
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.11",
+  version: "1.0.12",
   private: true,
   type: "module",
   engines: {
@@ -25267,6 +25267,8 @@ var SCHEMAS = {
     model: optStr,
     files_touched: lax(external_exports.array(external_exports.string()).default([])),
     summary_written: external_exports.boolean().default(false),
+    /** The summary was written by the Stop hook from the final reply, not by the model. */
+    summary_auto: external_exports.boolean().optional(),
     usage: usageSchema.default({}),
     failures: lax(external_exports.array(failureSchema).optional())
   }),
@@ -25283,6 +25285,8 @@ var SCHEMAS = {
     status: external_exports.enum(["active", "reverted", "superseded"]).default("active"),
     files: lax(external_exports.array(external_exports.string()).default([])),
     verified: external_exports.boolean().default(false),
+    /** Recorded by a hook when a failing check passed again after edits; the cause is a guess, so it never blocks an edit. */
+    auto: external_exports.boolean().optional(),
     supersedes: optStr,
     session: optStr,
     created: iso
@@ -26456,6 +26460,7 @@ function writeSummary(root, entryId, input) {
     e.sections.Done = bullets(input.done);
     e.sections.Next = bullets(input.next);
     e.data.summary_written = true;
+    delete e.data.summary_auto;
   });
 }
 
@@ -26549,7 +26554,7 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
   }
   const head = [
     `Binkgo: ${project.data.name}${project.data.status === "active" ? "" : ` [${project.data.status}]`}`,
-    `Goal: ${cap(project.data.goal, 140) || "(not set; call project_update)"}`,
+    `Goal: ${cap(project.data.goal, 140) || "(not set; project_update once the person states it)"}`,
     `Focus: ${cap(project.data.focus, 140) || "(not set)"}`
   ];
   const units = [];
@@ -26598,7 +26603,7 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
     units.push("Project map: none yet. Save notes (project_map set) for areas you explore.");
   } else {
     const stale = notes.filter(isStale).length;
-    units.push(`Project map: ${notes.length} notes (${stale} stale). Before Glob/Grep, read the map entry for that folder (project_map path).`);
+    units.push(`Project map: ${notes.length} notes (${stale} stale). A folder's note is shown when you explore it.`);
     const depth = (p) => p === "." ? 0 : p.split("/").length;
     const byDepth = [...notes].sort((a, b) => depth(a.path) - depth(b.path) || a.path.localeCompare(b.path));
     const top = byDepth.filter((n) => depth(n.path) <= 1);
@@ -26827,7 +26832,7 @@ function stateFile(sessionId) {
 function isState(v) {
   if (!v || typeof v !== "object") return false;
   const s = v;
-  return typeof s.session_id === "string" && typeof s.root === "string" && (s.entry_id === null || typeof s.entry_id === "string") && Array.isArray(s.warned_files) && s.warned_files.every((f) => typeof f === "string") && (s.map_shown === void 0 || Array.isArray(s.map_shown) && s.map_shown.every((f) => typeof f === "string")) && typeof s.dirty === "boolean" && typeof s.reminded === "boolean" && typeof s.ended === "boolean" && (s.transcript_path === void 0 || typeof s.transcript_path === "string") && (s.summary_at === void 0 || typeof s.summary_at === "string") && (s.usage_at === void 0 || typeof s.usage_at === "string");
+  return typeof s.session_id === "string" && typeof s.root === "string" && (s.entry_id === null || typeof s.entry_id === "string") && Array.isArray(s.warned_files) && s.warned_files.every((f) => typeof f === "string") && (s.map_shown === void 0 || Array.isArray(s.map_shown) && s.map_shown.every((f) => typeof f === "string")) && typeof s.dirty === "boolean" && typeof s.ended === "boolean" && (s.transcript_path === void 0 || typeof s.transcript_path === "string") && (s.notice_at === void 0 || typeof s.notice_at === "string") && (s.usage_at === void 0 || typeof s.usage_at === "string");
 }
 function readFile2(file) {
   try {
@@ -26977,6 +26982,7 @@ function logFix(root, input, now = /* @__PURE__ */ new Date()) {
       status: "active",
       files,
       verified: input.verified,
+      ...input.auto ? { auto: true } : {},
       supersedes: superseded ?? reverted,
       session: input.session ?? null,
       created: localIso(now)
@@ -27055,7 +27061,7 @@ var TOOL_DEFS = {
     shape: { name: external_exports.string().min(1), goal: external_exports.string().default("") }
   },
   project_brief: {
-    description: "Project status: goal, focus, open tasks, last session.",
+    description: "Project status. Already in the session brief; call only if none was shown.",
     shape: {}
   },
   project_update: {
@@ -27114,7 +27120,7 @@ var TOOL_DEFS = {
     }
   },
   log_fix: {
-    description: "Record a checked bug fix. supersedes/reverts: earlier fix ref.",
+    description: "Record a checked bug fix (or pass it in session_summary fixes[]). supersedes/reverts: earlier fix ref.",
     shape: {
       title: external_exports.string().min(1),
       symptom: external_exports.string().min(1),
@@ -27140,7 +27146,7 @@ var TOOL_DEFS = {
     }
   },
   session_summary: {
-    description: "Write this session summary (done, next), plus in the same call what is not logged yet: checked fixes, real decisions, task status changes.",
+    description: "Session summary (done, next) plus unlogged fixes, decisions, task moves. Only if asked, or without hooks (Codex); Claude Code saves your final reply.",
     shape: {
       summary: external_exports.string().min(1),
       done: external_exports.array(external_exports.string()),
@@ -27311,11 +27317,7 @@ function callTool(root, name, rawArgs, now = /* @__PURE__ */ new Date()) {
       if (state) {
         mutateState(state.session_id, () => state, (s) => {
           s.dirty = false;
-          s.reminded = false;
-          s.summary_at = now.toISOString();
           s.actions = [];
-          s.edits = 0;
-          s.edited_files = [];
         });
       }
       return `Saved ${saved.join(", ")}.`;
@@ -27346,7 +27348,9 @@ ${n.details}` : ""}`).join("\n\n");
 }
 
 // src/mcp/server.ts
-var server = new McpServer({ name: "binkgo", version: "0.1.0" }, { instructions: INSTRUCTIONS });
+var HOOKS_MODE = process.argv.includes("--hooks-mode");
+var server = new McpServer({ name: "binkgo", version: "0.1.0" }, HOOKS_MODE ? void 0 : { instructions: INSTRUCTIONS });
+var registered = /* @__PURE__ */ new Map();
 var codexSessionId = `codex-${(0, import_node_crypto8.randomUUID)()}`;
 var codexSessions = /* @__PURE__ */ new Map();
 async function resolveRoot() {
@@ -27372,9 +27376,27 @@ Open ${s.verify_url}, approve code ${s.code}, then accept here.`,
   });
   return r.action === "accept";
 }
+function syncSignIn() {
+  const tool = registered.get("sign_in");
+  if (!HOOKS_MODE || !tool || !isSignedIn()) return;
+  tool.remove();
+  registered.delete("sign_in");
+}
+async function hooksSignIn() {
+  if (!isSignedIn() && server.server.getClientCapabilities()?.elicitation) {
+    if (await gateReply("project_brief", { ask: askSignIn }) === null) return "Signed in. Binkgo is on.";
+  }
+  return await gateReply("sign_in") ?? "";
+}
 for (const [name, def] of Object.entries(TOOL_DEFS)) {
-  server.registerTool(name, { description: def.description, inputSchema: def.shape }, async (args) => {
+  if (HOOKS_MODE && name !== "sign_in") continue;
+  registered.set(name, server.registerTool(name, { description: def.description, inputSchema: def.shape }, async (args) => {
     try {
+      if (HOOKS_MODE) {
+        const text = await hooksSignIn();
+        syncSignIn();
+        return { content: [{ type: "text", text }] };
+      }
       const early = await gateReply(name, { ask: askSignIn });
       if (early !== null) return { content: [{ type: "text", text: early }] };
       const root = await resolveRoot();
@@ -27401,7 +27423,7 @@ for (const [name, def] of Object.entries(TOOL_DEFS)) {
       const message = errorText(e);
       return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
     }
-  });
+  }));
 }
 function closeOnExit() {
   if (process.env.BINKGO_CLIENT !== "codex") return;
@@ -27415,6 +27437,16 @@ function closeOnExit() {
 }
 async function main() {
   closeOnExit();
+  if (HOOKS_MODE) {
+    syncSignIn();
+    if (registered.has("sign_in")) {
+      const timer = setInterval(() => {
+        syncSignIn();
+        if (!registered.has("sign_in")) clearInterval(timer);
+      }, 5e3);
+      timer.unref();
+    }
+  }
   await server.connect(new StdioServerTransport());
 }
 main().catch((e) => {
