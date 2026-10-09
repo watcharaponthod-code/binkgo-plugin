@@ -25005,7 +25005,7 @@ var INSTRUCTIONS = [
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.12",
+  version: "1.0.13",
   private: true,
   type: "module",
   engines: {
@@ -26898,7 +26898,7 @@ function vaultExists(root) {
 }
 function writeGitignore(root) {
   try {
-    import_node_fs11.default.writeFileSync(import_node_path11.default.join(vaultDir(root), ".gitignore"), ["*.lock", "*.steal", "*.tmp", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
+    import_node_fs11.default.writeFileSync(import_node_path11.default.join(vaultDir(root), ".gitignore"), ["*.lock", "*.steal", "*.tmp", ".cache/", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
   } catch (e) {
     if (e.code !== "EEXIST") throw e;
   }

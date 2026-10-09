@@ -2520,7 +2520,7 @@ var require_loader = __commonJS({
         iterator(documents[index]);
       }
     }
-    function load2(input, options2) {
+    function load3(input, options2) {
       var documents = loadDocuments(input, options2);
       if (documents.length === 0) {
         return void 0;
@@ -2537,10 +2537,10 @@ var require_loader = __commonJS({
       return loadAll(input, iterator, common.extend({ schema: DEFAULT_SAFE_SCHEMA }, options2));
     }
     function safeLoad(input, options2) {
-      return load2(input, common.extend({ schema: DEFAULT_SAFE_SCHEMA }, options2));
+      return load3(input, common.extend({ schema: DEFAULT_SAFE_SCHEMA }, options2));
     }
     module2.exports.loadAll = loadAll;
-    module2.exports.load = load2;
+    module2.exports.load = load3;
     module2.exports.safeLoadAll = safeLoadAll;
     module2.exports.safeLoad = safeLoad;
   }
@@ -3417,7 +3417,7 @@ var require_parse = __commonJS({
 var require_gray_matter = __commonJS({
   "node_modules/gray-matter/index.js"(exports2, module2) {
     "use strict";
-    var fs14 = require("fs");
+    var fs15 = require("fs");
     var sections = require_section_matter();
     var defaults = require_defaults();
     var stringify = require_stringify();
@@ -3501,7 +3501,7 @@ var require_gray_matter = __commonJS({
       return stringify(file, data, options2);
     };
     matter2.read = function(filepath, options2) {
-      const str2 = fs14.readFileSync(filepath, "utf8");
+      const str2 = fs15.readFileSync(filepath, "utf8");
       const file = matter2(str2, options2);
       file.path = filepath;
       return file;
@@ -4074,8 +4074,8 @@ function getErrorMap() {
 
 // node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path15, errorMaps, issueData } = params;
-  const fullPath = [...path15, ...issueData.path || []];
+  const { data, path: path16, errorMaps, issueData } = params;
+  const fullPath = [...path16, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -4191,11 +4191,11 @@ var errorUtil;
 
 // node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path15, key) {
+  constructor(parent, value, path16, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path15;
+    this._path = path16;
     this._key = key;
   }
   get path() {
@@ -8122,8 +8122,8 @@ function mutateEntry(root, kind, id, fn) {
 }
 
 // src/hooks/run.ts
-var import_node_fs13 = __toESM(require("node:fs"), 1);
-var import_node_path14 = __toESM(require("node:path"), 1);
+var import_node_fs14 = __toESM(require("node:fs"), 1);
+var import_node_path15 = __toESM(require("node:path"), 1);
 
 // src/license/key.ts
 var LICENSE_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
@@ -8284,7 +8284,7 @@ function licenseStatus(now, appVersion, opts = {}) {
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.12",
+  version: "1.0.13",
   private: true,
   type: "module",
   engines: {
@@ -8368,9 +8368,9 @@ function isSignedIn(o = {}) {
 }
 
 // src/hooks/handlers.ts
-var import_node_fs12 = __toESM(require("node:fs"), 1);
+var import_node_fs13 = __toESM(require("node:fs"), 1);
 var import_node_os5 = __toESM(require("node:os"), 1);
-var import_node_path13 = __toESM(require("node:path"), 1);
+var import_node_path14 = __toESM(require("node:path"), 1);
 
 // src/transcript/usage.ts
 var import_node_fs5 = __toESM(require("node:fs"), 1);
@@ -8463,13 +8463,13 @@ function readRecords(file) {
 }
 function transcriptStart(transcriptPath) {
   let head;
-  let cut = false;
+  let cut2 = false;
   try {
     const fd = import_node_fs5.default.openSync(transcriptPath, "r");
     try {
       const buf = Buffer.alloc(256 * 1024);
       const got = import_node_fs5.default.readSync(fd, buf, 0, buf.length, 0);
-      cut = got === buf.length;
+      cut2 = got === buf.length;
       head = buf.toString("latin1", 0, got);
     } finally {
       import_node_fs5.default.closeSync(fd);
@@ -8478,7 +8478,7 @@ function transcriptStart(transcriptPath) {
     return null;
   }
   const lines = head.split("\n");
-  if (cut) lines.pop();
+  if (cut2) lines.pop();
   for (const line of lines) {
     if (!line.includes(HAS_TIMESTAMP)) continue;
     try {
@@ -9147,6 +9147,551 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
   return build(middle, false);
 }
 
+// src/vault/symbols.ts
+var import_node_fs8 = __toESM(require("node:fs"), 1);
+var import_node_path10 = __toESM(require("node:path"), 1);
+var MAX_FILES = 4e3;
+var MAX_BYTES = 512 * 1024;
+var MAX_SYMS = 80;
+var SIG = 90;
+var STALE_MS = 24 * 60 * 60 * 1e3;
+var SKIP_DIRS = /* @__PURE__ */ new Set(["node_modules", ".git", "dist", "build", "out", "vendor", "coverage", VAULT_DIRNAME, ".next", ".nuxt", ".venv", "venv", "__pycache__", "target", ".gradle", ".idea", ".cache", "bower_components", "Pods"]);
+var LANG = {
+  js: "js",
+  mjs: "js",
+  cjs: "js",
+  jsx: "js",
+  ts: "js",
+  tsx: "js",
+  py: "py",
+  go: "go",
+  rs: "rs",
+  java: "java",
+  kt: "kt",
+  rb: "rb",
+  php: "php",
+  cs: "cs",
+  swift: "swift"
+};
+var IDENT = "[A-Za-z_$][\\w$]*";
+var RULES = {
+  js: [
+    [new RegExp(`^(?:export\\s+)?(?:default\\s+)?(?:async\\s+)?function\\s*\\*?\\s*(${IDENT})`), 1],
+    [new RegExp(`^(?:export\\s+)?(?:default\\s+)?(?:abstract\\s+)?class\\s+(${IDENT})`), 1],
+    [new RegExp(`^export\\s+(?:declare\\s+)?(?:interface|type|enum|namespace)\\s+(${IDENT})`), 1],
+    [new RegExp(`^(?:export\\s+)?(?:const|let|var)\\s+(${IDENT})\\s*[=:]`), 1],
+    [new RegExp(`^(?:module\\.)?exports\\.(${IDENT})\\s*=`), 1],
+    [new RegExp(`^module\\.exports\\s*=\\s*(?:async\\s+)?(?:function|class)\\s*(${IDENT})`), 1]
+  ],
+  py: [[/^(?:async\s+)?def\s+(\w+)/, 1], [/^class\s+(\w+)/, 1], [/^([A-Z][A-Z0-9_]{2,})\s*[:=]/, 1]],
+  go: [[/^func\s+(?:\([^)]*\)\s*)?(\w+)/, 1], [/^type\s+(\w+)/, 1], [/^(?:var|const)\s+(\w+)/, 1]],
+  rs: [
+    [/^(?:pub(?:\([^)]*\))?\s+)?(?:async\s+)?(?:unsafe\s+)?(?:fn|struct|enum|trait|mod|const|static|type)\s+(\w+)/, 1],
+    [/^ {1,4}pub(?:\([^)]*\))?\s+(?:async\s+)?fn\s+(\w+)/, 1]
+  ],
+  java: [
+    [/^\s{0,4}(?:(?:public|protected|private|static|final|abstract|sealed)\s+)*(?:class|interface|enum|record)\s+(\w+)/, 1],
+    [/^ {4}(?:(?:public|protected|private|static|final|abstract|synchronized)\s+)+[\w<>\[\],.? ]+?\s+(\w+)\s*\(/, 1]
+  ],
+  kt: [[/^\s{0,4}(?:(?:public|private|internal|protected|open|abstract|data|sealed|suspend|override)\s+)*(?:fun\s+(?:<[^>]*>\s*)?(?:[\w.]+\.)?|class\s+|object\s+|interface\s+)(\w+)/, 1]],
+  rb: [[/^\s{0,2}def\s+(?:self\.)?(\w+[?!=]?)/, 1], [/^\s{0,2}(?:class|module)\s+(\w+)/, 1]],
+  php: [
+    [/^\s{0,4}(?:(?:public|protected|private|static|final|abstract)\s+)*function\s+&?(\w+)/, 1],
+    [/^\s{0,4}(?:(?:final|abstract)\s+)?(?:class|interface|trait)\s+(\w+)/, 1]
+  ],
+  cs: [
+    [/^\s{0,8}(?:(?:public|protected|private|internal|static|sealed|abstract|partial)\s+)*(?:class|interface|enum|struct|record)\s+(\w+)/, 1],
+    [/^ {8,12}(?:(?:public|protected|private|internal|static|virtual|override|async|abstract)\s+)+[\w<>\[\],.? ]+?\s+(\w+)\s*\(/, 1]
+  ],
+  swift: [[/^\s{0,4}(?:(?:public|private|internal|open|final|static|class|override|mutating)\s+)*(?:func|class|struct|enum|protocol|extension)\s+(\w+)/, 1]]
+};
+var COMMENT = { js: /^\s*(?:\/\/+|\/\*+|\*)\s*(\S.*)$/, go: /^\s*\/\/+\s*(\S.*)$/, rs: /^\s*\/\/[/!]*\s*(\S.*)$/, java: /^\s*(?:\/\/+|\/\*+|\*)\s*(\S.*)$/, py: /^\s*#\s*(\S.*)$/, rb: /^\s*#\s*(\S.*)$/, php: /^\s*(?:\/\/+|#|\/\*+|\*)\s*(\S.*)$/, kt: /^\s*(?:\/\/+|\/\*+|\*)\s*(\S.*)$/, cs: /^\s*(?:\/\/+|\/\*+|\*)\s*(\S.*)$/, swift: /^\s*\/\/+\s*(\S.*)$/ };
+function sigOf(line, name) {
+  const one = line.trim().replace(/\s+/g, " ");
+  const at = one.indexOf(name);
+  if (at !== -1) {
+    const rest = one.slice(at + name.length);
+    const m = /^\s*(?:[:=]\s*(?:async\s*)?(?:function\s*\*?\s*\w*\s*)?)?\(/.exec(rest);
+    if (m) {
+      let depth = 0;
+      let end = -1;
+      for (let i = m[0].length - 1; i < rest.length; i++) {
+        if (rest[i] === "(") depth++;
+        else if (rest[i] === ")" && --depth === 0) {
+          end = i;
+          break;
+        }
+      }
+      const params = end === -1 ? `${rest.slice(m[0].length - 1)}\u2026)` : rest.slice(m[0].length - 1, end + 1);
+      return cut(name + params);
+    }
+  }
+  return cut(one.replace(/\s*(?:\{|=>\s*\{?|:)\s*$/, ""));
+}
+var cut = (s) => s.length > SIG ? `${s.slice(0, SIG - 1)}\u2026` : s;
+function extractSymbols(text, lang) {
+  const rules = RULES[lang] ?? [];
+  const s = [];
+  const lines = text.split("\n");
+  let doc;
+  let inExports = false;
+  const seen = /* @__PURE__ */ new Set();
+  const add = (name, line, sig) => {
+    if (name.length < 2 || seen.has(name) || s.length >= MAX_SYMS) return;
+    seen.add(name);
+    s.push([name, line, sig]);
+  };
+  const com = COMMENT[lang];
+  for (let i = 0; i < lines.length && s.length < MAX_SYMS; i++) {
+    const raw = lines[i];
+    if (raw.length === 0 || raw.length > 600) continue;
+    if (doc === void 0 && i < 12 && com) {
+      const c = com.exec(raw);
+      if (c && !/^(?:use strict|eslint|@ts-|!|-\*-|prettier|istanbul|\/)/.test(c[1])) doc = cut(c[1].replace(/\*\/\s*$/, "").trim());
+      else if (c === null && raw.trim() !== "" && !/^['"]use strict/.test(raw.trim()) && !/^(?:#!|<\?php|package\b)/.test(raw.trim())) doc = "";
+    }
+    if (lang === "js") {
+      if (inExports) {
+        if (/^\s*\}/.test(raw)) {
+          inExports = false;
+          continue;
+        }
+        const k = new RegExp(`^\\s{1,4}(${IDENT})\\s*[,:(]|^\\s{1,4}(${IDENT})\\s*$`).exec(raw);
+        if (k) add(k[1] ?? k[2], i + 1, sigOf(raw, k[1] ?? k[2]));
+        continue;
+      }
+      const me = /^module\.exports\s*=\s*\{(.*)$/.exec(raw);
+      if (me) {
+        const inline = me[1];
+        if (/\}\s*;?\s*$/.test(inline)) {
+          for (const k of inline.matchAll(new RegExp(`(?:^|[,{\\s])(${IDENT})\\s*(?=[:,}(])`, "g"))) add(k[1], i + 1, sigOf(raw, k[1]));
+        } else inExports = true;
+        continue;
+      }
+    }
+    const c0 = raw.charCodeAt(0);
+    if ((c0 === 32 || c0 === 9) && lang !== "java" && lang !== "kt" && lang !== "rb" && lang !== "php" && lang !== "cs" && lang !== "swift" && lang !== "rs") continue;
+    for (const [re, g] of rules) {
+      const m = re.exec(raw);
+      if (!m) continue;
+      const name = m[g];
+      if (lang === "js" && /=\s*(?:require\(|await\s+import\()/.test(raw)) break;
+      add(name, i + 1, sigOf(raw, name));
+      break;
+    }
+  }
+  return doc ? { s, d: doc } : { s };
+}
+function ignoredBy(root) {
+  const names = /* @__PURE__ */ new Set();
+  const paths = /* @__PURE__ */ new Set();
+  try {
+    for (const raw of import_node_fs8.default.readFileSync(import_node_path10.default.join(root, ".gitignore"), "utf8").split(/\r?\n/)) {
+      const line = raw.trim();
+      if (!line || line.startsWith("#") || /[*?[!]/.test(line)) continue;
+      const clean = line.replace(/^\/+/, "").replace(/\/+$/, "");
+      if (!clean) continue;
+      if (line.startsWith("/") || clean.includes("/")) paths.add(clean);
+      else names.add(clean);
+    }
+  } catch {
+  }
+  return { names, paths };
+}
+function walkSources(root) {
+  const ign = ignoredBy(root);
+  const out = [];
+  const queue = [""];
+  for (let qi = 0; qi < queue.length && out.length < MAX_FILES; qi++) {
+    const rel = queue[qi];
+    let ents;
+    try {
+      ents = import_node_fs8.default.readdirSync(import_node_path10.default.join(root, rel), { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const e of ents) {
+      const r = rel ? `${rel}/${e.name}` : e.name;
+      if (e.isDirectory()) {
+        if (!SKIP_DIRS.has(e.name) && !ign.names.has(e.name) && !ign.paths.has(r)) queue.push(r);
+        continue;
+      }
+      if (!e.isFile()) continue;
+      const dot = e.name.lastIndexOf(".");
+      const lang = dot > 0 ? LANG[e.name.slice(dot + 1).toLowerCase()] : void 0;
+      if (!lang || /\.min\.[a-z]+$|\.d\.ts$/i.test(e.name) || ign.names.has(e.name) || ign.paths.has(r)) continue;
+      out.push({ rel: r, lang });
+      if (out.length >= MAX_FILES) break;
+    }
+  }
+  return out;
+}
+var cacheFile2 = (root) => import_node_path10.default.join(vaultDir(root), ".cache", "symbols.json");
+function readIndex(root) {
+  try {
+    const j = JSON.parse(import_node_fs8.default.readFileSync(cacheFile2(root), "utf8"));
+    return j && j.v === 1 && j.files && typeof j.files === "object" ? j : null;
+  } catch {
+    return null;
+  }
+}
+function ignoreCache(root) {
+  const file = import_node_path10.default.join(vaultDir(root), ".gitignore");
+  try {
+    const cur = import_node_fs8.default.existsSync(file) ? import_node_fs8.default.readFileSync(file, "utf8") : null;
+    if (cur === null) import_node_fs8.default.writeFileSync(file, ["*.lock", "*.steal", "*.tmp", ".cache/", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
+    else if (!/^\/?\.cache\/?\s*$/m.test(cur)) import_node_fs8.default.writeFileSync(file, `${cur}${cur.endsWith("\n") || cur === "" ? "" : "\n"}.cache/
+`);
+  } catch {
+  }
+}
+function writeIndex(root, idx) {
+  ignoreCache(root);
+  writeAtomic(cacheFile2(root), JSON.stringify(idx));
+}
+function load2(root, f) {
+  let fd;
+  try {
+    fd = import_node_fs8.default.openSync(import_node_path10.default.join(root, f.rel), "r");
+    const st = import_node_fs8.default.fstatSync(fd);
+    if (!st.isFile() || st.size === 0 || st.size > MAX_BYTES) return null;
+    const { s, d } = extractSymbols(import_node_fs8.default.readFileSync(fd, "utf8"), f.lang);
+    const z = st.size;
+    const m = Math.floor(st.mtimeMs);
+    return d ? { z, m, s, d } : { z, m, s };
+  } catch {
+    return null;
+  } finally {
+    if (fd !== void 0) try {
+      import_node_fs8.default.closeSync(fd);
+    } catch {
+    }
+  }
+}
+function refreshIndex(root, now = Date.now(), force = false) {
+  const old = force ? null : readIndex(root);
+  const found = walkSources(root);
+  const files = {};
+  let changed = old === null;
+  for (const f of found) {
+    const prev = old?.files[f.rel];
+    if (prev) {
+      try {
+        const st = import_node_fs8.default.statSync(import_node_path10.default.join(root, f.rel));
+        if (st.size === prev.z && Math.floor(st.mtimeMs) === prev.m) {
+          files[f.rel] = prev;
+          continue;
+        }
+      } catch {
+      }
+    }
+    const e = load2(root, f);
+    if (e) {
+      files[f.rel] = e;
+      changed = true;
+    }
+  }
+  if (old && Object.keys(old.files).length !== Object.keys(files).length) changed = true;
+  const idx = { v: 1, built: changed || !old ? now : old.built, files };
+  if (changed) {
+    try {
+      writeIndex(root, idx);
+    } catch {
+    }
+  }
+  return idx;
+}
+function ensureIndex(root, now = Date.now()) {
+  const old = readIndex(root);
+  return refreshIndex(root, now, old === null || now - old.built >= STALE_MS);
+}
+function updateFile(root, rel) {
+  const idx = readIndex(root);
+  if (!idx) return;
+  const dot = rel.lastIndexOf(".");
+  const lang = dot > 0 ? LANG[rel.slice(dot + 1).toLowerCase()] : void 0;
+  if (!lang || rel.split("/").some((p) => SKIP_DIRS.has(p))) return;
+  try {
+    const e = load2(root, { rel, lang });
+    if (e) idx.files[rel] = e;
+    else delete idx.files[rel];
+  } catch {
+    delete idx.files[rel];
+  }
+  try {
+    writeIndex(root, idx);
+  } catch {
+  }
+}
+
+// src/hooks/hints.ts
+var HINT_HEAD = "Binkgo: likely relevant (read them in one message, skip searching):";
+var HINT_MAX_CHARS = 600;
+var HINT_MAX_LINES = 6;
+var PARAMS = {
+  /** A file or basename written in the prompt. */
+  pathExact: 24,
+  /** An identifier of the prompt equal to a symbol name (camelCase and snake_case alike), per symbol, counted up to `identCap`. */
+  ident: 24,
+  identCap: 2,
+  /** A plain word equal to a symbol name. */
+  symWord: 6,
+  /** A word in the file's name, in a folder name, in a symbol's words, in the first comment: times the word's rarity. */
+  base: 2.5,
+  dir: 2,
+  sub: 2,
+  subCap: 4.5,
+  doc: 2.5,
+  docCap: 4,
+  /** Added to a file with some match that the last session touched or its handoff names. */
+  boost: 1,
+  /** Test files rank a little below the sources they test. */
+  testFactor: 0.6,
+  /** The best file must score at least this much for anything to be said. */
+  confident: 3.5,
+  /** Further files must reach this share of the best score (and `minScore`). */
+  ratio: 0.6,
+  minScore: 0.5
+};
+var STOP_EN = new Set("a an the and or but if then else of to in on at by for with from as is are was were be been being it its this that these those there here i me my we our you your they them their he she his her do does did done doing have has had having can could will would shall should may might must not no yes so than too very just also only any all each every some such into over under about after before again once up down out off what which who whom whose when where why how please add fix make made change changes update updated use used using need needs want wants bug bugs issue file files code function functions method new old get set let like keep stay still now today next first second brief briefly small little big plain simple thing things way ways one two three same other others another style work works working project library app step steps continue find state pick useful tell show look read write run build check try more less much many test tests testing spec specs question answer answers lines line instead currently today returns return returned give gives given make sure ensure anything everything something nothing cannot cant dont doesnt isnt wont without within while both either neither".split(/\s+/));
+var STOP_TH = new Set("\u0E17\u0E35\u0E48 \u0E02\u0E2D\u0E07 \u0E41\u0E25\u0E30 \u0E43\u0E19 \u0E43\u0E2B\u0E49 \u0E40\u0E1B\u0E47\u0E19 \u0E44\u0E21\u0E48 \u0E44\u0E14\u0E49 \u0E01\u0E47 \u0E08\u0E30 \u0E21\u0E35 \u0E01\u0E32\u0E23 \u0E04\u0E27\u0E32\u0E21 \u0E41\u0E25\u0E49\u0E27 \u0E2B\u0E23\u0E37\u0E2D \u0E41\u0E15\u0E48 \u0E27\u0E48\u0E32 \u0E19\u0E35\u0E49 \u0E19\u0E31\u0E49\u0E19 \u0E04\u0E37\u0E2D \u0E0A\u0E48\u0E27\u0E22 \u0E14\u0E49\u0E27\u0E22 \u0E2B\u0E19\u0E48\u0E2D\u0E22 \u0E04\u0E23\u0E31\u0E1A \u0E04\u0E48\u0E30 \u0E19\u0E30 \u0E44\u0E1B \u0E21\u0E32 \u0E2D\u0E31\u0E19 \u0E01\u0E31\u0E1A \u0E08\u0E32\u0E01 \u0E16\u0E36\u0E07 \u0E40\u0E1E\u0E37\u0E48\u0E2D \u0E42\u0E14\u0E22 \u0E41\u0E01\u0E49 \u0E40\u0E1E\u0E34\u0E48\u0E21 \u0E17\u0E33".split(/\s+/));
+function stem(w) {
+  let r = w;
+  if (r.length > 4 && r.endsWith("ies")) return `${r.slice(0, -3)}y`;
+  if (r.length > 5 && r.endsWith("ing")) r = r.slice(0, -3);
+  else if (r.length > 4 && r.endsWith("ed")) r = r.slice(0, -2);
+  else if (r.length > 4 && /(?:ss|x|z|ch|sh)es$/.test(r)) r = r.slice(0, -2);
+  else if (r.length > 3 && r.endsWith("s") && !r.endsWith("ss") && !r.endsWith("us")) r = r.slice(0, -1);
+  if (r.length > 3 && /([^aeiou\d])\1$/.test(r) && !/(?:ss|ll|ff)$/.test(r)) r = r.slice(0, -1);
+  if (r.length > 4 && r.endsWith("e")) r = r.slice(0, -1);
+  return r;
+}
+function splitWords(ident) {
+  return ident.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2").split(/[^A-Za-z0-9฀-๿]+/).filter(Boolean).map((w) => w.toLowerCase());
+}
+var keyOf = (name) => name.toLowerCase().replace(/[_$]/g, "");
+var isTestPath = (rel) => /(?:^|\/)(?:tests?|__tests__|spec|specs)\/|\.(?:test|spec)\.[a-z]+$|(?:^|\/)test_[^/]+\.py$|_test\.(?:go|py|rs|rb)$|Tests?\.(?:java|kt|cs|swift)$/i.test(rel);
+var baseName = (rel) => rel.slice(rel.lastIndexOf("/") + 1);
+var stemOf = (rel) => baseName(rel).replace(/\.[^.]+$/, "").replace(/[._-](?:test|spec)$/i, "").replace(/^test_/, "").replace(/_test$/, "");
+function parsePrompt(text) {
+  const src = text.slice(0, 4e3);
+  const paths = [];
+  const idents = /* @__PURE__ */ new Set();
+  const words = [];
+  const seen = /* @__PURE__ */ new Set();
+  for (const m of src.matchAll(/[\w@.-]*[\w-](?:[\\/][\w@.-]+)*\.[A-Za-z]{1,5}\b/g)) {
+    const p = m[0].replace(/\\/g, "/").replace(/^\.\//, "").toLowerCase();
+    if (/^\d+\.\d+$/.test(p) || /^[\d.]+$/.test(p)) continue;
+    if (p.includes("/") || /\.(?:js|mjs|cjs|jsx|ts|tsx|py|go|rs|java|kt|rb|php|cs|swift|md|json|ya?ml|toml)$/.test(p)) paths.push(p);
+  }
+  for (const m of src.matchAll(/`?([A-Za-z_$][\w$]*)`?(\()?/g)) {
+    const tok = m[1];
+    const shaped = /[a-z][A-Z]/.test(tok) || /^[A-Z][a-z]+[A-Z]/.test(tok) || tok.includes("_") || m[2] === "(" || m[0].startsWith("`") && m[0].includes("`", 1);
+    if (shaped && tok.length > 2) idents.add(keyOf(tok));
+    for (const w of splitWords(tok)) {
+      const s = stem(w);
+      if (w.length < 2 || STOP_EN.has(w) || STOP_EN.has(s) || seen.has(s) || /^\d+$/.test(w)) continue;
+      seen.add(s);
+      words.push(s);
+    }
+  }
+  for (const m of src.matchAll(/[฀-๿]+/g)) {
+    if (STOP_TH.has(m[0]) || seen.has(m[0])) continue;
+    seen.add(m[0]);
+    words.push(m[0]);
+  }
+  for (const p of paths) for (const seg of p.split("/")) for (const w of splitWords(seg.replace(/\.[^.]+$/, ""))) {
+    const s = stem(w);
+    if (!STOP_EN.has(w) && w.length > 1 && !seen.has(s)) {
+      seen.add(s);
+      words.push(s);
+    }
+  }
+  return { idents, words, paths };
+}
+function rankFiles(idx, p, ctx = {}, W = PARAMS) {
+  const rels = Object.keys(idx.files);
+  const N = rels.length;
+  if (N === 0 || p.idents.size === 0 && p.words.length === 0 && p.paths.length === 0) return [];
+  const wordSet = new Set(p.words);
+  const per = /* @__PURE__ */ new Map();
+  const df = /* @__PURE__ */ new Map();
+  const bump = (w) => {
+    df.set(w, (df.get(w) ?? 0) + 1);
+  };
+  for (const rel of rels) {
+    const entry2 = idx.files[rel];
+    const lc = rel.toLowerCase();
+    let path16 = 0;
+    for (const pp of p.paths) {
+      if (lc === pp || lc.endsWith(`/${pp}`)) path16 = Math.max(path16, W.pathExact);
+    }
+    const hits = /* @__PURE__ */ new Set();
+    const segs = lc.split("/");
+    const bws = new Set(splitWords(stemOf(rel)).map(stem));
+    const dws = /* @__PURE__ */ new Set();
+    for (let i = 0; i < segs.length - 1; i++) for (const w of splitWords(segs[i])) dws.add(stem(w));
+    let b = 0;
+    let d = 0;
+    const fileWords = /* @__PURE__ */ new Set();
+    for (const w of wordSet) {
+      if (bws.has(w)) {
+        b += 1;
+        fileWords.add(w);
+        hits.add(`b:${w}`);
+      } else if (dws.has(w)) {
+        d += 1;
+        fileWords.add(w);
+        hits.add(`d:${w}`);
+      }
+    }
+    let exact = 0;
+    let symWord = 0;
+    let subHits = 0;
+    let symScore = 0;
+    let best;
+    if (entry2.s.length > 0 && (p.idents.size > 0 || wordSet.size > 0)) {
+      const joined = entry2.s.map((x) => x[0]).join(" ").toLowerCase().replace(/[_$]/g, "");
+      const maybe = [...wordSet].some((w) => w.length >= 2 && joined.includes(w)) || [...p.idents].some((k) => joined.includes(k));
+      if (maybe) {
+        for (const sy of entry2.s) {
+          const key = keyOf(sy[0]);
+          let s = 0;
+          if (p.idents.has(key)) {
+            exact++;
+            s += 10;
+            fileWords.add(`=${key}`);
+          } else if (wordSet.has(key) && key.length >= 4) {
+            symWord++;
+            s += 3;
+            fileWords.add(key);
+          } else {
+            const sw = splitWords(sy[0]).map(stem);
+            let n = 0;
+            for (const w of sw) if (wordSet.has(w)) {
+              n++;
+              fileWords.add(w);
+              hits.add(`s:${w}`);
+            }
+            if (n > 0) {
+              subHits += n;
+              s += n;
+            }
+          }
+          if (s > symScore) {
+            symScore = s;
+            best = sy;
+          }
+        }
+      }
+    }
+    let docHits = 0;
+    if (entry2.d) {
+      const dw = new Set(splitWords(entry2.d).map(stem));
+      for (const w of wordSet) if (dw.has(w)) {
+        docHits++;
+        fileWords.add(w);
+        hits.add(`c:${w}`);
+      }
+    }
+    if (path16 === 0 && b === 0 && d === 0 && exact === 0 && symWord === 0 && subHits === 0 && docHits === 0) continue;
+    for (const w of fileWords) bump(w);
+    per.set(rel, { rel, entry: entry2, path: path16, hits, sym: best, symScore, exact, docHits, subHits, symWord });
+  }
+  const idf = (w) => Math.max(0.15, Math.log((N + 1) / ((df.get(w) ?? 1) + 0.5)) / Math.log(N + 1));
+  const recent = new Set(ctx.recent ?? []);
+  const named = new Set(ctx.named ?? []);
+  const out = [];
+  for (const f of per.values()) {
+    let score = f.path + Math.min(f.exact, W.identCap) * W.ident + Math.min(f.symWord, 2) * W.symWord;
+    let sub = 0;
+    let doc = 0;
+    for (const h of f.hits) {
+      const w = h.slice(2);
+      const k = h[0];
+      if (k === "b") score += W.base * idf(w);
+      else if (k === "d") score += W.dir * idf(w);
+      else if (k === "s") sub += W.sub * idf(w);
+      else doc += W.doc * idf(w);
+    }
+    score += Math.min(sub, W.subCap) + Math.min(doc, W.docCap);
+    if (score >= 1 && (recent.has(f.rel) || named.has(f.rel))) score += W.boost;
+    if (isTestPath(f.rel)) score *= W.testFactor;
+    out.push({ rel: f.rel, score, sym: f.sym });
+  }
+  return out.sort((a, b) => b.score - a.score || (a.rel < b.rel ? -1 : 1));
+}
+function testFor(rel, idx) {
+  if (isTestPath(rel)) return null;
+  const name = stemOf(rel);
+  const dir = rel.includes("/") ? rel.slice(0, rel.lastIndexOf("/")) : "";
+  const n = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const want = new RegExp(`(?:^|/)(?:${n}\\.(?:test|spec)\\.[a-z]+|test_${n}\\.py|${n}_test\\.(?:go|py|rs|rb)|${n}Tests?\\.(?:java|kt|cs|swift))$`, "i");
+  let found = null;
+  for (const r of Object.keys(idx.files)) {
+    if (!want.test(r)) continue;
+    if (found === null || r.startsWith(`${dir}/`) || r.startsWith(`tests/${dir.replace(/^src\/?/, "")}`)) found = r;
+    if (r.startsWith(`${dir}/`) && dir) break;
+  }
+  return found;
+}
+var lineOf = (r, budget) => {
+  if (!r.sym) return r.rel;
+  const text = `${r.rel}:${r.sym[1]} ${r.sym[2]}`;
+  return text.length > budget ? `${text.slice(0, budget - 1)}\u2026` : text;
+};
+function pickLines(idx, ranked, W = PARAMS) {
+  const top = ranked[0];
+  if (!top || top.score < W.confident) return [];
+  const cut2 = Math.max(W.minScore, top.score * W.ratio);
+  const picked = [];
+  const has = (rel) => picked.some((x) => x.rel === rel);
+  for (const r of ranked) {
+    if (r.score < cut2 || picked.length >= HINT_MAX_LINES) break;
+    if (has(r.rel)) continue;
+    picked.push(r);
+    const t = testFor(r.rel, idx);
+    if (t && !has(t) && picked.length < HINT_MAX_LINES) picked.push({ rel: t, score: 0 });
+  }
+  return picked;
+}
+function renderHint(picked) {
+  if (picked.length === 0) return void 0;
+  const lines = [];
+  let len = HINT_HEAD.length;
+  for (const r of picked) {
+    const l = lineOf(r, 110);
+    if (len + 1 + l.length > HINT_MAX_CHARS) continue;
+    lines.push(l);
+    len += 1 + l.length;
+  }
+  return lines.length > 0 ? `${HINT_HEAD}
+${lines.join("\n")}` : void 0;
+}
+function recentFiles(root, idx) {
+  const recent = /* @__PURE__ */ new Set();
+  const named = /* @__PURE__ */ new Set();
+  try {
+    for (const id of listIds(root, "session").reverse().slice(0, 2)) {
+      const e = readEntry(root, "session", id);
+      if (isBroken(e)) continue;
+      for (const f of e.data.files_touched) recent.add(f);
+      const text = `${e.sections.Summary ?? ""} ${e.sections.Done ?? ""} ${e.sections.Next ?? ""}`;
+      for (const m of text.matchAll(/[\w@.-]+(?:\/[\w@.-]+)+/g)) if (idx.files[m[0]]) named.add(m[0]);
+      if (recent.size > 0) break;
+    }
+  } catch {
+  }
+  return { recent: [...recent], named: [...named] };
+}
+function promptHint(root, prompt) {
+  const p = parsePrompt(prompt);
+  if (p.idents.size === 0 && p.words.length === 0 && p.paths.length === 0) return void 0;
+  const idx = readIndex(root) ?? refreshIndex(root);
+  const ranked = rankFiles(idx, p, recentFiles(root, idx));
+  return renderHint(pickLines(idx, ranked));
+}
+
 // src/hooks/handlers.ts
 var import_node_child_process = require("node:child_process");
 
@@ -9202,7 +9747,7 @@ var advisoryNote = (rel, fixLines) => `Binkgo: ${rel} has earlier fixes; conside
 ${fixLines.join("\n")}`;
 var cliFooter = (hookFile) => {
   const cli = hookFile.replace(/\\/g, "/").replace(/[^/]*$/, "cli.cjs");
-  return `Binkgo CLI, only if needed, with other tool calls: node "${cli}" log_fix|log_decision|task_upsert|project_map|search|read '<json>'. Your final reply is the handoff: say what changed, end "Next: \u2026"; a line "Decision: <what> \u2014 <why>" is logged.`;
+  return `Binkgo CLI, only if needed, with other tool calls: node "${cli}" log_fix|log_decision|task_upsert|project_map|search|read '<json>'. Your final reply is the handoff: say what changed, end "Next: \u2026"; a line "Decision: <what> \u2014 <why>" is logged. Read all files you need in one message.`;
 };
 var mapNote = (lines, details) => `Binkgo map (read before exploring further):
 ${lines.join("\n")}${details ? `
@@ -9213,7 +9758,7 @@ var signInNote = "Binkgo: sign in to turn on project memory (free). Run /binkgo 
 var signInNotice = "\u{1F33F} Binkgo \xB7 not signed in, so project memory is off. Sign in once (free): run /binkgo login, or ask the AI to sign in to Binkgo.";
 
 // src/hooks/handoff.ts
-var import_node_fs8 = __toESM(require("node:fs"), 1);
+var import_node_fs9 = __toESM(require("node:fs"), 1);
 var SUMMARY_CAP = 600;
 var SHORT_REPLY = 40;
 var NEXT_BULLETS = 3;
@@ -9223,9 +9768,9 @@ function plainText(text) {
 }
 function capWords(text, max) {
   if (text.length <= max) return text;
-  const cut = text.slice(0, max - 1);
-  const at = cut.lastIndexOf(" ");
-  return `${(at > max / 2 ? cut.slice(0, at) : cut).replace(/[\s,;:.-]+$/, "")}\u2026`;
+  const cut2 = text.slice(0, max - 1);
+  const at = cut2.lastIndexOf(" ");
+  return `${(at > max / 2 ? cut2.slice(0, at) : cut2).replace(/[\s,;:.-]+$/, "")}\u2026`;
 }
 var NEXT_LINE = /^\s*(?:[-*•]\s*)?(?:\*\*|__)?(?:next(?:\s+steps?)?|ต่อไป|ขั้นต่อไป)(?=[\s:：*_]|$)(?:\*\*|__)?\s*[:：]?\s*(?:\*\*|__)?\s*(.*)$/i;
 var BULLET = /^\s*(?:[-*•]|\d+[.)])\s+(.*)$/;
@@ -9277,11 +9822,11 @@ function lastReplyFromTranscript(file) {
   if (!file) return null;
   let fd;
   try {
-    fd = import_node_fs8.default.openSync(file, "r");
-    const size = import_node_fs8.default.fstatSync(fd).size;
+    fd = import_node_fs9.default.openSync(file, "r");
+    const size = import_node_fs9.default.fstatSync(fd).size;
     const start = Math.max(0, size - TAIL_BYTES);
     const buf = Buffer.alloc(size - start);
-    import_node_fs8.default.readSync(fd, buf, 0, buf.length, start);
+    import_node_fs9.default.readSync(fd, buf, 0, buf.length, start);
     const lines = buf.toString("utf8").split("\n");
     if (start > 0) lines.shift();
     for (let i = lines.length - 1; i >= 0; i--) {
@@ -9302,25 +9847,25 @@ function lastReplyFromTranscript(file) {
     return null;
   } finally {
     if (fd !== void 0) try {
-      import_node_fs8.default.closeSync(fd);
+      import_node_fs9.default.closeSync(fd);
     } catch {
     }
   }
 }
 
 // src/vault/live.ts
-var import_node_fs9 = __toESM(require("node:fs"), 1);
-var import_node_path10 = __toESM(require("node:path"), 1);
+var import_node_fs10 = __toESM(require("node:fs"), 1);
+var import_node_path11 = __toESM(require("node:path"), 1);
 var CLAUDE_WORKING_MS = 10 * 60 * 1e3;
 var CODEX_WORKING_MS = 5 * 60 * 1e3;
 var CLAUDE_WAITING_MS = 30 * 60 * 1e3;
 var CLOSED_VISIBLE_MS = 60 * 60 * 1e3;
 var LIVE_MAX_AGE_MS = 24 * 60 * 60 * 1e3;
 function liveDir() {
-  return import_node_path10.default.join(binkgoHome(), "live");
+  return import_node_path11.default.join(binkgoHome(), "live");
 }
 function liveFile(sessionId) {
-  return import_node_path10.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
+  return import_node_path11.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
 }
 function isRecord(v) {
   if (!v || typeof v !== "object") return false;
@@ -9330,7 +9875,7 @@ function isRecord(v) {
 }
 function readFile(file) {
   try {
-    const parsed = JSON.parse(import_node_fs9.default.readFileSync(file, "utf8"));
+    const parsed = JSON.parse(import_node_fs10.default.readFileSync(file, "utf8"));
     return isRecord(parsed) ? parsed : null;
   } catch {
     return null;
@@ -9360,13 +9905,13 @@ function markClaude(input, state, now) {
 }
 
 // src/vault/state.ts
-var import_node_fs10 = __toESM(require("node:fs"), 1);
-var import_node_path11 = __toESM(require("node:path"), 1);
+var import_node_fs11 = __toESM(require("node:fs"), 1);
+var import_node_path12 = __toESM(require("node:path"), 1);
 function stateDir() {
-  return import_node_path11.default.join(binkgoHome(), "state");
+  return import_node_path12.default.join(binkgoHome(), "state");
 }
 function stateFile(sessionId) {
-  return import_node_path11.default.join(stateDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
+  return import_node_path12.default.join(stateDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
 }
 function isState(v) {
   if (!v || typeof v !== "object") return false;
@@ -9375,7 +9920,7 @@ function isState(v) {
 }
 function readFile2(file) {
   try {
-    const parsed = JSON.parse(import_node_fs10.default.readFileSync(file, "utf8"));
+    const parsed = JSON.parse(import_node_fs11.default.readFileSync(file, "utf8"));
     return isState(parsed) ? parsed : null;
   } catch {
     return null;
@@ -9400,13 +9945,13 @@ function pruneStates(now, maxAgeDays = 30) {
   const leftoverCutoff = now.getTime() - LEFTOVER_MAX_AGE_MS;
   let names;
   try {
-    names = import_node_fs10.default.readdirSync(stateDir());
+    names = import_node_fs11.default.readdirSync(stateDir());
   } catch {
     return;
   }
   const mtimeOf = (file) => {
     try {
-      const st = import_node_fs10.default.statSync(file);
+      const st = import_node_fs11.default.statSync(file);
       return st.isFile() ? st.mtimeMs : null;
     } catch {
       return null;
@@ -9415,7 +9960,7 @@ function pruneStates(now, maxAgeDays = 30) {
   let handled = 0;
   for (const name of names) {
     if (handled >= PRUNE_MAX_FILES) break;
-    const file = import_node_path11.default.join(stateDir(), name);
+    const file = import_node_path12.default.join(stateDir(), name);
     try {
       if (name.endsWith(".json")) {
         const m = mtimeOf(file);
@@ -9423,11 +9968,11 @@ function pruneStates(now, maxAgeDays = 30) {
         handled++;
         withLock(file, () => {
           const again = mtimeOf(file);
-          if (again !== null && again < cutoff) import_node_fs10.default.rmSync(file, { force: true });
+          if (again !== null && again < cutoff) import_node_fs11.default.rmSync(file, { force: true });
         }, { timeoutMs: 200 });
       } else if (/\.(tmp|lock|steal)$/.test(name)) {
         const m = mtimeOf(file);
-        if (m !== null && m < leftoverCutoff) import_node_fs10.default.rmSync(file, { force: true });
+        if (m !== null && m < leftoverCutoff) import_node_fs11.default.rmSync(file, { force: true });
       }
     } catch {
     }
@@ -9435,9 +9980,9 @@ function pruneStates(now, maxAgeDays = 30) {
 }
 
 // src/vault/vault.ts
-var import_node_fs11 = __toESM(require("node:fs"), 1);
+var import_node_fs12 = __toESM(require("node:fs"), 1);
 var import_node_os4 = __toESM(require("node:os"), 1);
-var import_node_path12 = __toESM(require("node:path"), 1);
+var import_node_path13 = __toESM(require("node:path"), 1);
 function must2(root, kind, id) {
   const e = readEntry(root, kind, id);
   if (isBroken(e)) throw new Error(`Cannot read ${kind} ${id}: ${e.error}`);
@@ -9445,16 +9990,16 @@ function must2(root, kind, id) {
 }
 function canHostVault(root) {
   const r = canonicalPath(root);
-  if (import_node_path12.default.dirname(r) === r) return false;
+  if (import_node_path13.default.dirname(r) === r) return false;
   if (samePath(r, import_node_os4.default.homedir())) return false;
   return !samePath(vaultDir(r), binkgoHome());
 }
 function vaultExists(root) {
-  return import_node_fs11.default.existsSync(entryPath(root, "project", "project"));
+  return import_node_fs12.default.existsSync(entryPath(root, "project", "project"));
 }
 function writeGitignore(root) {
   try {
-    import_node_fs11.default.writeFileSync(import_node_path12.default.join(vaultDir(root), ".gitignore"), ["*.lock", "*.steal", "*.tmp", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
+    import_node_fs12.default.writeFileSync(import_node_path13.default.join(vaultDir(root), ".gitignore"), ["*.lock", "*.steal", "*.tmp", ".cache/", "!artifacts/files/**", ""].join("\n"), { flag: "wx" });
   } catch (e) {
     if (e.code !== "EEXIST") throw e;
   }
@@ -9464,7 +10009,7 @@ function initVault(root, input, now = /* @__PURE__ */ new Date(), opts = {}) {
   noControl("The goal", input.goal, true);
   if (!canHostVault(root)) throw new Error(`Binkgo cannot create a vault in ${root}`);
   for (const k of KINDS) {
-    if (k !== "project" && k !== "milestone" && k !== "map") import_node_fs11.default.mkdirSync(import_node_path12.default.join(vaultDir(root), DIRS[k]), { recursive: true });
+    if (k !== "project" && k !== "milestone" && k !== "map") import_node_fs12.default.mkdirSync(import_node_path13.default.join(vaultDir(root), DIRS[k]), { recursive: true });
   }
   if (!vaultExists(root)) {
     const t = localIso(now);
@@ -9574,7 +10119,7 @@ function stateFor(input) {
 function editedFile(input, root) {
   const raw = input.tool_input?.file_path ?? input.tool_input?.notebook_path;
   if (typeof raw !== "string" || !raw) return null;
-  return toRelPath(root, import_node_path13.default.resolve(input.cwd || root, raw));
+  return toRelPath(root, import_node_path14.default.resolve(input.cwd || root, raw));
 }
 function additionalContext(event, text) {
   return { hookSpecificOutput: { hookEventName: event, additionalContext: text } };
@@ -9614,9 +10159,9 @@ var MANIFESTS = /* @__PURE__ */ new Set([
   "deno.json"
 ]);
 function isProject(root) {
-  if (import_node_fs12.default.existsSync(import_node_path13.default.join(root, ".git"))) return true;
+  if (import_node_fs13.default.existsSync(import_node_path14.default.join(root, ".git"))) return true;
   try {
-    return import_node_fs12.default.readdirSync(root).some((n) => MANIFESTS.has(n) || /\.(sln|csproj)$/i.test(n));
+    return import_node_fs13.default.readdirSync(root).some((n) => MANIFESTS.has(n) || /\.(sln|csproj)$/i.test(n));
   } catch {
     return false;
   }
@@ -9624,7 +10169,7 @@ function isProject(root) {
 function autoCreate(root, now) {
   if (vaultExists(root) || !canHostVault(root) || isScratchFolder(root) || !isProject(root)) return null;
   try {
-    const name = import_node_path13.default.basename(root);
+    const name = import_node_path14.default.basename(root);
     initVault(root, { name }, now, { auto: true });
     return createdNote(name, commitCount(root));
   } catch {
@@ -9638,7 +10183,7 @@ function markLive(input, state, now) {
   } catch {
   }
 }
-var footer = () => import_node_path13.default.basename(__filename) === "hook.cjs" ? `
+var footer = () => import_node_path14.default.basename(__filename) === "hook.cjs" ? `
 ${cliFooter(__filename)}` : "";
 function sessionStart(input, now = /* @__PURE__ */ new Date()) {
   const root = findProjectRoot(input.cwd);
@@ -9658,10 +10203,16 @@ function sessionStart(input, now = /* @__PURE__ */ new Date()) {
     if (typeof input.transcript_path === "string" && input.transcript_path) s.transcript_path = input.transcript_path;
     if (entry2) s.entry_id = entry2;
   });
+  if (entry2) {
+    try {
+      ensureIndex(root);
+    } catch {
+    }
+  }
   let out;
   if (entry2) {
     const brief = buildBrief(root, now);
-    let name = import_node_path13.default.basename(root);
+    let name = import_node_path14.default.basename(root);
     try {
       name = readProject(root).data.name;
       registerProject(root, name, now, { auto: true });
@@ -9685,7 +10236,15 @@ Binkgo session: ${refOf("session", entry2)}${footer()}`);
 }
 function promptSubmit(input, now = /* @__PURE__ */ new Date()) {
   markLive(input, "working", now);
-  return void 0;
+  if (typeof input.prompt !== "string" || input.prompt.trim().length < 8) return void 0;
+  try {
+    const root = readState(input.session_id)?.root ?? findProjectRoot(input.cwd);
+    if (!vaultExists(root)) return void 0;
+    const text = promptHint(root, input.prompt);
+    return text ? additionalContext("UserPromptSubmit", text) : void 0;
+  } catch {
+    return void 0;
+  }
 }
 function preEdit(input, _now = /* @__PURE__ */ new Date()) {
   const state = stateFor(input);
@@ -9720,8 +10279,8 @@ function preEdit(input, _now = /* @__PURE__ */ new Date()) {
   };
 }
 function patternBase(pattern) {
-  const cut = pattern.search(/[*?[{]/);
-  const head = cut === -1 ? pattern : pattern.slice(0, cut);
+  const cut2 = pattern.search(/[*?[{]/);
+  const head = cut2 === -1 ? pattern : pattern.slice(0, cut2);
   return head.slice(0, Math.max(0, head.lastIndexOf("/")));
 }
 var MAP_LINES = 6;
@@ -9729,14 +10288,14 @@ var MAP_DETAILS = 600;
 function exploreTarget(input, root) {
   const ti = input.tool_input ?? {};
   const base = typeof ti.file_path === "string" && ti.file_path ? ti.file_path : typeof ti.path === "string" && ti.path ? ti.path : "";
-  let full = base ? import_node_path13.default.resolve(input.cwd || root, base) : input.cwd || root;
+  let full = base ? import_node_path14.default.resolve(input.cwd || root, base) : input.cwd || root;
   if (typeof ti.pattern === "string" && !base) {
     const b = patternBase(ti.pattern.split(String.fromCharCode(92)).join("/"));
-    if (b && !import_node_path13.default.isAbsolute(b)) full = import_node_path13.default.resolve(input.cwd || root, b);
+    if (b && !import_node_path14.default.isAbsolute(b)) full = import_node_path14.default.resolve(input.cwd || root, b);
   }
   const rel = toRelPath(root, full);
   if (rel !== null) return rel;
-  return import_node_path13.default.relative(canonicalPath(root), canonicalPath(full)) === "" ? "." : null;
+  return import_node_path14.default.relative(canonicalPath(root), canonicalPath(full)) === "" ? "." : null;
 }
 function preExplore(input, _now = /* @__PURE__ */ new Date()) {
   const read = readState(input.session_id);
@@ -9744,7 +10303,7 @@ function preExplore(input, _now = /* @__PURE__ */ new Date()) {
   const dir = vaultDir(root);
   const rel = exploreTarget(input, root);
   if (rel === null || !vaultExists(root)) return void 0;
-  if (!import_node_fs12.default.existsSync(import_node_path13.default.join(dir, "map"))) return void 0;
+  if (!import_node_fs13.default.existsSync(import_node_path14.default.join(dir, "map"))) return void 0;
   const shown = new Set(read?.map_shown ?? []);
   const above = (n) => n === "." || rel.startsWith(`${n}/`);
   const below = (n) => {
@@ -9764,7 +10323,7 @@ function preExplore(input, _now = /* @__PURE__ */ new Date()) {
 }
 function isScratchFolder(root) {
   const home = import_node_os5.default.homedir();
-  return [import_node_path13.default.join(home, "Desktop"), import_node_path13.default.join(home, "Downloads"), import_node_path13.default.join(home, "Documents"), import_node_os5.default.tmpdir()].some((p) => samePath(root, p));
+  return [import_node_path14.default.join(home, "Desktop"), import_node_path14.default.join(home, "Downloads"), import_node_path14.default.join(home, "Documents"), import_node_os5.default.tmpdir()].some((p) => samePath(root, p));
 }
 var CHANGING = /\b(git\b[^|;&\n]*?\s(commit|merge|rebase|revert|cherry-pick|push|reset)|kubectl\b[^|;&\n]*?\s(apply|patch|create|delete|scale|rollout|set|edit|replace|label|annotate)|helm\s+(install|upgrade|uninstall)|docker\s+(build|push)|sed\s+-i|npm\s+(install|publish)|pip\s+install|terraform\s+apply|vercel|wrangler\s+deploy|kaggle\s+(kernels\s+push|datasets\s+(create|version)))\b/;
 var ACTIONS = 8;
@@ -9777,7 +10336,7 @@ var CHECK_NAME = /(?:^|[:_.-])(?:test|tests|spec|e2e|build|lint|check|typecheck|
 var PM_COMMANDS = /* @__PURE__ */ new Set(["install", "i", "ci", "add", "remove", "rm", "uninstall", "update", "up", "publish", "start", "exec", "init", "create", "view", "info", "outdated", "audit", "link", "pack", "dlx", "x"]);
 function packageScripts(cwd) {
   try {
-    const pkg = JSON.parse(import_node_fs12.default.readFileSync(import_node_path13.default.join(cwd, "package.json"), "utf8"));
+    const pkg = JSON.parse(import_node_fs13.default.readFileSync(import_node_path14.default.join(cwd, "package.json"), "utf8"));
     return pkg.scripts && typeof pkg.scripts === "object" ? pkg.scripts : {};
   } catch {
     return {};
@@ -9856,7 +10415,12 @@ function postShell(input, now = /* @__PURE__ */ new Date()) {
   if (isCheck(cmd, input.cwd)) checkPassed(input, cmd, now);
   if (!CHANGING.test(cmd) || SCRATCH_EDIT.test(cmd)) return void 0;
   const read = readState(input.session_id);
-  if (!vaultExists(read?.root ?? findProjectRoot(input.cwd))) return void 0;
+  const shellRoot = read?.root ?? findProjectRoot(input.cwd);
+  if (!vaultExists(shellRoot)) return void 0;
+  try {
+    if (readIndex(shellRoot)) refreshIndex(shellRoot);
+  } catch {
+  }
   const line = (cmd.match(CHANGING)?.[0] ?? "") + ": " + cmd.replace(/\s+/g, " ").slice(0, 90);
   mutateState(input.session_id, () => fresh(input), (s) => {
     s.dirty = true;
@@ -9872,10 +10436,14 @@ function postEdit(input, now = /* @__PURE__ */ new Date()) {
   if (!rel) return void 0;
   if (!vaultExists(root)) {
     if (!canHostVault(root) || isScratchFolder(root)) return void 0;
-    initVault(root, { name: import_node_path13.default.basename(root) }, now, { auto: true });
+    initVault(root, { name: import_node_path14.default.basename(root) }, now, { auto: true });
   }
   const entry2 = state.entry_id && entryExists(root, "session", state.entry_id) ? state.entry_id : openSession(root, input.session_id, { model: null }, sessionBegan(input.transcript_path ?? state.transcript_path, now));
   touchFile(root, entry2, rel);
+  try {
+    updateFile(root, rel);
+  } catch {
+  }
   mutateState(input.session_id, () => fresh(input), (s) => {
     s.entry_id = entry2;
     s.dirty = true;
@@ -9994,10 +10562,10 @@ function describeError(e) {
 }
 function logError(name, sessionId, e) {
   try {
-    const dir = import_node_path14.default.join(binkgoHome(), "logs");
-    import_node_fs13.default.mkdirSync(dir, { recursive: true });
-    import_node_fs13.default.appendFileSync(
-      import_node_path14.default.join(dir, "hooks.log"),
+    const dir = import_node_path15.default.join(binkgoHome(), "logs");
+    import_node_fs14.default.mkdirSync(dir, { recursive: true });
+    import_node_fs14.default.appendFileSync(
+      import_node_path15.default.join(dir, "hooks.log"),
       `${(/* @__PURE__ */ new Date()).toISOString()} ${name} ${sessionId || "-"}: ${describeError(e)}
 `
     );
