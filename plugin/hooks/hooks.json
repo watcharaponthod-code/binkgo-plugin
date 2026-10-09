@@ -43,6 +43,14 @@
         ]
       }
     ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/dist/hook.cjs", "post-shell-fail"], "async": true }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [

@@ -3683,7 +3683,7 @@ var import_node_path14 = __toESM(require("node:path"), 1);
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.10",
+  version: "1.0.11",
   private: true,
   type: "module",
   engines: {
@@ -7977,6 +7977,12 @@ var usageSchema = external_exports.object({
     binkgoInjectedTokens: external_exports.number().default(0)
   }).optional()
 });
+var failureSchema = external_exports.object({
+  command: external_exports.string(),
+  excerpt: external_exports.string().default(""),
+  at: iso,
+  fixed_at: isoOpt
+});
 var TASK_STATUSES = ["todo", "doing", "done", "blocked"];
 var ARTIFACT_KINDS = ["spec", "plan", "doc", "image", "html", "code", "other"];
 var entry = (shape) => external_exports.object(shape).passthrough();
@@ -8049,7 +8055,8 @@ var SCHEMAS = {
     model: optStr,
     files_touched: lax(external_exports.array(external_exports.string()).default([])),
     summary_written: external_exports.boolean().default(false),
-    usage: usageSchema.default({})
+    usage: usageSchema.default({}),
+    failures: lax(external_exports.array(failureSchema).optional())
   }),
   decision: entry({
     title: external_exports.string().min(1),

@@ -7697,6 +7697,12 @@ var usageSchema = external_exports.object({
   }).optional()
 });
 var emptyUsage = () => usageSchema.parse({});
+var failureSchema = external_exports.object({
+  command: external_exports.string(),
+  excerpt: external_exports.string().default(""),
+  at: iso,
+  fixed_at: isoOpt
+});
 var TASK_STATUSES = ["todo", "doing", "done", "blocked"];
 var ARTIFACT_KINDS = ["spec", "plan", "doc", "image", "html", "code", "other"];
 var entry = (shape) => external_exports.object(shape).passthrough();
@@ -7769,7 +7775,8 @@ var SCHEMAS = {
     model: optStr,
     files_touched: lax(external_exports.array(external_exports.string()).default([])),
     summary_written: external_exports.boolean().default(false),
-    usage: usageSchema.default({})
+    usage: usageSchema.default({}),
+    failures: lax(external_exports.array(failureSchema).optional())
   }),
   decision: entry({
     title: external_exports.string().min(1),
@@ -8253,7 +8260,7 @@ function licenseStatus(now, appVersion, opts = {}) {
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.10",
+  version: "1.0.11",
   private: true,
   type: "module",
   engines: {
@@ -8743,6 +8750,114 @@ function listMapNotes(root, max = 500) {
 }
 var isStale = (n) => n.state === "changed" || n.state === "missing";
 
+// src/vault/sessions.ts
+var import_node_path8 = __toESM(require("node:path"), 1);
+function openSession(root, sessionId, meta, now = /* @__PURE__ */ new Date()) {
+  const dir = import_node_path8.default.join(vaultDir(root), DIRS.session);
+  return withLock(dir, () => {
+    const sid8 = sessionId.replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toLowerCase() || "session";
+    const suffix = new RegExp(`-${sid8}(-\\d+)?$`);
+    for (const candidate of listIds(root, "session").filter((n) => suffix.test(n))) {
+      const e = readEntry(root, "session", candidate);
+      if (!isBroken(e) && e.data.session_id === sessionId) return e.id;
+    }
+    const id = uniqueId(dir, `${dateStamp(now)}-${timeStamp(now)}-${sid8}`);
+    writeEntry(
+      root,
+      "session",
+      id,
+      {
+        session_id: sessionId,
+        started: localIso(now),
+        ended: null,
+        model: meta.model,
+        files_touched: [],
+        summary_written: false,
+        usage: emptyUsage()
+      },
+      { Summary: "", Done: "", Next: "" }
+    );
+    return id;
+  });
+}
+function touchFile(root, entryId, relPath) {
+  mutateEntry(root, "session", entryId, (e) => {
+    if (!e.data.files_touched.includes(relPath)) e.data.files_touched.push(relPath);
+  });
+}
+var MAX_FAILURES = 5;
+var FAILURE_LOOKBACK = 10;
+function recordFailure(root, entryId, f, now = /* @__PURE__ */ new Date()) {
+  mutateEntry(root, "session", entryId, (e) => {
+    const list = (e.data.failures ?? []).filter((x) => x.command !== f.command);
+    list.push({ command: f.command, excerpt: f.excerpt, at: localIso(now), fixed_at: null });
+    e.data.failures = list.slice(-MAX_FAILURES);
+  });
+}
+var recentIds = (root) => listIds(root, "session").reverse().slice(0, FAILURE_LOOKBACK);
+function clearFailures(root, command, now = /* @__PURE__ */ new Date()) {
+  for (const id of recentIds(root)) {
+    const raw = readRaw(root, "session", id);
+    if (raw === null || !raw.includes("fixed_at: null")) continue;
+    const e = readEntry(root, "session", id);
+    if (isBroken(e) || !(e.data.failures ?? []).some((x) => x.command === command && x.fixed_at === null)) continue;
+    mutateEntry(root, "session", id, (m) => {
+      for (const x of m.data.failures ?? []) if (x.command === command && x.fixed_at === null) x.fixed_at = localIso(now);
+    });
+  }
+}
+function openFailures(root, limit = 2) {
+  const out = [];
+  for (const id of recentIds(root)) {
+    if (out.length >= limit) break;
+    const raw = readRaw(root, "session", id);
+    if (raw === null || !raw.includes("fixed_at: null")) continue;
+    const e = readEntry(root, "session", id);
+    if (isBroken(e)) continue;
+    for (const f of [...e.data.failures ?? []].reverse()) if (f.fixed_at === null) out.push({ ...f, session: id });
+  }
+  return out.slice(0, limit);
+}
+function writeAutoSummary(root, entryId, file) {
+  mutateEntry(root, "session", entryId, (e) => {
+    if (e.data.summary_written) return;
+    e.sections.Summary = `Small edit to ${file} (recorded automatically).`;
+    e.sections.Done = `- Edited ${file}`;
+    e.sections.Next = "";
+  });
+}
+function updateSessionUsage(root, entryId, usage, model) {
+  mutateEntry(root, "session", entryId, (e) => {
+    e.data.usage = usage;
+    if (model) e.data.model = model;
+  });
+}
+function endSession(root, entryId, now = /* @__PURE__ */ new Date()) {
+  mutateEntry(root, "session", entryId, (e) => {
+    e.data.ended = localIso(now);
+  });
+}
+var PRE_FILTERABLE = /^[ -~]+$/;
+var YAML_SPECIAL = /["'\\#]|: /;
+var canPreFilter = (p) => PRE_FILTERABLE.test(p) && !YAML_SPECIAL.test(p) && p === p.trim();
+var squash = (s) => s.replace(/\s+/g, "");
+function findFixesForFile(root, relPath) {
+  const norm = (p) => process.platform === "win32" ? p.toLowerCase() : p;
+  const target = norm(relPath);
+  const needle = squash(target);
+  const plain = canPreFilter(relPath);
+  const found = [];
+  for (const id of listIds(root, "fix")) {
+    if (plain) {
+      const raw = readRaw(root, "fix", id);
+      if (raw === null || !squash(norm(raw)).includes(needle)) continue;
+    }
+    const e = readEntry(root, "fix", id);
+    if (!isBroken(e) && e.data.files.some((p) => norm(p) === target)) found.push(e);
+  }
+  return found.sort((a, b) => Date.parse(b.data.created) - Date.parse(a.data.created) || (a.id < b.id ? 1 : -1));
+}
+
 // src/vault/brief.ts
 var newestFirst = (a, b) => a.id < b.id ? 1 : -1;
 var byCreated = (a, b) => Date.parse(b.data.created) - Date.parse(a.data.created) || newestFirst(a, b);
@@ -8811,6 +8926,7 @@ var FOOT = "More: search, read <id>, project_map.";
 var LAST_SUMMARY = 240;
 var LAST_NEXT = 140;
 var TITLE = 70;
+var FAILING = 2;
 var LIST = 3;
 var MAP_SHOWN = 8;
 var MAP_SCAN = 100;
@@ -8841,6 +8957,8 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
     const next = (last.sections.Next ?? "").split(/\r?\n/).map((l) => l.replace(/^- /, "").trim()).filter(Boolean).join("; ");
     units.push(`Last session (${refOf("session", last.id)}): ${cap(last.sections.Summary ?? "", LAST_SUMMARY)}${next ? ` Next: ${cap(next, LAST_NEXT)}` : ""}`);
   }
+  const failing = openFailures(root, FAILING).map((f) => `${cap(f.command, 50)} \u2014 ${cap(f.excerpt, 100)} (${refOf("session", f.session)})`);
+  if (failing.length) units.push(failing.length === 1 ? `Failing checks: ${failing[0]}` : ["Failing checks:", ...failing.map((l) => `- ${l}`)].join("\n"));
   const { open: tasks, done: doneIds, known, perMilestone } = scanTasks(root);
   const today = dateStamp(now);
   const current = activeMilestone(root, today);
@@ -8904,6 +9022,50 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
 // src/hooks/handlers.ts
 var import_node_child_process = require("node:child_process");
 
+// src/hooks/checks.ts
+var COMMAND_MAX = 120;
+var EXCERPT_MAX = 240;
+var LINE_MAX = 120;
+var NAME = "KEY|TOKEN|SECRET|PASSWORD|PASSWD|AUTH";
+var SCRUBS = [
+  [/\bBearer\s+[A-Za-z0-9._~+/-]+=*/gi, "Bearer ***"],
+  // NAME=value and NAME: value with an upper-case name (API_KEY, GITHUB_TOKEN), or a lower-case one with separators (api_key, access-token).
+  [new RegExp(String.raw`\b([A-Za-z0-9_.-]*(?:${NAME})[A-Za-z0-9_.-]*)(\s*[=:]\s*)("[^"]*"|'[^']*'|[^\s"',;]+)`, "g"), "$1$2***"],
+  [new RegExp(String.raw`((?:^|[\s"'(,{])(?:[a-z0-9]+[_.-])*(?:${NAME.toLowerCase()})(?:[_.-][a-z0-9]+)*)(\s*[=:]\s*)("[^"]*"|'[^']*'|[^\s"',;]+)`, "gm"), "$1$2***"],
+  // --token value, --api-key=value
+  [new RegExp(String.raw`(--[a-z0-9-]*(?:${NAME.toLowerCase()})[a-z0-9-]*)(\s+|=)(?!-)("[^"]*"|'[^']*'|\S+)`, "gi"), "$1$2***"],
+  [/\bsk-[A-Za-z0-9_-]{8,}/g, "***"],
+  [/\bgh[pous]_[A-Za-z0-9]{8,}/g, "***"],
+  [/\bxox[abp]-[A-Za-z0-9-]{8,}/g, "***"],
+  [/\beyJ[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+){0,2}/g, "***"],
+  [/[A-Za-z0-9+/_=-]{40,}/g, "***"]
+];
+function scrub(text) {
+  return SCRUBS.reduce((t, [re, to]) => t.replace(re, to), text);
+}
+var normCommand = (cmd) => scrub(cmd.replace(/\s+/g, " ").trim()).slice(0, COMMAND_MAX);
+var WEAK = /\bError:/;
+var strong = (line) => /\b[1-9]\d* (?:failing|failed)\b/i.test(line) || /\bFAIL\b|\bFAILED\b|✗|×|●|AssertionError|error TS\d+|npm ERR!|Traceback|panicked/.test(line);
+var showsFailure = (output) => output.split(/\r?\n/).some(strong);
+function excerptOf(output) {
+  const lines = scrub(output).split(/\r?\n/).map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean);
+  const hits = lines.filter((l) => strong(l) || WEAK.test(l)).slice(0, 3).map((l) => l.slice(0, LINE_MAX));
+  const text = hits.length ? hits.join(" | ") : (lines.find((l) => !/^Exit code \d+$/i.test(l)) ?? "").slice(0, LINE_MAX);
+  return text.slice(0, EXCERPT_MAX);
+}
+function responseText(r) {
+  if (typeof r === "string") return r;
+  if (!r || typeof r !== "object") return "";
+  const o = r;
+  const parts = ["stdout", "stderr", "output", "error", "content", "text", "result"].map((k) => o[k]).filter((v) => typeof v === "string");
+  if (parts.length) return parts.join("\n");
+  try {
+    return JSON.stringify(r).slice(0, 2e4);
+  } catch {
+    return "";
+  }
+}
+
 // src/hooks/messages.ts
 var denyNote = (rel, fixLines) => `Binkgo: ${rel} has earlier fixes:
 ${fixLines.join("\n")}
@@ -8911,11 +9073,12 @@ Read them (read tool), then retry the edit; it will be allowed.`;
 var advisoryNote = (rel, fixLines) => `Binkgo: ${rel} has earlier fixes; read them before changing it again:
 ${fixLines.join("\n")}`;
 var MAP_ASK_READS = 5;
-var stopRequest = (sessionRef, s = {}, doing = []) => {
+var stopRequest = (sessionRef, s = {}, doing = [], failing = []) => {
   const areas = Object.entries(s.unmapped ?? {}).filter(([, n]) => n >= MAP_ASK_READS).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([p]) => p);
   return [
     `Binkgo: call session_summary (session "${sessionRef}") with summary, done, next, and unlogged fixes[], decisions[]; then finish.`,
     ...s.actions?.length ? ["Shell changes this session:", ...s.actions.map((a) => `- ${a}`)] : [],
+    ...failing.map((c) => `Still failing: ${c}`),
     ...doing.length ? ["In progress (tasks[] status done/blocked if that changed):", ...doing.map((t) => `- ${t}`)] : [],
     ...areas.length ? [`project_map set: a note for ${areas.join(", ")} (read often, none yet).`] : []
   ].join("\n");
@@ -8923,24 +9086,24 @@ var stopRequest = (sessionRef, s = {}, doing = []) => {
 var mapNote = (lines, details) => `Binkgo map (read before exploring further):
 ${lines.join("\n")}${details ? `
 ${details}` : ""}`;
-var createdNote = (name, commits) => `Binkgo: this git repository had no vault, so one was just created for "${name}" and registered; it is empty.` + (commits > ADOPT_COMMITS ? ` The repo has ${commits} commits: suggest the user run /binkgo:adopt once to fill it from the history.` : "");
+var createdNote = (name, commits) => `Binkgo: this project folder had no vault, so one was just created for "${name}" and registered; it is empty.` + (commits > ADOPT_COMMITS ? ` The repo has ${commits} commits: suggest the user run /binkgo:adopt once to fill it from the history.` : "");
 var ADOPT_COMMITS = 20;
 var signInNote = "Binkgo: sign in to turn on project memory (free). Run /binkgo login, or ask the agent to call sign_in.";
 var signInNotice = "\u{1F33F} Binkgo \xB7 not signed in, so project memory is off. Sign in once (free): run /binkgo login, or ask the AI to sign in to Binkgo.";
 
 // src/vault/live.ts
 var import_node_fs8 = __toESM(require("node:fs"), 1);
-var import_node_path8 = __toESM(require("node:path"), 1);
+var import_node_path9 = __toESM(require("node:path"), 1);
 var CLAUDE_WORKING_MS = 10 * 60 * 1e3;
 var CODEX_WORKING_MS = 5 * 60 * 1e3;
 var CLAUDE_WAITING_MS = 30 * 60 * 1e3;
 var CLOSED_VISIBLE_MS = 60 * 60 * 1e3;
 var LIVE_MAX_AGE_MS = 24 * 60 * 60 * 1e3;
 function liveDir() {
-  return import_node_path8.default.join(binkgoHome(), "live");
+  return import_node_path9.default.join(binkgoHome(), "live");
 }
 function liveFile(sessionId) {
-  return import_node_path8.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
+  return import_node_path9.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
 }
 function isRecord(v) {
   if (!v || typeof v !== "object") return false;
@@ -8977,73 +9140,6 @@ function markClaude(input, state, now) {
     },
     now
   );
-}
-
-// src/vault/sessions.ts
-var import_node_path9 = __toESM(require("node:path"), 1);
-function openSession(root, sessionId, meta, now = /* @__PURE__ */ new Date()) {
-  const dir = import_node_path9.default.join(vaultDir(root), DIRS.session);
-  return withLock(dir, () => {
-    const sid8 = sessionId.replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toLowerCase() || "session";
-    const suffix = new RegExp(`-${sid8}(-\\d+)?$`);
-    for (const candidate of listIds(root, "session").filter((n) => suffix.test(n))) {
-      const e = readEntry(root, "session", candidate);
-      if (!isBroken(e) && e.data.session_id === sessionId) return e.id;
-    }
-    const id = uniqueId(dir, `${dateStamp(now)}-${timeStamp(now)}-${sid8}`);
-    writeEntry(
-      root,
-      "session",
-      id,
-      {
-        session_id: sessionId,
-        started: localIso(now),
-        ended: null,
-        model: meta.model,
-        files_touched: [],
-        summary_written: false,
-        usage: emptyUsage()
-      },
-      { Summary: "", Done: "", Next: "" }
-    );
-    return id;
-  });
-}
-function touchFile(root, entryId, relPath) {
-  mutateEntry(root, "session", entryId, (e) => {
-    if (!e.data.files_touched.includes(relPath)) e.data.files_touched.push(relPath);
-  });
-}
-function updateSessionUsage(root, entryId, usage, model) {
-  mutateEntry(root, "session", entryId, (e) => {
-    e.data.usage = usage;
-    if (model) e.data.model = model;
-  });
-}
-function endSession(root, entryId, now = /* @__PURE__ */ new Date()) {
-  mutateEntry(root, "session", entryId, (e) => {
-    e.data.ended = localIso(now);
-  });
-}
-var PRE_FILTERABLE = /^[ -~]+$/;
-var YAML_SPECIAL = /["'\\#]|: /;
-var canPreFilter = (p) => PRE_FILTERABLE.test(p) && !YAML_SPECIAL.test(p) && p === p.trim();
-var squash = (s) => s.replace(/\s+/g, "");
-function findFixesForFile(root, relPath) {
-  const norm = (p) => process.platform === "win32" ? p.toLowerCase() : p;
-  const target = norm(relPath);
-  const needle = squash(target);
-  const plain = canPreFilter(relPath);
-  const found = [];
-  for (const id of listIds(root, "fix")) {
-    if (plain) {
-      const raw = readRaw(root, "fix", id);
-      if (raw === null || !squash(norm(raw)).includes(needle)) continue;
-    }
-    const e = readEntry(root, "fix", id);
-    if (!isBroken(e) && e.data.files.some((p) => norm(p) === target)) found.push(e);
-  }
-  return found.sort((a, b) => Date.parse(b.data.created) - Date.parse(a.data.created) || (a.id < b.id ? 1 : -1));
 }
 
 // src/vault/state.ts
@@ -9228,8 +9324,33 @@ function commitCount(root) {
     return 0;
   }
 }
+var MANIFESTS = /* @__PURE__ */ new Set([
+  "package.json",
+  "pyproject.toml",
+  "requirements.txt",
+  "setup.py",
+  "Cargo.toml",
+  "go.mod",
+  "pom.xml",
+  "build.gradle",
+  "build.gradle.kts",
+  "Gemfile",
+  "composer.json",
+  "pubspec.yaml",
+  "CMakeLists.txt",
+  "Makefile",
+  "deno.json"
+]);
+function isProject(root) {
+  if (import_node_fs11.default.existsSync(import_node_path12.default.join(root, ".git"))) return true;
+  try {
+    return import_node_fs11.default.readdirSync(root).some((n) => MANIFESTS.has(n) || /\.(sln|csproj)$/i.test(n));
+  } catch {
+    return false;
+  }
+}
 function autoCreate(root, now) {
-  if (vaultExists(root) || !import_node_fs11.default.existsSync(import_node_path12.default.join(root, ".git")) || !canHostVault(root)) return null;
+  if (vaultExists(root) || !canHostVault(root) || isScratchFolder(root) || !isProject(root)) return null;
   try {
     const name = import_node_path12.default.basename(root);
     initVault(root, { name }, now, { auto: true });
@@ -9278,6 +9399,8 @@ function sessionStart(input, now = /* @__PURE__ */ new Date()) {
 
 Binkgo session: ${refOf("session", entry2)}`);
     out.systemMessage = notice(`${name}: project memory loaded. The AI does the work; you review and steer it.`);
+  } else {
+    out = { systemMessage: notice("no project folder here, so memory is off. Start Claude Code inside a project folder, or ask the AI to run project_init.") };
   }
   try {
     pruneStates(now);
@@ -9383,9 +9506,66 @@ function countUnmapped(input, rel, notes) {
 }
 var CHANGING = /\b(git\b[^|;&\n]*?\s(commit|merge|rebase|revert|cherry-pick|push|reset)|kubectl\b[^|;&\n]*?\s(apply|patch|create|delete|scale|rollout|set|edit|replace|label|annotate)|helm\s+(install|upgrade|uninstall)|docker\s+(build|push)|sed\s+-i|npm\s+(install|publish)|pip\s+install|terraform\s+apply|vercel|wrangler\s+deploy|kaggle\s+(kernels\s+push|datasets\s+(create|version)))\b/;
 var ACTIONS = 8;
-function postShell(input, _now = /* @__PURE__ */ new Date()) {
+var SCRATCH_EDIT = /\bsed\s+-i\b[^|;&\n]*(\$\{?TEMP\b|\$\{?TMPDIR\b|%TEMP%|\/tmp\/|AppData[\\/]+Local[\\/]+Temp|scratchpad)/i;
+var CHECK = /(?:^|[\s;&|(])(?:(?:npm|pnpm|yarn|bun)\s+(?:run\s+)?(?:test|build|lint|typecheck|check)(?::[\w:-]+)?|(?:npx|bunx)\s+(?:--no-install\s+|-y\s+)?(?:vitest|jest|tsc|eslint|playwright|mocha)|(?:vitest|jest|mocha|pytest|tsc|eslint|ruff|mypy|pyright|rspec|phpunit|make|mvn|gradle|gradlew|\.\/gradlew|\.\/mvnw|mvnw)|python3?\s+-m\s+(?:pytest|unittest)|cargo\s+(?:test|build|check|clippy)|go\s+(?:test|build|vet)|dotnet\s+(?:test|build)|flutter\s+test|swift\s+(?:test|build))(?=$|[\s;&|)])/;
+var SCRIPT_CHECK = /(?:^|[;&|(]|&&)\s*(?:(?:bash|sh|zsh|pwsh|powershell(?:\.exe)?|python3?|node)\s+(?:-\S+\s+)*)?(?:\.{0,2}[\\/])?[\w.\\/-]*?(?:test|tests|spec|build|lint|check|verify|ci)[\w.-]*\.(?:sh|ps1|bat|cmd|py|mjs|cjs|js)(?=$|[\s;&|)])/i;
+var RUN_SCRIPT = /(?:^|[;&|(]|&&)\s*(?:npm|pnpm|yarn|bun)\s+(?:run(?:-script)?\s+)?([\w:.-]+)/g;
+var INSTALL = /\b(?:(?:npm|pnpm|yarn|bun)\s+(?:add|install|i|remove|rm|uninstall|update|up)|pip3?\s+install|cargo\s+install|go\s+install|brew\s+install)\b/;
+var CHECK_NAME = /(?:^|[:_.-])(?:test|tests|spec|e2e|build|lint|check|typecheck|types|verify)(?:[:_.-]|$)/i;
+var PM_COMMANDS = /* @__PURE__ */ new Set(["install", "i", "ci", "add", "remove", "rm", "uninstall", "update", "up", "publish", "start", "exec", "init", "create", "view", "info", "outdated", "audit", "link", "pack", "dlx", "x"]);
+function packageScripts(cwd) {
+  try {
+    const pkg = JSON.parse(import_node_fs11.default.readFileSync(import_node_path12.default.join(cwd, "package.json"), "utf8"));
+    return pkg.scripts && typeof pkg.scripts === "object" ? pkg.scripts : {};
+  } catch {
+    return {};
+  }
+}
+function isCheck(full, cwd) {
+  const cmd = full.split(/&&|\|\||[;|&\n]/).filter((part) => !INSTALL.test(part)).join(" ; ");
+  if (CHECK.test(cmd) || SCRIPT_CHECK.test(cmd)) return true;
+  let scripts = null;
+  for (const m of cmd.matchAll(RUN_SCRIPT)) {
+    const name = m[1];
+    if (PM_COMMANDS.has(name)) continue;
+    if (CHECK_NAME.test(name)) return true;
+    scripts ??= packageScripts(cwd);
+    const body = scripts[name];
+    if (typeof body === "string" && (CHECK.test(body) || SCRIPT_CHECK.test(body))) return true;
+  }
+  return false;
+}
+function entryFor(input, state, now) {
+  const entry2 = state.entry_id && entryExists(state.root, "session", state.entry_id) ? state.entry_id : openSession(state.root, input.session_id, { model: null }, sessionBegan(input.transcript_path ?? state.transcript_path, now));
+  if (entry2 !== state.entry_id) mutateState(input.session_id, () => state, (s) => {
+    s.entry_id = entry2;
+  });
+  return entry2;
+}
+function noteFailure(input, cmd, output, now) {
+  const state = stateFor(input);
+  if (!vaultExists(state.root)) return;
+  recordFailure(state.root, entryFor(input, state, now), { command: normCommand(cmd), excerpt: excerptOf(output) }, now);
+}
+function postShellFail(input, now = /* @__PURE__ */ new Date()) {
   const cmd = input.tool_input?.command;
-  if (typeof cmd !== "string" || !CHANGING.test(cmd)) return void 0;
+  if (typeof cmd !== "string" || input.is_interrupt === true || !isCheck(cmd, input.cwd)) return void 0;
+  noteFailure(input, cmd, typeof input.error === "string" ? input.error : responseText(input.tool_response), now);
+  return void 0;
+}
+function checkPassed(input, cmd, now) {
+  const r = input.tool_response;
+  if (r && typeof r === "object" && r.interrupted === true) return;
+  const output = responseText(r);
+  if (showsFailure(output)) return noteFailure(input, cmd, output, now);
+  const root = readState(input.session_id)?.root ?? findProjectRoot(input.cwd);
+  if (vaultExists(root)) clearFailures(root, normCommand(cmd), now);
+}
+function postShell(input, now = /* @__PURE__ */ new Date()) {
+  const cmd = input.tool_input?.command;
+  if (typeof cmd !== "string") return void 0;
+  if (isCheck(cmd, input.cwd)) checkPassed(input, cmd, now);
+  if (!CHANGING.test(cmd) || SCRATCH_EDIT.test(cmd)) return void 0;
   const read = readState(input.session_id);
   if (!vaultExists(read?.root ?? findProjectRoot(input.cwd))) return void 0;
   const line = (cmd.match(CHANGING)?.[0] ?? "") + ": " + cmd.replace(/\s+/g, " ").slice(0, 90);
@@ -9409,6 +9589,8 @@ function postEdit(input, now = /* @__PURE__ */ new Date()) {
   mutateState(input.session_id, () => fresh(input), (s) => {
     s.entry_id = entry2;
     s.dirty = true;
+    s.edits = (s.edits ?? 0) + 1;
+    if (!(s.edited_files ?? []).includes(rel)) s.edited_files = [...s.edited_files ?? [], rel];
   });
   return void 0;
 }
@@ -9434,6 +9616,14 @@ function inProgress(root) {
     return [];
   }
 }
+function ownFailures(root, entryId) {
+  try {
+    const e = readEntry(root, "session", entryId);
+    return isBroken(e) ? [] : (e.data.failures ?? []).filter((f) => f.fixed_at === null).slice(-2).reverse().map((f) => f.command);
+  } catch {
+    return [];
+  }
+}
 function stop(input, now = /* @__PURE__ */ new Date()) {
   const out = stopCheck(input, now);
   markLive(input, out ? "working" : "waiting", now);
@@ -9451,18 +9641,29 @@ function stopCheck(input, now) {
       s.usage_at = now.toISOString();
     });
   }
+  const failing = ownFailures(state.root, state.entry_id);
   let block = false;
+  let auto = null;
   mutateState(input.session_id, () => state, (s) => {
     const recent = s.summary_at !== void 0 && now.getTime() - Date.parse(s.summary_at) < SUMMARY_QUIET_MS;
-    if (s.dirty && !s.reminded && !input.stop_hook_active && !recent) {
+    if (!s.dirty || s.reminded || input.stop_hook_active || recent) return;
+    if ((s.edited_files?.length ?? 0) >= 2 || (s.edits ?? 0) >= 3 || (s.actions?.length ?? 0) > 0 || failing.length > 0) {
       s.reminded = true;
       block = true;
+    } else if (s.edited_files?.length === 1 && s.auto_summary !== s.edited_files[0]) {
+      auto = s.auto_summary = s.edited_files[0];
     }
   });
+  if (auto) {
+    try {
+      writeAutoSummary(state.root, state.entry_id, auto);
+    } catch {
+    }
+  }
   if (!block) return void 0;
   return {
     decision: "block",
-    reason: stopRequest(refOf("session", state.entry_id), unlogged(state.root, readState(input.session_id) ?? state), inProgress(state.root)),
+    reason: stopRequest(refOf("session", state.entry_id), unlogged(state.root, readState(input.session_id) ?? state), inProgress(state.root), failing),
     systemMessage: notice("asked the AI to record this session (summary, fixes, decisions, task status).")
   };
 }
@@ -9490,6 +9691,7 @@ var HANDLERS = {
   "post-edit": postEdit,
   "prompt-submit": promptSubmit,
   "post-shell": postShell,
+  "post-shell-fail": postShellFail,
   stop,
   "session-end": sessionEnd
 };

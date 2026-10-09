@@ -25005,7 +25005,7 @@ var INSTRUCTIONS = [
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.10",
+  version: "1.0.11",
   private: true,
   type: "module",
   engines: {
@@ -25189,6 +25189,12 @@ var usageSchema = external_exports.object({
   }).optional()
 });
 var emptyUsage = () => usageSchema.parse({});
+var failureSchema = external_exports.object({
+  command: external_exports.string(),
+  excerpt: external_exports.string().default(""),
+  at: iso,
+  fixed_at: isoOpt
+});
 var TASK_STATUSES = ["todo", "doing", "done", "blocked"];
 var ARTIFACT_KINDS = ["spec", "plan", "doc", "image", "html", "code", "other"];
 var entry = (shape) => external_exports.object(shape).passthrough();
@@ -25261,7 +25267,8 @@ var SCHEMAS = {
     model: optStr,
     files_touched: lax(external_exports.array(external_exports.string()).default([])),
     summary_written: external_exports.boolean().default(false),
-    usage: usageSchema.default({})
+    usage: usageSchema.default({}),
+    failures: lax(external_exports.array(failureSchema).optional())
   }),
   decision: entry({
     title: external_exports.string().min(1),
@@ -26398,6 +26405,60 @@ function mapNotesFor(root, input) {
 }
 var isStale = (n) => n.state === "changed" || n.state === "missing";
 
+// src/vault/sessions.ts
+var import_node_path8 = __toESM(require("node:path"), 1);
+function openSession(root, sessionId, meta, now = /* @__PURE__ */ new Date()) {
+  const dir = import_node_path8.default.join(vaultDir(root), DIRS.session);
+  return withLock(dir, () => {
+    const sid8 = sessionId.replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toLowerCase() || "session";
+    const suffix = new RegExp(`-${sid8}(-\\d+)?$`);
+    for (const candidate of listIds(root, "session").filter((n) => suffix.test(n))) {
+      const e = readEntry(root, "session", candidate);
+      if (!isBroken(e) && e.data.session_id === sessionId) return e.id;
+    }
+    const id = uniqueId(dir, `${dateStamp(now)}-${timeStamp(now)}-${sid8}`);
+    writeEntry(
+      root,
+      "session",
+      id,
+      {
+        session_id: sessionId,
+        started: localIso(now),
+        ended: null,
+        model: meta.model,
+        files_touched: [],
+        summary_written: false,
+        usage: emptyUsage()
+      },
+      { Summary: "", Done: "", Next: "" }
+    );
+    return id;
+  });
+}
+var FAILURE_LOOKBACK = 10;
+var recentIds = (root) => listIds(root, "session").reverse().slice(0, FAILURE_LOOKBACK);
+function openFailures(root, limit = 2) {
+  const out = [];
+  for (const id of recentIds(root)) {
+    if (out.length >= limit) break;
+    const raw = readRaw(root, "session", id);
+    if (raw === null || !raw.includes("fixed_at: null")) continue;
+    const e = readEntry(root, "session", id);
+    if (isBroken(e)) continue;
+    for (const f of [...e.data.failures ?? []].reverse()) if (f.fixed_at === null) out.push({ ...f, session: id });
+  }
+  return out.slice(0, limit);
+}
+var bullets = (items) => items.map((i) => `- ${i}`).join("\n");
+function writeSummary(root, entryId, input) {
+  mutateEntry(root, "session", entryId, (e) => {
+    e.sections.Summary = input.summary;
+    e.sections.Done = bullets(input.done);
+    e.sections.Next = bullets(input.next);
+    e.data.summary_written = true;
+  });
+}
+
 // src/vault/brief.ts
 var newestFirst = (a, b) => a.id < b.id ? 1 : -1;
 var byCreated = (a, b) => Date.parse(b.data.created) - Date.parse(a.data.created) || newestFirst(a, b);
@@ -26466,6 +26527,7 @@ var FOOT = "More: search, read <id>, project_map.";
 var LAST_SUMMARY = 240;
 var LAST_NEXT = 140;
 var TITLE = 70;
+var FAILING = 2;
 var LIST = 3;
 var MAP_SHOWN = 8;
 var MAP_SCAN = 100;
@@ -26496,6 +26558,8 @@ function buildBrief(root, now = /* @__PURE__ */ new Date()) {
     const next = (last.sections.Next ?? "").split(/\r?\n/).map((l) => l.replace(/^- /, "").trim()).filter(Boolean).join("; ");
     units.push(`Last session (${refOf("session", last.id)}): ${cap(last.sections.Summary ?? "", LAST_SUMMARY)}${next ? ` Next: ${cap(next, LAST_NEXT)}` : ""}`);
   }
+  const failing = openFailures(root, FAILING).map((f) => `${cap(f.command, 50)} \u2014 ${cap(f.excerpt, 100)} (${refOf("session", f.session)})`);
+  if (failing.length) units.push(failing.length === 1 ? `Failing checks: ${failing[0]}` : ["Failing checks:", ...failing.map((l) => `- ${l}`)].join("\n"));
   const { open: tasks, done: doneIds, known, perMilestone } = scanTasks(root);
   const today = dateStamp(now);
   const current = activeMilestone(root, today);
@@ -26664,17 +26728,17 @@ function sessionBegan(transcriptPath, now) {
 
 // src/vault/live.ts
 var import_node_fs9 = __toESM(require("node:fs"), 1);
-var import_node_path8 = __toESM(require("node:path"), 1);
+var import_node_path9 = __toESM(require("node:path"), 1);
 var CLAUDE_WORKING_MS = 10 * 60 * 1e3;
 var CODEX_WORKING_MS = 5 * 60 * 1e3;
 var CLAUDE_WAITING_MS = 30 * 60 * 1e3;
 var CLOSED_VISIBLE_MS = 60 * 60 * 1e3;
 var LIVE_MAX_AGE_MS = 24 * 60 * 60 * 1e3;
 function liveDir() {
-  return import_node_path8.default.join(binkgoHome(), "live");
+  return import_node_path9.default.join(binkgoHome(), "live");
 }
 function liveFile(sessionId) {
-  return import_node_path8.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
+  return import_node_path9.default.join(liveDir(), `${sessionId.replace(/[^A-Za-z0-9_-]/g, "_")}.json`);
 }
 function isRecord(v) {
   if (!v || typeof v !== "object") return false;
@@ -26732,7 +26796,7 @@ function allRecords() {
   }
   const out = [];
   for (const name of names) {
-    const rec = readFile(import_node_path8.default.join(liveDir(), name));
+    const rec = readFile(import_node_path9.default.join(liveDir(), name));
     if (rec) out.push(rec);
   }
   return out;
@@ -26749,46 +26813,6 @@ function setCurrentTask(root, agent, task, now) {
       r.task = null;
     }, now);
   }
-}
-
-// src/vault/sessions.ts
-var import_node_path9 = __toESM(require("node:path"), 1);
-function openSession(root, sessionId, meta, now = /* @__PURE__ */ new Date()) {
-  const dir = import_node_path9.default.join(vaultDir(root), DIRS.session);
-  return withLock(dir, () => {
-    const sid8 = sessionId.replace(/[^A-Za-z0-9]/g, "").slice(0, 8).toLowerCase() || "session";
-    const suffix = new RegExp(`-${sid8}(-\\d+)?$`);
-    for (const candidate of listIds(root, "session").filter((n) => suffix.test(n))) {
-      const e = readEntry(root, "session", candidate);
-      if (!isBroken(e) && e.data.session_id === sessionId) return e.id;
-    }
-    const id = uniqueId(dir, `${dateStamp(now)}-${timeStamp(now)}-${sid8}`);
-    writeEntry(
-      root,
-      "session",
-      id,
-      {
-        session_id: sessionId,
-        started: localIso(now),
-        ended: null,
-        model: meta.model,
-        files_touched: [],
-        summary_written: false,
-        usage: emptyUsage()
-      },
-      { Summary: "", Done: "", Next: "" }
-    );
-    return id;
-  });
-}
-var bullets = (items) => items.map((i) => `- ${i}`).join("\n");
-function writeSummary(root, entryId, input) {
-  mutateEntry(root, "session", entryId, (e) => {
-    e.sections.Summary = input.summary;
-    e.sections.Done = bullets(input.done);
-    e.sections.Next = bullets(input.next);
-    e.data.summary_written = true;
-  });
 }
 
 // src/vault/state.ts
@@ -27290,6 +27314,8 @@ function callTool(root, name, rawArgs, now = /* @__PURE__ */ new Date()) {
           s.reminded = false;
           s.summary_at = now.toISOString();
           s.actions = [];
+          s.edits = 0;
+          s.edited_files = [];
         });
       }
       return `Saved ${saved.join(", ")}.`;
