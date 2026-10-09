@@ -8253,7 +8253,7 @@ function licenseStatus(now, appVersion, opts = {}) {
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.9",
+  version: "1.0.10",
   private: true,
   type: "module",
   engines: {
@@ -8926,6 +8926,7 @@ ${details}` : ""}`;
 var createdNote = (name, commits) => `Binkgo: this git repository had no vault, so one was just created for "${name}" and registered; it is empty.` + (commits > ADOPT_COMMITS ? ` The repo has ${commits} commits: suggest the user run /binkgo:adopt once to fill it from the history.` : "");
 var ADOPT_COMMITS = 20;
 var signInNote = "Binkgo: sign in to turn on project memory (free). Run /binkgo login, or ask the agent to call sign_in.";
+var signInNotice = "\u{1F33F} Binkgo \xB7 not signed in, so project memory is off. Sign in once (free): run /binkgo login, or ask the AI to sign in to Binkgo.";
 
 // src/vault/live.ts
 var import_node_fs8 = __toESM(require("node:fs"), 1);
@@ -9527,7 +9528,7 @@ function runHook(name, rawInput, now = /* @__PURE__ */ new Date()) {
     }
     sessionId = input.session_id;
     if (!isSignedIn({ now })) {
-      return name === "session-start" ? JSON.stringify({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: signInNote } }) : void 0;
+      return name === "session-start" ? JSON.stringify({ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: signInNote }, systemMessage: signInNotice }) : void 0;
     }
     const out = handler(input, now);
     return out ? JSON.stringify(out) : void 0;

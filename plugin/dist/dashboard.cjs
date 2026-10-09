@@ -3683,7 +3683,7 @@ var import_node_path14 = __toESM(require("node:path"), 1);
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.9",
+  version: "1.0.10",
   private: true,
   type: "module",
   engines: {

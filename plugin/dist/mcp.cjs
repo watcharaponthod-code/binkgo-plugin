@@ -25005,7 +25005,7 @@ var INSTRUCTIONS = [
 // package.json
 var package_default = {
   name: "binkgo",
-  version: "1.0.9",
+  version: "1.0.10",
   private: true,
   type: "module",
   engines: {
@@ -25805,9 +25805,33 @@ async function signInTool(o = {}) {
       return "Could not check the sign-in just now. Call sign_in again in a moment.";
   }
 }
+var asked = false;
+async function promptSignIn(o) {
+  if (!o.ask || asked) return false;
+  asked = true;
+  let s;
+  try {
+    s = await startSignin({ fetch: o.fetch, appVersion: package_default.version });
+  } catch {
+    return false;
+  }
+  if (!await o.ask(s).catch(() => false)) return false;
+  const sleep = o.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
+  const end = Date.now() + (o.waitMs ?? 9e4);
+  for (; ; ) {
+    const r = await pollSignin(s.poll_token, { fetch: o.fetch, publicKey: o.publicKey, appVersion: package_default.version });
+    if (r.status === "approved") {
+      asked = false;
+      return true;
+    }
+    if (r.status === "denied" || r.status === "expired" || Date.now() >= end) return false;
+    await sleep(Math.max(1, s.interval) * 1e3);
+  }
+}
 async function gateReply(name, o = {}) {
   if (name === "sign_in") return signInTool(o);
-  return isSignedIn(o) ? null : NOT_SIGNED_IN;
+  if (isSignedIn(o)) return null;
+  return await promptSignIn(o) ? null : NOT_SIGNED_IN;
 }
 
 // src/vault/index.ts
@@ -27311,10 +27335,21 @@ async function resolveRoot() {
   }
   return findProjectRoot(process.cwd());
 }
+async function askSignIn(s) {
+  const can = server.server.getClientCapabilities()?.elicitation;
+  if (!can) return false;
+  const message = `Binkgo needs a sign-in (free) to turn on project memory. Approve code ${s.code} in your browser.`;
+  const r = can.url ? await server.server.elicitInput({ mode: "url", message, url: s.verify_url, elicitationId: (0, import_node_crypto8.randomUUID)() }) : await server.server.elicitInput({
+    message: `${message}
+Open ${s.verify_url}, approve code ${s.code}, then accept here.`,
+    requestedSchema: { type: "object", properties: {} }
+  });
+  return r.action === "accept";
+}
 for (const [name, def] of Object.entries(TOOL_DEFS)) {
   server.registerTool(name, { description: def.description, inputSchema: def.shape }, async (args) => {
     try {
-      const early = await gateReply(name);
+      const early = await gateReply(name, { ask: askSignIn });
       if (early !== null) return { content: [{ type: "text", text: early }] };
       const root = await resolveRoot();
       let input = args;
